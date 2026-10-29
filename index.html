@@ -1,0 +1,2080 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f1eef4">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Mat Cat Yoga</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: dusk-quiet single page — build, preview, live (landscape: breathing circle + cat left, words right; stacks in portrait), done with feedback, and the pose library */
+:root {
+  --bg: #f1eef4;
+  --surface: #f9f7fb;
+  --ink: #2f2a3a;
+  --muted: #7b7389;
+  --line: #e0dbe7;
+  --accent: #d9823f;
+  --accent-ink: #ffffff;
+  --ring: #e3dcef;
+  --ring-edge: #d3c8e4;
+  --inhale: #5f8fb4;
+  --exhale: #b9764a;
+  --good: #4f9a72;
+  --hard: #c0663f;
+  --cat-shadow: #ddd6e6;
+  --strap: #8a7cc8;
+  --font-display: "Quicksand", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1722; --surface: #221e2c; --ink: #ece7f3; --muted: #a49cb2; --line: #332d40;
+    --accent: #f0a35e; --accent-ink: #24170c; --ring: #2a2538; --ring-edge: #3a3350;
+    --inhale: #8fbede; --exhale: #e2a57a; --good: #7cc79e; --hard: #ec9370; --cat-shadow: #2b2637; --strap: #b0a5ec;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1722; --surface: #221e2c; --ink: #ece7f3; --muted: #a49cb2; --line: #332d40;
+  --accent: #f0a35e; --accent-ink: #24170c; --ring: #2a2538; --ring-edge: #3a3350;
+  --inhale: #8fbede; --exhale: #e2a57a; --good: #7cc79e; --hard: #ec9370; --cat-shadow: #2b2637; --strap: #b0a5ec;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 28px;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+p { margin: 0; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.screen { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.muted { color: var(--muted); }
+.label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 700; }
+.btn { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.big { padding: 13px 28px; font-size: 1.05rem; }
+.btn.quiet { border-color: transparent; color: var(--muted); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 7px 15px; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+input[type="range"] { accent-color: var(--accent); width: min(260px, 100%); }
+
+/* build */
+.hero { display: flex; align-items: center; gap: 18px; }
+.hero .halo { position: relative; width: 140px; flex: none; }
+.hero .halo::before { content: ""; position: absolute; inset: 8% 6% 14%; border-radius: 50%; background: var(--ring); }
+.hero svg { position: relative; width: 100%; height: auto; aspect-ratio: 260 / 230; display: block; }
+.hero h1 { font-size: clamp(1.7rem, 6vw, 2.3rem); }
+.form { display: grid; gap: 20px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.links { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* preview */
+.summary h2 { font-size: 1.8rem; }
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.card { background: var(--surface); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.offer { display: flex; align-items: center; gap: 12px; }
+.offer svg { width: 76px; flex: none; height: auto; aspect-ratio: 260 / 230; }
+.props { margin: 0; padding-left: 1.1em; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.sec-head h3 { font-size: 1.2rem; }
+.strip { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 88px; background: var(--surface); border-radius: 14px; padding: 4px 4px 8px; text-align: center; }
+.chip svg { width: 80px; height: auto; aspect-ratio: 260 / 230; }
+.chip b { font-size: 0.72rem; line-height: 1.15; font-weight: 700; }
+.chip small { font-size: 0.66rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip.flowy { justify-content: center; min-height: 104px; border: 1px dashed var(--line); background: transparent; }
+.chip.challenge { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.chip.peak { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.why { max-width: 70ch; }
+.thinking { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 24px 0; }
+.mine button[aria-pressed="true"][data-v="new"] { background: var(--inhale); border-color: var(--inhale); color: var(--bg); }
+.rounds { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); padding: 0 8px; }
+.note { font-size: 0.85rem; color: var(--muted); flex-basis: 100%; }
+.startbar { position: sticky; bottom: 0; background: var(--bg); padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--line); }
+
+/* live: one fixed screen, nothing scrolls; rows = top bar, progress, stage + words, controls */
+body.is-live { overflow: hidden; }
+#live { position: fixed; inset: 0; z-index: 5; max-width: none; margin: 0; background: var(--bg);
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: clamp(4px, 1.4dvh, 10px);
+  padding: max(8px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.topbar { display: flex; align-items: center; gap: 12px; font-size: 0.86rem; color: var(--muted); min-height: 28px; min-width: 0; }
+.topbar .sect { font-family: var(--font-display); font-size: 1rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.topbar .time { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.topbar .btn { padding: 4px 10px; font-size: 0.82rem; white-space: nowrap; }
+.wake { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; white-space: nowrap; }
+.wake i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+.wake[data-on="1"] i { background: var(--good); }
+.wake[data-on="0"] i { background: var(--hard); }
+.bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); opacity: .7; }
+.livegrid { min-height: 0; height: 100%; display: grid; gap: clamp(8px, 2.5vw, 22px); grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); align-items: center; }
+.stage { position: relative; min-width: 0; min-height: 0; height: 100%; display: grid; place-items: center; }
+.stage .ring { position: absolute; height: 82%; max-width: 92%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, var(--ring) 58%, transparent 71%); box-shadow: 0 0 0 1px var(--ring-edge); transform: scale(.86); will-change: transform; top: 50%; left: 50%; translate: -50% -52%; }
+.stage svg { position: relative; height: 100%; max-height: 100%; width: auto; max-width: 100%; aspect-ratio: 260 / 230; display: block; }
+.side-badge { position: absolute; top: 0; left: 0; border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: 0.78rem; color: var(--muted); background: var(--bg); }
+.panel { display: flex; flex-direction: column; justify-content: center; gap: clamp(4px, 1.8dvh, 14px); min-width: 0; min-height: 0; max-height: 100%; overflow: hidden; }
+.sa { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.25rem, min(4.2vw, 8dvh), 2.8rem); line-height: 1.08; overflow-wrap: anywhere; }
+.en { font-weight: 600; font-size: clamp(0.95rem, min(2.2vw, 4.4dvh), 1.25rem); margin-top: 2px; }
+.de { color: var(--muted); font-size: clamp(0.85rem, min(1.9vw, 3.8dvh), 1rem); }
+.cue { color: var(--muted); font-size: clamp(0.85rem, min(1.9vw, 3.8dvh), 0.98rem); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.breathbox { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 1.8rem; }
+.breathword { font-family: var(--font-display); font-size: clamp(1.15rem, min(3.4vw, 7dvh), 2rem); letter-spacing: 0.04em; }
+.breathword[data-b="in"] { color: var(--inhale); }
+.breathword[data-b="out"] { color: var(--exhale); }
+.dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--muted); opacity: .6; }
+.dots i.on { background: var(--accent); border-color: var(--accent); opacity: 1; }
+.count { font-variant-numeric: tabular-nums; font-family: var(--font-display); font-size: clamp(1.05rem, 5dvh, 1.4rem); color: var(--muted); }
+.next { display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: clamp(4px, 1.4dvh, 10px); min-width: 0; }
+.next svg { width: clamp(44px, 14dvh, 78px); flex: none; height: auto; aspect-ratio: 260 / 230; opacity: .85; }
+.next .t { display: flex; flex-direction: column; min-width: 0; }
+.next .t b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.howline { font-size: 0.86rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.controls { display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap; transition: opacity .6s; min-width: 0; }
+.controls .btn { padding: clamp(6px, 1.6dvh, 11px) clamp(10px, 2.6vw, 18px); white-space: nowrap; flex: 0 1 auto; min-width: 0; }
+#pauseBtn { min-width: 96px; }
+#live.quiet .controls, #live.quiet .topbar .btn { opacity: .12; }
+@media (max-height: 430px) { .cue, .howline { -webkit-line-clamp: 1; } .de { display: none; } .wake span { display: none; } }
+@media (orientation: portrait) {
+  .livegrid { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; align-items: stretch; }
+  .panel { justify-content: flex-start; }
+}
+@media (orientation: portrait) and (max-width: 520px) { .sa { font-size: clamp(1.5rem, 7.5vw, 2.4rem); } .wake span { display: none; } }
+@media (max-width: 420px) { .controls { gap: 6px; } .controls .btn { padding-inline: 10px; font-size: .9rem; } #pauseBtn { min-width: 84px; } #plusBtn { display: none; } }
+
+/* done */
+.done { align-items: center; text-align: center; }
+.done .catwrap { width: min(320px, 85%); }
+.done svg { width: 100%; height: auto; aspect-ratio: 260 / 230; }
+.fb { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 18px; text-align: left; }
+.fb textarea { width: 100%; min-height: 84px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 10px 12px; resize: vertical; }
+.marks { display: flex; flex-wrap: wrap; gap: 6px; }
+.marks button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 12px; font-size: 0.86rem; }
+.marks button[data-m="love"] { border-color: var(--good); color: var(--good); }
+.marks button[data-m="hard"] { border-color: var(--hard); color: var(--hard); }
+.status { font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
+
+/* library */
+.lib-tools { display: flex; flex-direction: column; gap: 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.pcard { background: var(--surface); border-radius: 18px; padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pcard svg { width: 100%; height: auto; aspect-ratio: 260 / 230; }
+.pcard .s { font-family: var(--font-display); font-weight: 500; font-size: 1.02rem; line-height: 1.2; }
+.pcard .e { font-weight: 700; font-size: 0.86rem; }
+.pcard .d { color: var(--muted); font-size: 0.84rem; }
+.lvl { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.lvl i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.lvl i.on { background: var(--muted); }
+.mine { display: flex; gap: 4px; margin-top: 6px; }
+.mine button { flex: 1; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 4px 0; font-size: 0.76rem; font-weight: 600; }
+.mine button[aria-pressed="true"][data-v="easy"] { background: var(--good); border-color: var(--good); color: var(--bg); }
+.mine button[aria-pressed="true"][data-v="ok"] { background: var(--muted); border-color: var(--muted); color: var(--bg); }
+.mine button[aria-pressed="true"][data-v="hard"] { background: var(--hard); border-color: var(--hard); color: var(--bg); }
+.proposed { font-size: 0.7rem; color: var(--muted); font-style: italic; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stage .ring { transform: scale(.93) !important; } }
+</style>
+
+<section class="screen" id="build">
+  <div class="hero">
+    <div class="halo"><svg id="heroCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
+    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <h1>Today's practice</h1>
+      <p class="muted">Choose the time and how you feel.</p>
+    </div>
+  </div>
+  <div class="form">
+    <div class="field"><span class="label">Time</span><div class="seg" data-key="minutes"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
+    <div class="field"><span class="label">Style</span><div class="seg" data-key="style"><button type="button" data-v="vinyasa">Vinyasa</button><button type="button" data-v="slow">Slow flow</button></div></div>
+    <div class="field"><span class="label">Energy</span><div class="seg" data-key="energy"><button type="button" data-v="low">Low</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="high">High</button></div></div>
+    <div class="field"><span class="label">Focus</span><div class="seg" data-key="focus" data-multi="1"><button type="button" data-v="hamstrings">Hamstrings</button><button type="button" data-v="back">Back</button><button type="button" data-v="hips">Hips</button><button type="button" data-v="balance">Balance</button><button type="button" data-v="core">Core</button></div></div>
+    <div class="field"><span class="label">Breath length</span><div class="seg" data-key="cycle"><button type="button" data-v="5">5 s</button><button type="button" data-v="6">6 s</button><button type="button" data-v="7">7 s</button></div></div>
+    <div class="field"><span class="label">Sound</span><div class="seg" data-key="sound"><button type="button" data-v="bowls">Bowls</button><button type="button" data-v="off">Silent</button></div>
+      <label class="row muted" for="vol" style="font-size:.88rem">Volume <input type="range" id="vol" min="0" max="100" step="5"> <button class="btn quiet" id="testSound" type="button">Listen</button></label>
+    </div>
+    <div class="row"><button class="btn primary big" id="buildBtn" type="button">Build practice</button><button class="btn big" id="surpriseBtn" type="button" hidden>Surprise me</button><button class="btn" id="libBtn" type="button">Pose library</button></div>
+    <p class="muted" id="surpriseNote" style="font-size:.88rem" hidden>Surprise me asks Claude to write a class just for you. It takes about half a minute and uses your Claude account.</p>
+  </div>
+</section>
+
+<section class="screen" id="preview" hidden>
+  <div class="summary" style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="sumTitle"></h2>
+    <span class="muted" id="sumMeta"></span>
+    <p class="why" id="sumWhy"></p>
+  </div>
+  <div class="thinking" id="thinking" hidden><p class="muted" id="thinkingTxt">Claude is composing your class…</p><button class="btn" id="stopBtn" type="button">Stop</button></div>
+  <div class="cards" id="topCards"></div>
+  <div id="sections" style="display:flex;flex-direction:column;gap:26px"></div>
+  <div class="startbar">
+    <button class="btn primary big" id="startBtn" type="button">Begin</button>
+    <label class="row muted" for="fsStart" id="fsStartWrap" style="font-size:.9rem"><input type="checkbox" id="fsStart" checked> Full screen</label>
+    <button class="btn" id="shuffleBtn" type="button">Shuffle</button>
+    <button class="btn quiet" id="backBtn" type="button">Settings</button>
+  </div>
+</section>
+
+<section class="screen" id="live" hidden>
+  <div class="topbar">
+    <span class="sect" id="lSect"></span>
+    <span class="wake" id="wake" data-on=""><i></i><span id="wakeTxt"></span></span>
+    <span class="time" id="lTime"></span>
+    <button class="btn quiet" id="fsBtn" type="button" hidden>Full screen</button>
+  </div>
+  <div class="bar"><span id="lBar"></span></div>
+  <div class="livegrid">
+    <div class="stage">
+      <div class="ring" id="ring"></div>
+      <svg id="lFig" viewBox="0 0 260 230" role="img" aria-label="Current pose"></svg>
+      <span class="side-badge" id="lSide" hidden></span>
+    </div>
+    <div class="panel">
+      <div aria-live="polite">
+        <div class="sa" id="lSa"></div>
+        <div class="en" id="lEn"></div>
+        <div class="de" id="lDe"></div>
+      </div>
+      <p class="cue" id="lCue"></p>
+      <div class="breathbox">
+        <span class="breathword" id="lBreath"></span>
+        <div class="dots" id="lDots"></div>
+        <span class="count" id="lCount"></span>
+      </div>
+      <div class="next">
+        <svg id="nFig" viewBox="0 0 260 230" aria-hidden="true"></svg>
+        <div class="t"><span class="label">Next</span><b id="nName"></b><span class="howline" id="nHow"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="prevBtn" type="button">Back</button>
+    <button class="btn primary" id="pauseBtn" type="button">Pause</button>
+    <button class="btn" id="skipBtn" type="button">Skip</button>
+    <button class="btn" id="plusBtn" type="button">+15 s</button>
+    <button class="btn quiet" id="endBtn" type="button">End</button>
+  </div>
+  <video id="keepAwake" muted playsinline loop preload="auto" style="position:absolute;width:1px;height:1px;opacity:.01;pointer-events:none" aria-hidden="true">
+    <source src="data:video/webm;base64,GkXfo59ChoEBQveBAULygQRC84EIQoKEd2VibUKHgQRChYECGFOAZwEAAAAAAAeFEU2bdLpNu4tTq4QVSalmU6yBoU27i1OrhBZUrmtTrIHYTbuMU6uEElTDZ1OsggGETbuMU6uEHFO7a1Osggdv7AEAAAAAAABZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVSalmsirXsYMPQkBNgI1MYXZmNjAuMTYuMTAwV0GNTGF2ZjYwLjE2LjEwMESJiECfYAAAAAAAFlSua0CmrgEAAAAAAAA414EBc8WISNC/GUvoDfucgQAitZyDdW5kiIEAhoVWX1ZQOIOBASPjg4Q7msoA4ImwgRC6gRCagQKuAQAAAAAAAFzXgQJzxYgtV0yia8CAg5yBACK1nIN1bmSIgQCGhkFfT1BVU1aqg2MuoFa7hATEtACDgQLhkZ+BAbWIQL9AAAAAAABiZIEQY6KTT3B1c0hlYWQBATgBQB8AAAAAABJUw2dA1nNzoGPAgGfImkWjh0VOQ09ERVJEh41MYXZmNjAuMTYuMTAwc3PWY8CLY8WISNC/GUvoDftnyKFFo4dFTkNPREVSRIeUTGF2YzYwLjMxLjEwMiBsaWJ2cHhnyKFFo4hEVVJBVElPTkSHkzAwOjAwOjAyLjAwMDAwMDAwMABzc9djwItjxYgtV0yia8CAg2fIokWjh0VOQ09ERVJEh5VMYXZjNjAuMzEuMTAyIGxpYm9wdXNnyKFFo4hEVVJBVElPTkSHkzAwOjAwOjAyLjAwODAwMDAwMAAfQ7Z1RQnngQCji4IAAIAIC+Y7I6tgo6OBAACAEAIAnQEqEAAQAABHCIWFiJmEiAICAAwNYAD+/6tQgKOKggAVgAgIrLMOxqOKggApgAgIrLMOxqOKggA9gAgIrLMOxqOKggBRgAgIrLMOxqOKggBlgAgIrLMOxqOKggB5gAgIrLMOxqOKggCNgAgIrLMOxqOKggChgAgIrLMOxqOKggC1gAgIrLMOxqOKggDJgAgIrLMOxqOKggDdgAgIrLMOxqOKggDxgAgIrLMOxqOKggEFgAgIrLMOxqOKggEZgAgIrLMOxqOKggEtgAgIrLMOxqOKggFBgAgIrLMOxqOKggFVgAgIrLMOxqOKggFpgAgIrLMOxqOKggF9gAgIrLMOxqOKggGRgAgIrLMOxqOKggGlgAgIrLMOxqOKggG5gAgIrLMOxqOKggHNgAgIrLMOxqOKggHhgAgIrLMOxqOKggH1gAgIrLMOxqOKggIJgAgIrLMOxqOKggIdgAgIrLMOxqOKggIxgAgIrLMOxqOKggJFgAgIrLMOxqOKggJZgAgIrLMOxqOKggJtgAgIrLMOxqOKggKBgAgIrLMOxqOKggKVgAgIrLMOxqOKggKpgAgIrLMOxqOKggK9gAgIrLMOxqOKggLRgAgIrLMOxqOKggLlgAgIrLMOxqOKggL5gAgIrLMOxqOKggMNgAgIrLMOxqOKggMhgAgIrLMOxqOKggM1gAgIrLMOxqOKggNJgAgIrLMOxqOKggNdgAgIrLMOxqOKggNxgAgIrLMOxqOKggOFgAgIrLMOxqOKggOZgAgIrLMOxqOKggOtgAgIrLMOxqOKggPBgAgIrLMOxqOKggPVgAgIrLMOxqOKggPpgAgIrLMOxqOZgQPoALEBAAEQEAAYADA/9AwAAAD+/6tQgKOKggP9gAgIrLMOxqOKggQRgAgIrLMOxqOKggQlgAgIrLMOxqOKggQ5gAgIrLMOxqOKggRNgAgIrLMOxqOKggRhgAgIrLMOxqOKggR1gAgIrLMOxqOKggSJgAgIrLMOxqOKggSdgAgIrLMOxqOKggSxgAgIrLMOxqOKggTFgAgIrLMOxqOKggTZgAgIrLMOxqOKggTtgAgIrLMOxqOKggUBgAgIrLMOxqOKggUVgAgIrLMOxqOKggUpgAgIrLMOxqOKggU9gAgIrLMOxqOKggVRgAgIrLMOxqOKggVlgAgIrLMOxqOKggV5gAgIrLMOxqOKggWNgAgIrLMOxqOKggWhgAgIrLMOxqOKggW1gAgIrLMOxqOKggXJgAgIrLMOxqOKggXdgAgIrLMOxqOKggXxgAgIrLMOxqOKggYFgAgIrLMOxqOKggYZgAgIrLMOxqOKggYtgAgIrLMOxqOKggZBgAgIrLMOxqOKggZVgAgIrLMOxqOKggZpgAgIrLMOxqOKggZ9gAgIrLMOxqOKggaRgAgIrLMOxqOKggalgAgIrLMOxqOKgga5gAgIrLMOxqOKggbNgAgIrLMOxqOKggbhgAgIrLMOxqOKggb1gAgIrLMOxqOKggcJgAgIrLMOxqOKggcdgAgIrLMOxqOKggcxgAgIrLMOxqOKggdFgAgIrLMOxqOKggdZgAgIrLMOxqOKggdtgAgIrLMOxqOKggeBgAgIrLMOxqOKggeVgAgIrLMOxqOKggepgAgIrLMOxqOKgge9gAgIrLMOxqCToYqCB9EACAissw7GdaKEAM3+YBxTu2uRu4+zgQC3iveBAfGCAmDwgRA=" type="video/webm"><source src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAXEbW9vdgAAAGxtdmhkAAAAAAAAAAAAAAAAAAAD6AAAB9AAAQAAAQAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwAAAl10cmFrAAAAXHRraGQAAAADAAAAAAAAAAAAAAABAAAAAAAAB9AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAABAAAAAABAAAAAQAAAAAAAkZWR0cwAAABxlbHN0AAAAAAAAAAEAAAfQAAAAAAABAAAAAAHVbWRpYQAAACBtZGhkAAAAAAAAAAAAAAAAAABAAAAAgABVxAAAAAAALWhkbHIAAAAAAAAAAHZpZGUAAAAAAAAAAAAAAABWaWRlb0hhbmRsZXIAAAABgG1pbmYAAAAUdm1oZAAAAAEAAAAAAAAAAAAAACRkaW5mAAAAHGRyZWYAAAAAAAAAAQAAAAx1cmwgAAAAAQAAAUBzdGJsAAAAvHN0c2QAAAAAAAAAAQAAAKxhdmMxAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAABAAEABIAAAASAAAAAAAAAABFUxhdmM2MC4zMS4xMDIgbGlieDI2NAAAAAAAAAAAAAAAGP//AAAAMmF2Y0MBZAAK/+EAF2dkAAqs2V7ARAAAAwAEAAADAAg8SJZYAQAEaO+Py/34+AAAAAAQcGFzcAAAAAEAAAABAAAAFGJ0cnQAAAAAAAALWAAAC1gAAAAYc3R0cwAAAAAAAAABAAAAAgAAQAAAAAAUc3RzcwAAAAAAAAABAAAAAQAAABxzdHNjAAAAAAAAAAEAAAABAAAAAQAAAAEAAAAcc3RzegAAAAAAAAAAAAAAAgAAAskAAAANAAAAGHN0Y28AAAAAAAAAAgAABgkAAAjyAAACkXRyYWsAAABcdGtoZAAAAAMAAAAAAAAAAAAAAAIAAAAAAAAH0AAAAAAAAAAAAAAAAQEAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAACRlZHRzAAAAHGVsc3QAAAAAAAAAAQAAB9AAAAQAAAEAAAAAAgltZGlhAAAAIG1kaGQAAAAAAAAAAAAAAAAAAB9AAABCgFXEAAAAAAAtaGRscgAAAAAAAAAAc291bgAAAAAAAAAAAAAAAFNvdW5kSGFuZGxlcgAAAAG0bWluZgAAABBzbWhkAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAF4c3RibAAAAH5zdHNkAAAAAAAAAAEAAABubXA0YQAAAAAAAAABAAAAAAAAAAAAAQAQAAAAAB9AAAAAAAA2ZXNkcwAAAAADgICAJQACAASAgIAXQBUAAAAAAB9AAAABPwWAgIAFFYhW5QAGgICAAQIAAAAUYnRydAAAAAAAAB9AAAABPwAAACBzdHRzAAAAAAAAAAIAAAAQAAAEAAAAAAEAAAKAAAAAKHN0c2MAAAAAAAAAAgAAAAEAAAABAAAAAQAAAAIAAAAIAAAAAQAAAFhzdHN6AAAAAAAAAAAAAAARAAAAFQAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAcc3RjbwAAAAAAAAADAAAF9AAACNIAAAj/AAAAGnNncGQBAAAAcm9sbAAAAAIAAAAB//8AAAAcc2JncAAAAAByb2xsAAAAAQAAABEAAAABAAAAYnVkdGEAAABabWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAbWRpcmFwcGwAAAAAAAAAAAAAAAAtaWxzdAAAACWpdG9vAAAAHWRhdGEAAAABAAAAAExhdmY2MC4xNi4xMDAAAAAIZnJlZQAAAzNtZGF03gIATGF2YzYwLjMxLjEwMgACMEAOAAACrgYF//+q3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE2NCByMzEwOCAzMWUxOWY5IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAyMyAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTEgZGVibG9jaz0xOi0zOi0zIGFuYWx5c2U9MHgzOjB4MTEzIG1lPWhleCBzdWJtZT0yIHBzeT0xIHBzeV9yZD0yLjAwOjAuNzAgbWl4ZWRfcmVmPTAgbWVfcmFuZ2U9MTYgY2hyb21hX21lPTEgdHJlbGxpcz0wIDh4OGRjdD0xIGNxbT0wIGRlYWR6b25lPTIxLDExIGZhc3RfcHNraXA9MSBjaHJvbWFfcXBfb2Zmc2V0PTAgdGhyZWFkcz0xIGxvb2thaGVhZF90aHJlYWRzPTEgc2xpY2VkX3RocmVhZHM9MCBucj0wIGRlY2ltYXRlPTEgaW50ZXJsYWNlZD0wIGJsdXJheV9jb21wYXQ9MCBjb25zdHJhaW5lZF9pbnRyYT0wIGJmcmFtZXM9MyBiX3B5cmFtaWQ9MiBiX2FkYXB0PTEgYl9iaWFzPTAgZGlyZWN0PTEgd2VpZ2h0Yj0xIG9wZW5fZ29wPTAgd2VpZ2h0cD0xIGtleWludD0yNTAga2V5aW50X21pbj0xIHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9MTAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4yMACAAAAAE2WIhAAXzn/s/8JV/9j2RKK///EBGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwAAAAlBmiEYgvnP/vABGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBw==" type="video/mp4">
+  </video>
+</section>
+
+<section class="screen done" id="done" hidden>
+  <div class="catwrap"><svg id="doneCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
+  <h2 style="font-size:2.1rem">Namaste</h2>
+  <p class="muted" id="doneMeta"></p>
+  <div class="fb">
+    <div class="field"><span class="label">How was it</span><div class="seg" id="fbOverall"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button></div></div>
+    <div class="field"><span class="label">Intensity</span><div class="seg" id="fbIntensity"><button type="button" data-v="too easy">Too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too much">Too much</button></div></div>
+    <div class="field"><span class="label">Poses · tap once for loved, twice for hard</span><div class="marks" id="fbMarks"></div></div>
+    <div class="field"><label class="label" for="fbNote">Notes</label><textarea id="fbNote" placeholder="What felt good, what was missing, what to change"></textarea></div>
+    <div class="row"><button class="btn primary big" id="fbSave" type="button">Save</button><button class="btn quiet" id="againBtn" type="button">Build another</button></div>
+    <p class="status" id="fbStatus" aria-live="polite"></p>
+  </div>
+</section>
+
+<section class="screen" id="library" hidden>
+  <div class="row" style="justify-content:space-between">
+    <h2 style="font-size:1.8rem">Pose library</h2>
+    <button class="btn" id="libBack" type="button">Done</button>
+  </div>
+  <p class="muted" id="libIntro"></p>
+  <div class="lib-tools">
+    <div class="seg" id="fLevel"><button type="button" data-v="all" aria-pressed="true">All levels</button><button type="button" data-v="1">Basic</button><button type="button" data-v="2">Intermediate</button><button type="button" data-v="3">Advanced</button></div>
+    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="easy">Easy for me</button><button type="button" data-v="ok">OK for me</button><button type="button" data-v="hard">Hard for me</button><button type="button" data-v="new">Untested</button><button type="button" data-v="unrated">Not yet rated</button></div>
+  </div>
+  <div class="grid" id="libGrid"></div>
+</section>
+
+<script>// Pose engine: a 2D figure defined by absolute segment angles (degrees, 0 = right, 90 = up).
+// The same definition drives still drawings and (Phase 2) interpolated transitions.
+(function (root) {
+  const SEG = { torso: 50, neck: 9, head: 11.5, upper: 28, fore: 26, thigh: 44, shin: 42, foot: 13 };
+  const FLOOR = 0; // joints rest one limb-radius above the drawn floor line (model y = -5)
+  const rad = d => d * Math.PI / 180;
+  const step = (p, ang, len) => ({ x: p.x + Math.cos(rad(ang)) * len, y: p.y + Math.sin(rad(ang)) * len });
+
+  // defaults so pose definitions stay short
+  const DEFAULT = { view: "side", t: 90, bend: 0, h: 90, aN: [-90, -90], aF: [-90, -90], lN: [-90, -90, 0], lF: [-90, -90, 0] };
+
+  function full(p) { return Object.assign({}, DEFAULT, p); }
+
+  function compute(pose, opt) {
+    const p = full(pose);
+    const HR = (opt && opt.head) || SEG.head;
+    const width = p.view === "front" ? 1 : 0; // front view spreads shoulders and hips
+    const w = p.width != null ? p.width : width;
+    const hip = { x: 0, y: 0 };
+    const sh = step(hip, p.t, SEG.torso);
+    // perpendicular to torso, used for shoulder/hip spread in front view
+    const perp = rad(p.t - 90);
+    const off = (pt, d) => ({ x: pt.x + Math.cos(perp) * d, y: pt.y + Math.sin(perp) * d });
+    const shN = off(sh, 12 * w), shF = off(sh, -12 * w);
+    const hipN = off(hip, 7 * w), hipF = off(hip, -7 * w);
+    const neck = step(sh, p.h, SEG.neck);
+    const head = step(sh, p.h, SEG.neck + HR);
+    const arm = (s, a) => { const e = step(s, a[0], SEG.upper); return [s, e, step(e, a[1], SEG.fore)]; };
+    const leg = (h, l) => { const k = step(h, l[0], SEG.thigh); const an = step(k, l[1], SEG.shin); return [h, k, an, step(an, l[2], SEG.foot)]; };
+    const J = { hip, sh, neck, head, hAng: p.h, armN: arm(shN, p.aN), armF: arm(shF, p.aF), legN: leg(hipN, p.lN), legF: leg(hipF, p.lF), bend: p.bend, t: p.t, w };
+    // spine curve control point (positive bend bulges the front of the body)
+    const mid = { x: (hip.x + sh.x) / 2, y: (hip.y + sh.y) / 2 };
+    J.spineC = step(mid, p.t - 90, p.bend);
+    // put the lowest point on the floor
+    const pts = [hip, sh, ...J.armN, ...J.armF, ...J.legN, ...J.legF];
+    let minY = Math.min(...pts.map(q => q.y), head.y - HR + 5); // head circle rests on the floor line
+    const dy = FLOOR - minY + (pose.lift || 0);
+    const all = [hip, sh, neck, head, J.spineC, ...J.armN, ...J.armF, ...J.legN, ...J.legF];
+    // shoulder/hip offsets are separate objects inside the arrays; dedupe before shifting
+    const seen = new Set();
+    for (const q of all) { if (seen.has(q)) continue; seen.add(q); q.y += dy; }
+    return J;
+  }
+
+  function bounds(J, HR) {
+    HR = HR || SEG.head;
+    const pts = [J.hip, J.sh, ...J.armN, ...J.armF, ...J.legN, ...J.legF];
+    const xs = pts.map(p => p.x).concat([J.head.x - HR, J.head.x + HR]);
+    const ys = pts.map(p => p.y).concat([J.head.y + HR]);
+    return { minX: Math.min(...xs), maxX: Math.max(...xs), maxY: Math.max(...ys) };
+  }
+
+  // shortest-path angle interpolation
+  function lerpAng(a, b, t) { let d = ((b - a + 540) % 360) - 180; return a + d * t; }
+  function lerp(a, b, t) {
+    a = full(a); b = full(b);
+    const L = (x, y) => x + (y - x) * t;
+    const arr = (x, y) => x.map((v, i) => lerpAng(v, y[i], t));
+    const wa = a.view === "front" ? 1 : 0, wb = b.view === "front" ? 1 : 0;
+    return { view: "side", width: L(a.width != null ? a.width : wa, b.width != null ? b.width : wb), t: lerpAng(a.t, b.t, t), bend: L(a.bend, b.bend), h: lerpAng(a.h, b.h, t),
+      aN: arr(a.aN, b.aN), aF: arr(a.aF, b.aF), lN: arr(a.lN, b.lN), lF: arr(a.lF, b.lF), lift: L(a.lift || 0, b.lift || 0) };
+  }
+
+  // SVG markup. Model y is up; SVG y is down. Fixed scale so all poses share one size.
+  const VB = { w: 260, h: 230, floor: 210 };
+  // Styles: "stick" (default line figure) and two mascot looks, "bean" and "cat".
+  const STYLES = {
+    stick: { head: SEG.head, arm: 8, leg: 10, torso: 15, torsoFront: 22, neck: 7,
+      near: "var(--fig, #1d2b25)", far: "var(--fig-far, #8aa198)" },
+    bean: { head: 15, arm: 11, leg: 13, torso: 24, torsoFront: 30, neck: 10, face: true,
+      near: "var(--m-body, #5c9a82)", far: "var(--m-far, #a8ccbd)" },
+    cat: { head: 18, arm: 13, leg: 15, torso: 30, torsoFront: 38, neck: 12, cat: true,
+      near: "var(--cat-body, #f2a157)", far: "var(--cat-shade, #de8a45)" },
+  };
+  function svgInner(pose, o) {
+    o = o || {};
+    const S = STYLES[o.style] || STYLES.stick;
+    const J = compute(pose, { head: S.head });
+    const b = bounds(J, S.head);
+    const cx = VB.w / 2 - (b.minX + b.maxX) / 2;
+    const X = p => (p.x + cx).toFixed(1), Y = p => (VB.floor - p.y).toFixed(1);
+    const line = pts => pts.map((p, i) => (i ? "L" : "M") + X(p) + " " + Y(p)).join(" ");
+    const front = J.w > 0.5;
+    const nearC = S.near, farC = front ? nearC : S.far;
+    const limb = (pts, c, sw) => `<path d="${line(pts)}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const torso = `<path d="M${X(J.hip)} ${Y(J.hip)} Q${X(J.spineC)} ${Y(J.spineC)} ${X(J.sh)} ${Y(J.sh)}" fill="none" stroke="${nearC}" stroke-width="${front ? S.torsoFront : S.torso}" stroke-linecap="round"/>`;
+    const neck = limb([J.sh, J.neck], nearC, S.neck);
+    const r = S.head, c = J.head, hA = J.hAng;
+    const at = (base, ang, d) => step(base, ang, d);
+    let ears = "", face = "", tail = "";
+    if (S.ears && !S.cat) {
+      const ear = s => { const a = at(c, hA + 30 * s, r * 0.95), b2 = at(c, hA + 62 * s, r * 0.95), tip = at(c, hA + 40 * s, r * 1.55);
+        return `<path d="M${X(a)} ${Y(a)} L${X(tip)} ${Y(tip)} L${X(b2)} ${Y(b2)} Z" fill="${nearC}" stroke="${nearC}" stroke-width="3" stroke-linejoin="round"/>`; };
+      ears = ear(1) + ear(-1);
+    }
+    if (S.tail && !S.cat && !front) {
+      const t0 = J.hip, t1 = at(J.hip, J.t + 120, 30), t2 = at(J.hip, J.t + 70, 36);
+      tail = `<path d="M${X(t0)} ${Y(t0)} Q${X(t1)} ${Y(t1)} ${X(t2)} ${Y(t2)}" fill="none" stroke="${farC}" stroke-width="7" stroke-linecap="round"/>`;
+    }
+    if (S.face) {
+      const ink = "var(--m-face, #2b211b)", blush = "var(--m-blush, #f08a8a)";
+      const dot = (p, rr, col) => `<circle cx="${X(p)}" cy="${Y(p)}" r="${rr}" fill="${col}"/>`;
+      if (front) {
+        const fwd = hA - 90;
+        [1, -1].forEach(sg => {
+          face += dot(at(at(c, fwd, r * 0.38 * sg), hA, r * 0.12), 2.1, ink);
+          face += `<ellipse cx="${X(at(at(c, fwd, r * 0.55 * sg), hA, -r * 0.22))}" cy="${Y(at(at(c, fwd, r * 0.55 * sg), hA, -r * 0.22))}" rx="3" ry="1.8" fill="${blush}" opacity=".8"/>`;
+        });
+        const m0 = at(at(c, hA, -r * 0.3), fwd, -r * 0.14), m1 = at(at(c, hA, -r * 0.3), fwd, r * 0.14), mc = at(c, hA, -r * 0.45);
+        face += `<path d="M${X(m0)} ${Y(m0)} Q${X(mc)} ${Y(mc)} ${X(m1)} ${Y(m1)}" fill="none" stroke="${ink}" stroke-width="1.6" stroke-linecap="round"/>`;
+      } else {
+        const fwd = hA - 90; // the way the face points in profile
+        face += dot(at(at(c, fwd, r * 0.5), hA, r * 0.12), 2.2, ink);
+        face += `<ellipse cx="${X(at(at(c, fwd, r * 0.36), hA, -r * 0.3))}" cy="${Y(at(at(c, fwd, r * 0.36), hA, -r * 0.3))}" rx="3.2" ry="2" fill="${blush}" opacity=".8"/>`;
+      }
+    }
+    let belly = "", shadow = "";
+    if (S.cat) {
+      const ink = "var(--cat-ink, #5a3420)", cream = "var(--cat-cream, #fde4b8)", pink = "var(--cat-pink, #f3a3a0)",
+        cheek = "var(--cat-cheek, #f2867f)", tailC = "var(--cat-tail, #d97c36)";
+      const ell = (p, rx, ry, ang, fill, extra) => `<ellipse cx="${X(p)}" cy="${Y(p)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="${fill}" transform="rotate(${(-ang).toFixed(1)} ${X(p)} ${Y(p)})"${extra || ""}/>`;
+      // ears with pink insides
+      const ear = sg => {
+        const a = at(c, hA + 18 * sg, r * 0.92), b2 = at(c, hA + 58 * sg, r * 0.92), tip = at(c, hA + 36 * sg, r * 1.5);
+        const cen = { x: (a.x + b2.x + tip.x) / 3, y: (a.y + b2.y + tip.y) / 3 };
+        const sh2 = q => ({ x: cen.x + (q.x - cen.x) * 0.5, y: cen.y + (q.y - cen.y) * 0.5 + 0 });
+        const tri = (A, B, C, f, sw) => `<path d="M${X(A)} ${Y(A)} L${X(B)} ${Y(B)} L${X(C)} ${Y(C)} Z" fill="${f}" stroke="${f}" stroke-width="${sw}" stroke-linejoin="round"/>`;
+        return tri(a, tip, b2, nearC, 5) + tri(sh2(a), sh2(tip), sh2(b2), pink, 2);
+      };
+      ears = ear(1) + ear(-1);
+      // tail continues the spine past the hips and curls up
+      const tp = front ? [at(J.hip, -40, 24), at(J.hip, -5, 40), at(J.hip, 25, 44)]
+                       : [at(J.hip, J.t + 150, 22), at(J.hip, J.t + 118, 38), at(J.hip, J.t + 82, 40)];
+      if (Math.min(...tp.map(q => q.y)) > 3)
+        tail = `<path d="M${X(J.hip)} ${Y(J.hip)} C${X(tp[0])} ${Y(tp[0])} ${X(tp[1])} ${Y(tp[1])} ${X(tp[2])} ${Y(tp[2])}" fill="none" stroke="${tailC}" stroke-width="9" stroke-linecap="round"/>`;
+      // cream belly patch on the front of the torso
+      const mid = { x: (J.hip.x + J.sh.x) / 2, y: (J.hip.y + J.sh.y) / 2 };
+      const tl = Math.hypot(J.sh.x - J.hip.x, J.sh.y - J.hip.y);
+      if (front) belly = ell(at(mid, J.t, -4), tl * 0.36, S.torsoFront * 0.3, J.t, cream);
+      else {
+        const bc = { x: (mid.x + J.spineC.x) / 2, y: (mid.y + J.spineC.y) / 2 };
+        belly = ell(at(bc, J.t - 90, S.torso * 0.2), tl * 0.38, S.torso * 0.24, J.t, cream);
+      }
+      // face
+      const fwd = hA - 90;
+      const P = (f, u) => at(at(c, fwd, r * f), hA, r * u);
+      const eye = q => `<circle cx="${X(q)}" cy="${Y(q)}" r="${(r * 0.13).toFixed(1)}" fill="${ink}"/>`;
+      if (front) {
+        face += eye(P(0.4, 0.08)) + eye(P(-0.4, 0.08));
+        face += ell(P(0.62, -0.22), r * 0.17, r * 0.11, 0, cheek, ' opacity=".85"') + ell(P(-0.62, -0.22), r * 0.17, r * 0.11, 0, cheek, ' opacity=".85"');
+        face += ell(P(0, -0.34), r * 0.36, r * 0.27, fwd, cream);
+        face += ell(P(0, -0.2), r * 0.09, r * 0.065, fwd, ink);
+        const m = (s1) => { const a = P(0, -0.3), b2 = P(0.2 * s1, -0.4), mc = P(0.1 * s1, -0.5); return `<path d="M${X(a)} ${Y(a)} Q${X(mc)} ${Y(mc)} ${X(b2)} ${Y(b2)}" fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round"/>`; };
+        face += m(1) + m(-1);
+      } else {
+        face += eye(P(0.42, 0.1));
+        face += ell(P(0.22, -0.3), r * 0.17, r * 0.11, fwd, cheek, ' opacity=".85"');
+        face += ell(P(0.74, -0.3), r * 0.3, r * 0.24, fwd, cream);
+        face += ell(P(0.98, -0.2), r * 0.08, r * 0.065, fwd, ink);
+        const a = P(0.95, -0.36), mc = P(0.86, -0.5), b2 = P(0.72, -0.4);
+        face += `<path d="M${X(a)} ${Y(a)} Q${X(mc)} ${Y(mc)} ${X(b2)} ${Y(b2)}" fill="none" stroke="${ink}" stroke-width="1.5" stroke-linecap="round"/>`;
+      }
+      const sw = (b.maxX - b.minX) / 2 * 0.85 + 12;
+      shadow = `<ellipse cx="${(VB.w / 2).toFixed(1)}" cy="${VB.floor + 5}" rx="${sw.toFixed(1)}" ry="6" fill="var(--cat-shadow, #e3cfb3)"/>`;
+    }
+    const head = ears + `<circle cx="${X(c)}" cy="${Y(c)}" r="${r}" fill="${nearC}"/>` + face;
+    const strap = pose.strap ? `<path d="${line(pose.strap === "F" ? [J.armF[2], J.legF[2]] : [J.armN[2], J.legN[3]])}" stroke="var(--strap, #6a5acd)" stroke-width="3" stroke-linecap="round"/>` : "";
+    const floor = o.floor === false ? "" : shadow ? shadow : `<line x1="8" x2="${VB.w - 8}" y1="${VB.floor + 5}" y2="${VB.floor + 5}" stroke="var(--floor, #c9d4ce)" stroke-width="3" stroke-linecap="round"/>`;
+    // tall poses (inversions) are scaled down around the floor so they stay inside the frame
+    const top = Math.max(b.maxY, ...[J.armN, J.armF, J.legN, J.legF].flat().map(q => q.y)) + 12;
+    const room = VB.floor - 6;
+    const body = tail + limb(J.armF, farC, S.arm) + limb(J.legF, farC, S.leg) + torso + belly + neck + head + limb(J.legN, nearC, S.leg) + strap + limb(J.armN, nearC, S.arm);
+    if (top > room) { const k = (room / top).toFixed(3); return floor + `<g transform="translate(${VB.w / 2} ${VB.floor + 5}) scale(${k}) translate(${-VB.w / 2} ${-(VB.floor + 5)})">${body}</g>`; }
+    return floor + body;
+    return floor + tail + limb(J.armF, farC, S.arm) + limb(J.legF, farC, S.leg) + torso + belly + neck + head + limb(J.legN, nearC, S.leg) + strap + limb(J.armN, nearC, S.arm);
+  }
+  function svg(pose, o) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${VB.w} ${VB.h}" role="img">${svgInner(pose, o)}</svg>`;
+  }
+
+  root.PoseEngine = { SEG, STYLES, compute, lerp, svg, svgInner, VB };
+  if (typeof module !== "undefined") module.exports = root.PoseEngine;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>// Pose library. Angles: degrees, 0 = right (the way a side-view figure faces), 90 = up.
+// t = torso (hip→shoulder), h = neck/head, aN/aF = near/far arm [upper, fore],
+// lN/lF = near/far leg [thigh, shin, foot], bend = spine curve (+ = backbend), view = side | front.
+// Metadata: sides 2 = done on both sides; focus = what it works; lvl 1–3; hold = breaths in a Vinyasa practice;
+// me = Michael's personal difficulty (easy | ok | hard), rated by him in the app on 29 Oct 2026; the app's stored ratings take priority; yin = minutes when held Yin-style; prop = household stand-in that helps; cue = one short line for the live screen.
+(function (root) {
+  const POSES = [
+    // standing
+    { id: "tadasana", me: "easy", sa: "Tadasana", en: "Mountain", de: "Berghaltung", cat: "standing", sides: 1, focus: ["posture"], lvl: 1, hold: 3,
+      cue: "Feet grounded, crown lifts, shoulders soft",
+      p: { aN: [-84, -86], aF: [-92, -92], lF: [-91, -90, 0] } },
+    { id: "urdhva-hastasana", me: "easy", sa: "Urdhva Hastasana", en: "Upward Salute", de: "Gestreckte Berghaltung", cat: "standing", sides: 1, focus: ["shoulders"], lvl: 1, hold: 1,
+      cue: "Reach up, ribs stay soft",
+      p: { t: 92, bend: 5, h: 86, aN: [104, 106], aF: [102, 104], lF: [-91, -90, 0] } },
+    { id: "uttanasana", me: "ok", sa: "Uttanasana", en: "Standing Forward Fold", de: "Stehende Vorwärtsbeuge", cat: "forward fold", sides: 1, focus: ["hamstrings", "back"], lvl: 1, hold: 1,
+      cue: "Bend the knees as much as you need, let the head hang",
+      p: { t: -60, bend: -12, h: -80, aN: [-60, -135], aF: [-62, -137], lN: [-95, -93, 0], lF: [-96, -93, 0] } },
+    { id: "ardha-uttanasana", me: "easy", sa: "Ardha Uttanasana", en: "Halfway Lift", de: "Halbe Vorwärtsbeuge", cat: "forward fold", sides: 1, focus: ["hamstrings", "back"], lvl: 1, hold: 1,
+      cue: "Long flat back, hands on shins",
+      p: { t: 4, h: 10, aN: [-80, -95], aF: [-84, -98], lN: [-88, -90, 0], lF: [-89, -90, 0] } },
+    { id: "utkatasana", me: "easy", sa: "Utkatasana", en: "Chair", de: "Stuhl", cat: "standing", sides: 1, focus: ["legs", "core"], lvl: 1, hold: 5,
+      cue: "Sit back, weight in the heels",
+      p: { t: 62, bend: 2, h: 66, aN: [76, 78], aF: [74, 76], lN: [-35, -110, 0], lF: [-36, -111, 0] } },
+    { id: "ashta-chandrasana", me: "easy", sa: "Ashta Chandrasana", en: "High Lunge", de: "Hoher Ausfallschritt", cat: "standing", sides: 2, focus: ["hips", "legs"], lvl: 1, hold: 5,
+      cue: "Back heel lifted, back leg strong",
+      p: { t: 90, bend: 4, h: 84, aN: [104, 106], aF: [102, 104], lN: [-8, -90, 0], lF: [206, 206, -70] } },
+    { id: "virabhadrasana-1", me: "easy", sa: "Virabhadrasana I", en: "Warrior I", de: "Krieger I", cat: "standing", sides: 2, focus: ["hips", "legs"], lvl: 1, hold: 5,
+      cue: "Back heel down, hips face forward",
+      p: { t: 90, bend: 5, h: 84, aN: [102, 104], aF: [100, 102], lN: [-10, -90, 0], lF: [215, 215, 2] } },
+    { id: "virabhadrasana-2", me: "easy", sa: "Virabhadrasana II", en: "Warrior II", de: "Krieger II", cat: "standing", sides: 2, focus: ["legs", "hips"], lvl: 1, hold: 5,
+      cue: "Front knee over the ankle, gaze past the front hand",
+      p: { view: "front", t: 90, h: 90, aN: [0, 0], aF: [180, 180], lN: [-22, -90, 0], lF: [222, 222, 180] } },
+    { id: "trikonasana", me: "ok", sa: "Utthita Trikonasana", en: "Triangle", de: "Dreieck", cat: "standing", sides: 2, focus: ["hamstrings", "side body"], lvl: 1, hold: 5,
+      prop: "Books under the lower hand", cue: "Hand to shin or books, both sides of the waist long",
+      p: { view: "front", t: 14, h: 22, aN: [-90, -90], aF: [90, 90], lN: [-60, -60, 0], lF: [240, 240, 180] } },
+    { id: "parsvottanasana", me: "ok", sa: "Parsvottanasana", en: "Pyramid", de: "Pyramide", cat: "forward fold", sides: 2, focus: ["hamstrings"], lvl: 2, hold: 5,
+      prop: "Books under the hands", cue: "Hinge from the hips, front knee may bend a little",
+      p: { t: -40, bend: -8, h: -55, aN: [-92, -92], aF: [-94, -94], lN: [-70, -70, 0], lF: [250, 250, 20] } },
+    { id: "vrksasana", me: "easy", sa: "Vrksasana", en: "Tree", de: "Baum", cat: "balance", sides: 2, focus: ["balance"], lvl: 1, hold: 5,
+      cue: "Foot to calf or thigh, never the knee",
+      p: { view: "front", t: 90, h: 90, aN: [80, 130], aF: [100, 50], lN: [-40, 185, -100], lF: [-90, -90, 180] } },
+    // floor flow
+    { id: "phalakasana", me: "easy", sa: "Phalakasana", en: "Plank", de: "Brett", cat: "core", sides: 1, focus: ["core"], lvl: 1, hold: 1,
+      cue: "One line from heels to head",
+      p: { t: 18, h: 18, aN: [-89, -89], aF: [-91, -91], lN: [198, 198, -72], lF: [198, 198, -72] } },
+    { id: "chaturanga", me: "easy", sa: "Chaturanga Dandasana", en: "Four-Limbed Staff", de: "Stockhaltung", cat: "core", sides: 1, focus: ["core", "arms"], lvl: 2, hold: 1,
+      cue: "Elbows hug the ribs, knees down if needed",
+      p: { t: 5, h: 8, aN: [188, -90], aF: [186, -92], lN: [185, 185, -82], lF: [185, 185, -82] } },
+    { id: "urdhva-mukha-svanasana", me: "easy", sa: "Urdhva Mukha Svanasana", en: "Upward-Facing Dog", de: "Heraufschauender Hund", cat: "backbend", sides: 1, focus: ["back"], lvl: 1, hold: 1,
+      cue: "Chest forward, shoulders away from the ears",
+      p: { t: 62, bend: 10, h: 80, aN: [-88, -88], aF: [-90, -90], lN: [190, 182, 180], lF: [190, 182, 180] } },
+    { id: "adho-mukha-svanasana", me: "ok", sa: "Adho Mukha Svanasana", en: "Downward-Facing Dog", de: "Herabschauender Hund", cat: "inversion", sides: 1, focus: ["hamstrings", "shoulders"], lvl: 1, hold: 5,
+      cue: "Knees soft, hips high, pedal the heels",
+      p: { t: -46, h: -70, aN: [-46, -46], aF: [-48, -48], lN: [-118, -118, -6], lF: [-117, -117, -6] } },
+    { id: "bhujangasana", me: "easy", sa: "Bhujangasana", en: "Cobra", de: "Kobra", cat: "backbend", sides: 1, focus: ["back"], lvl: 1, hold: 1,
+      cue: "Low and long, little weight in the hands",
+      p: { t: 30, bend: 10, h: 50, aN: [-150, -25], aF: [-152, -27], lN: [180, 180, 180], lF: [180, 180, 180] } },
+    { id: "salabhasana", me: "easy", sa: "Salabhasana", en: "Locust", de: "Heuschrecke", cat: "backbend", sides: 1, focus: ["back"], lvl: 1, hold: 4,
+      cue: "Lift chest and legs, neck long",
+      p: { t: 22, bend: 12, h: 35, aN: [166, 170], aF: [167, 171], lN: [166, 170, 175], lF: [167, 171, 176] } },
+    // kneeling
+    { id: "bharmanasana", me: "easy", sa: "Bharmanasana", en: "Tabletop", de: "Vierfüßlerstand", cat: "kneeling", sides: 1, focus: ["back"], lvl: 1, hold: 2,
+      cue: "Wrists under shoulders, knees under hips",
+      p: { t: 8, h: 5, aN: [-89, -89], aF: [-91, -91], lN: [-92, 180, 180], lF: [-93, 180, 180] } },
+    { id: "marjaryasana", me: "easy", sa: "Marjaryasana", en: "Cat", de: "Katze", cat: "kneeling", sides: 1, focus: ["back"], lvl: 1, hold: 1,
+      cue: "Exhale, round the back, chin to chest",
+      p: { t: 10, bend: -20, h: -60, aN: [-89, -89], aF: [-91, -91], lN: [-92, 180, 180], lF: [-93, 180, 180] } },
+    { id: "bitilasana", me: "easy", sa: "Bitilasana", en: "Cow", de: "Kuh", cat: "kneeling", sides: 1, focus: ["back"], lvl: 1, hold: 1,
+      cue: "Inhale, belly down, chest forward",
+      p: { t: 6, bend: 14, h: 45, aN: [-89, -89], aF: [-91, -91], lN: [-92, 180, 180], lF: [-93, 180, 180] } },
+    { id: "anjaneyasana", me: "ok", sa: "Anjaneyasana", en: "Low Lunge", de: "Tiefer Ausfallschritt", cat: "kneeling", sides: 2, focus: ["hips"], lvl: 1, hold: 5,
+      prop: "Folded towel under the back knee", cue: "Back knee down, hips sink forward",
+      p: { t: 90, bend: 8, h: 84, aN: [102, 104], aF: [100, 102], lN: [0, -65, 0], lF: [240, 180, 180] } },
+    { id: "ardha-hanumanasana", me: "hard", sa: "Ardha Hanumanasana", en: "Half Splits", de: "Halber Spagat", cat: "forward fold", sides: 2, focus: ["hamstrings"], lvl: 1, hold: 5, yin: 3,
+      prop: "Books under the hands", cue: "Hips over the back knee, front toes up",
+      p: { t: 20, bend: -10, h: 2, aN: [-90, -90], aF: [-92, -92], lN: [-31, -31, 80], lF: [-90, 180, 180] } },
+    { id: "balasana", me: "easy", sa: "Balasana", en: "Child's Pose", de: "Stellung des Kindes", cat: "restorative", sides: 1, focus: ["back"], lvl: 1, hold: 5, yin: 3,
+      prop: "Cushion under the forehead", cue: "Knees wide or together, breathe into the back",
+      p: { t: -25, bend: -12, h: -20, aN: [-8, 0], aF: [-7, 0], lN: [-30, 180, 180], lF: [-31, 180, 180] } },
+    { id: "bakasana", me: "ok", sa: "Bakasana", en: "Crow", de: "Krähe", cat: "arm balance", sides: 1, focus: ["core", "arms"], lvl: 2, hold: 3,
+      prop: "Cushion in front of the face", cue: "Knees high on the arms, gaze forward",
+      p: { t: -35, bend: -15, h: -15, aN: [-108, -82], aF: [-110, -84], lN: [-45, 160, 190], lF: [-47, 158, 188] } },
+    // seated
+    { id: "sukhasana", me: "easy", sa: "Sukhasana", en: "Easy Seat", de: "Bequemer Sitz", cat: "seated", sides: 1, focus: ["breath"], lvl: 1, hold: 8,
+      prop: "Sit on a folded blanket", cue: "Sit tall, slow the breath down",
+      p: { view: "front", t: 90, h: 90, aN: [-65, -45], aF: [245, 225], lN: [-5, 185, 180], lF: [185, -5, 0] } },
+    { id: "paschimottanasana", me: "hard", sa: "Paschimottanasana", en: "Seated Forward Fold", de: "Sitzende Vorwärtsbeuge", cat: "forward fold", sides: 1, focus: ["hamstrings", "back"], lvl: 1, hold: 8, yin: 4,
+      prop: "Blanket under the hips, belt around the feet", cue: "Knees may bend, fold from the hips",
+      p: { t: 22, bend: -12, h: 10, aN: [5, 0], aF: [3, -2], lN: [0, 0, 80], lF: [0, 0, 80] } },
+    { id: "janu-sirsasana", me: "hard", sa: "Janu Sirsasana", en: "Head-to-Knee", de: "Kopf-zum-Knie-Haltung", cat: "forward fold", sides: 2, focus: ["hamstrings", "back"], lvl: 1, hold: 8, yin: 3,
+      prop: "Belt around the front foot", cue: "Turn the chest toward the straight leg",
+      p: { t: 26, bend: -12, h: 12, aN: [6, 0], aF: [4, -2], lN: [0, 0, 80], lF: [12, 192, 190] } },
+    // lying
+    { id: "setu-bandha-sarvangasana", me: "easy", sa: "Setu Bandha Sarvangasana", en: "Bridge", de: "Brücke", cat: "backbend", sides: 1, focus: ["back", "hips"], lvl: 1, hold: 5,
+      cue: "Press through the feet, knees point forward",
+      p: { t: 210, bend: 8, h: 150, aN: [-2, 0], aF: [-3, 0], lN: [35, -72, 0], lF: [34, -73, 0] } },
+    { id: "urdhva-dhanurasana", me: "ok", sa: "Urdhva Dhanurasana", en: "Wheel", de: "Rad", cat: "backbend", sides: 1, focus: ["back", "shoulders"], lvl: 3, hold: 3,
+      cue: "Hands by the ears, press up evenly",
+      p: { t: 198, bend: 26, h: 255, aN: [-80, -86], aF: [-82, -88], lN: [-52, -100, 0], lF: [-53, -101, 0] } },
+    { id: "supta-padangusthasana", me: "hard", sa: "Supta Padangusthasana", en: "Reclined Hand-to-Big-Toe", de: "Liegende Hand-zum-Zeh-Haltung", cat: "forward fold", sides: 2, focus: ["hamstrings"], lvl: 1, hold: 8, yin: 3,
+      prop: "Belt or towel around the raised foot", cue: "Raised knee soft, other leg heavy on the floor",
+      p: { t: 180, h: 172, aN: [58, 60], aF: [56, 58], lN: [84, 84, 160], lF: [0, 0, 80], strap: true } },
+    { id: "supta-matsyendrasana", me: "ok", sa: "Supta Matsyendrasana", en: "Supine Twist", de: "Liegende Drehung", cat: "twist", sides: 2, focus: ["back"], lvl: 1, hold: 6, yin: 3,
+      prop: "Cushion under the bent knee", cue: "Knee across, both shoulders heavy",
+      p: { t: 180, h: 175, aN: [-60, -10], aF: [178, 180], lN: [50, -55, -60], lF: [0, 0, 80] } },
+    { id: "ananda-balasana", me: "ok", sa: "Ananda Balasana", en: "Happy Baby", de: "Glückliches Baby", cat: "hip opener", sides: 1, focus: ["hips", "back"], lvl: 1, hold: 6, yin: 2,
+      cue: "Hold feet or shins, rock side to side",
+      p: { t: 180, h: 172, aN: [100, 102], aF: [98, 100], lN: [155, 115, 20], lF: [153, 113, 18] } },
+    { id: "savasana", me: "easy", sa: "Savasana", en: "Corpse Pose", de: "Totenhaltung", cat: "restorative", sides: 1, focus: ["rest"], lvl: 1, hold: 0,
+      prop: "Cushion under the knees", cue: "Let go completely",
+      p: { t: 180, h: 178, aN: [-2, 0], aF: [-3, 0], lN: [0, 0, 70], lF: [0, 0, 70] } },
+    // ---- added 29 Oct: wider library ----
+    // standing & balance
+    { id: "virabhadrasana-3", me: "easy", sa: "Virabhadrasana III", en: "Warrior III", de: "Krieger III", cat: "balance", sides: 2, focus: ["balance", "legs", "hamstrings"], lvl: 2, hold: 5,
+      cue: "Hips level, reach long through heel and fingertips",
+      p: { t: 0, h: 2, aN: [2, 2], aF: [0, 0], lN: [-90, -90, 0], lF: [180, 180, -90] } },
+    { id: "natarajasana", me: "ok", sa: "Natarajasana", en: "Dancer", de: "Tänzer", cat: "balance", sides: 2, focus: ["balance", "back", "shoulders"], lvl: 2, hold: 5,
+      prop: "Belt around the lifted foot", cue: "Kick the foot into the hand, chest forward",
+      p: { t: 52, bend: 10, h: 60, aN: [40, 42], aF: [209, 209], lN: [-90, -90, 0], lF: [235, 95, 100], strap: "F" } },
+    { id: "ardha-chandrasana", me: "ok", sa: "Ardha Chandrasana", en: "Half Moon", de: "Halbmond", cat: "balance", sides: 2, focus: ["balance", "hamstrings"], lvl: 2, hold: 5,
+      prop: "Books under the lower hand", cue: "Stack the hips, lifted foot flexed",
+      p: { view: "front", t: 2, h: 8, aN: [-90, -90], aF: [90, 90], lN: [-90, -90, 0], lF: [180, 180, 180] } },
+    { id: "utthita-hasta-padangusthasana", me: "hard", sa: "Utthita Hasta Padangusthasana", en: "Extended Hand-to-Big-Toe", de: "Stehende Hand-zum-Zeh-Haltung", cat: "balance", sides: 2, focus: ["balance", "hamstrings"], lvl: 2, hold: 5,
+      prop: "Belt around the lifted foot", cue: "Standing leg strong, lifted knee may bend",
+      p: { t: 90, h: 88, aN: [-32, -32], aF: [-92, -92], lN: [0, 0, 80], lF: [-90, -90, 0], strap: true } },
+    { id: "garudasana", me: "ok", sa: "Garudasana", en: "Eagle", de: "Adler", cat: "balance", sides: 2, focus: ["balance", "hips", "shoulders"], lvl: 2, hold: 5,
+      cue: "Sit low, wrap what wraps, hands to shoulders if needed",
+      p: { view: "front", t: 92, h: 90, aN: [110, 70], aF: [70, 110], lN: [-112, -64, -30], lF: [-74, -100, 180] } },
+    { id: "utthita-parsvakonasana", me: "ok", sa: "Utthita Parsvakonasana", en: "Extended Side Angle", de: "Gestreckter Seitwinkel", cat: "standing", sides: 2, focus: ["legs", "side body", "hips"], lvl: 1, hold: 5,
+      prop: "Forearm on the thigh or hand on books", cue: "Long line from back heel to top fingertips",
+      p: { view: "front", t: 22, h: 30, aN: [-90, -90], aF: [32, 32], lN: [-22, -90, 0], lF: [222, 222, 180] } },
+    { id: "viparita-virabhadrasana", me: "easy", sa: "Viparita Virabhadrasana", en: "Reverse Warrior", de: "Umgekehrter Krieger", cat: "standing", sides: 2, focus: ["side body", "legs"], lvl: 1, hold: 3,
+      cue: "Front knee stays bent, reach up and back",
+      p: { view: "front", t: 108, bend: 6, h: 115, aN: [104, 112], aF: [245, 250], lN: [-22, -90, 0], lF: [222, 222, 180] } },
+    { id: "parivrtta-utkatasana", me: "ok", sa: "Parivrtta Utkatasana", en: "Revolved Chair", de: "Gedrehter Stuhl", cat: "twist", sides: 2, focus: ["back", "legs"], lvl: 2, hold: 5,
+      cue: "Knees level, elbow outside the knee, twist from the chest",
+      p: { t: 48, h: 50, aN: [-40, 120], aF: [-42, 118], lN: [-35, -110, 0], lF: [-36, -111, 0] } },
+    { id: "malasana", me: "hard", sa: "Malasana", en: "Garland", de: "Girlande (Hocke)", cat: "hip opener", sides: 1, focus: ["hips"], lvl: 1, hold: 6,
+      prop: "Rolled towel under the heels", cue: "Elbows press the knees open, chest lifts",
+      p: { t: 82, h: 86, aN: [-40, 120], aF: [-42, 118], lN: [25, -110, 0], lF: [24, -111, 0] } },
+    // kneeling & lunges
+    { id: "eka-pada-adho-mukha-svanasana", me: "ok", sa: "Eka Pada Adho Mukha Svanasana", en: "Three-Legged Dog", de: "Dreibeiniger Hund", cat: "inversion", sides: 2, focus: ["hamstrings", "shoulders"], lvl: 1, hold: 2,
+      cue: "Hips square, lift from the inner thigh",
+      p: { t: -46, h: -70, aN: [-46, -46], aF: [-48, -48], lN: [134, 134, 140], lF: [-117, -117, -6] } },
+    { id: "utthan-pristhasana", me: "ok", sa: "Utthan Pristhasana", en: "Lizard", de: "Eidechse", cat: "hip opener", sides: 2, focus: ["hips", "hamstrings"], lvl: 2, hold: 6, yin: 3,
+      prop: "Books under the hands, towel under the knee", cue: "Hands inside the front foot, hips heavy",
+      p: { t: 20, bend: -6, h: 12, aN: [-90, -90], aF: [-92, -92], lN: [0, -65, 0], lF: [240, 180, 180] } },
+    { id: "uttana-shishosana", me: "ok", sa: "Uttana Shishosana", en: "Puppy", de: "Welpe", cat: "kneeling", sides: 1, focus: ["shoulders", "back"], lvl: 1, hold: 6, yin: 2,
+      cue: "Hips over knees, melt the chest down",
+      p: { t: -32, bend: 8, h: -20, aN: [-12, -4], aF: [-11, -3], lN: [-90, 180, 180], lF: [-91, 180, 180] } },
+    { id: "ustrasana", me: "ok", sa: "Ustrasana", en: "Camel", de: "Kamel", cat: "backbend", sides: 1, focus: ["back", "hips"], lvl: 2, hold: 4,
+      prop: "Toes tucked to raise the heels", cue: "Hips forward, lift the chest before going back",
+      p: { t: 128, bend: 22, h: 190, aN: [-95, -95], aF: [-97, -97], lN: [-78, 180, 180], lF: [-79, 180, 180] } },
+    { id: "eka-pada-rajakapotasana", me: "ok", sa: "Eka Pada Rajakapotasana", en: "Pigeon", de: "Taube", cat: "hip opener", sides: 2, focus: ["hips"], lvl: 2, hold: 8, yin: 4,
+      prop: "Cushion under the front hip", cue: "Square the hips, cushion the front hip if it floats",
+      p: { t: 84, bend: 6, h: 86, aN: [-95, -95], aF: [-97, -97], lN: [-4, 180, 180], lF: [181, 181, 180] } },
+    { id: "hanumanasana", me: "hard", sa: "Hanumanasana", en: "Splits", de: "Spagat", cat: "forward fold", sides: 2, focus: ["hamstrings", "hips"], lvl: 3, hold: 5, yin: 2,
+      prop: "Books under the hands, cushion under the hips", cue: "Square hips, stop where it is still easy to breathe",
+      p: { t: 90, h: 88, aN: [100, 102], aF: [98, 100], lN: [0, 0, 80], lF: [180, 180, 180] } },
+    // prone & floor strength
+    { id: "salamba-bhujangasana", me: "easy", sa: "Salamba Bhujangasana", en: "Sphinx", de: "Sphinx", cat: "backbend", sides: 1, focus: ["back"], lvl: 1, hold: 6, yin: 3,
+      cue: "Elbows under shoulders, chest forward",
+      p: { t: 34, bend: 8, h: 60, aN: [-90, 0], aF: [-91, 0], lN: [180, 180, 180], lF: [180, 180, 180] } },
+    { id: "dhanurasana", me: "ok", sa: "Dhanurasana", en: "Bow", de: "Bogen", cat: "backbend", sides: 1, focus: ["back", "shoulders"], lvl: 2, hold: 4,
+      prop: "Belt around the ankles", cue: "Kick the feet into the hands",
+      p: { t: 40, bend: 14, h: 62, aN: [163, 165], aF: [162, 164], lN: [155, 40, 60], lF: [154, 39, 60] } },
+    { id: "paripurna-navasana", me: "ok", sa: "Paripurna Navasana", en: "Boat", de: "Boot", cat: "core", sides: 1, focus: ["core"], lvl: 2, hold: 5,
+      cue: "Chest lifts, knees bend if the back rounds",
+      p: { t: 118, h: 105, aN: [2, 0], aF: [0, -2], lN: [42, 42, 40], lF: [41, 41, 40] } },
+    { id: "vasisthasana", me: "ok", sa: "Vasisthasana", en: "Side Plank", de: "Seitstütz", cat: "core", sides: 2, focus: ["core", "arms"], lvl: 2, hold: 4,
+      cue: "Lift the hips, top arm reaches up",
+      p: { view: "front", t: 20, h: 20, aN: [-90, -90], aF: [90, 90], lN: [200, 200, 200], lF: [201, 201, 200] } },
+    { id: "ardha-pincha-mayurasana", me: "ok", sa: "Ardha Pincha Mayurasana", en: "Dolphin", de: "Delfin", cat: "inversion", sides: 1, focus: ["shoulders", "core"], lvl: 2, hold: 5,
+      cue: "Forearms parallel, walk the feet in",
+      p: { t: -60, h: -80, aN: [-92, 0], aF: [-93, 0], lN: [-112, -112, -6], lF: [-111, -111, -6] } },
+    // seated
+    { id: "dandasana", me: "ok", sa: "Dandasana", en: "Staff", de: "Stab", cat: "seated", sides: 1, focus: ["posture", "hamstrings"], lvl: 1, hold: 5,
+      prop: "Folded blanket under the hips", cue: "Sit tall, press the legs down",
+      p: { t: 90, h: 90, aN: [-92, -60], aF: [-93, -62], lN: [0, 0, 80], lF: [0, 0, 80] } },
+    { id: "baddha-konasana", me: "easy", sa: "Baddha Konasana", en: "Bound Angle", de: "Schmetterling", cat: "hip opener", sides: 1, focus: ["hips"], lvl: 1, hold: 8, yin: 4,
+      prop: "Cushions under the knees", cue: "Soles together, sit on a blanket, knees heavy",
+      p: { view: "front", t: 90, h: 90, aN: [-80, -110], aF: [260, 290], lN: [14, 202, 270], lF: [166, -22, 270] } },
+    { id: "ardha-matsyendrasana", me: "easy", sa: "Ardha Matsyendrasana", en: "Seated Twist", de: "Drehsitz", cat: "twist", sides: 2, focus: ["back"], lvl: 1, hold: 6,
+      cue: "Grow tall on the inhale, twist on the exhale",
+      p: { view: "front", t: 90, h: 70, aN: [-60, -95], aF: [-150, -100], lN: [70, -95, 0], lF: [185, -5, 0] } },
+    { id: "gomukhasana", me: "hard", sa: "Gomukhasana", en: "Cow Face", de: "Kuhgesicht", cat: "hip opener", sides: 2, focus: ["hips", "shoulders"], lvl: 2, hold: 6, yin: 2,
+      prop: "Belt between the hands, cushion under the hips", cue: "Use the belt, the hands do not need to meet",
+      p: { view: "front", t: 90, h: 90, aN: [-100, 160], aF: [100, -20], lN: [-12, 188, 180], lF: [192, -8, 0] } },
+    { id: "padmasana", me: "hard", sa: "Padmasana", en: "Lotus", de: "Lotus", cat: "hip opener", sides: 1, focus: ["hips"], lvl: 3, hold: 8,
+      prop: "Half Lotus or Easy Seat instead", cue: "Only if the knees are happy, never force",
+      p: { view: "front", t: 90, h: 90, aN: [-65, -45], aF: [245, 225], lN: [-5, 165, 150], lF: [185, 15, 30] } },
+    // lying & inversions
+    { id: "matsyasana", me: "easy", sa: "Matsyasana", en: "Fish", de: "Fisch", cat: "backbend", sides: 1, focus: ["back", "chest"], lvl: 1, hold: 5,
+      prop: "Cushion under the upper back", cue: "Press the forearms down, lift the chest",
+      p: { t: 160, bend: 14, h: 226, aN: [-40, 0], aF: [-41, 0], lN: [0, 0, 80], lF: [0, 0, 80] } },
+    { id: "apanasana", me: "easy", sa: "Apanasana", en: "Knees to Chest", de: "Knie zur Brust", cat: "restorative", sides: 1, focus: ["back"], lvl: 1, hold: 5,
+      cue: "Hug the knees, rock gently",
+      p: { t: 180, h: 175, aN: [60, -10], aF: [58, -12], lN: [130, -20, -30], lF: [129, -21, -30] } },
+    { id: "viparita-karani", me: "ok", sa: "Viparita Karani", en: "Legs Up the Wall", de: "Beine an der Wand", cat: "restorative", sides: 1, focus: ["rest", "hamstrings"], lvl: 1, hold: 10, yin: 4,
+      prop: "A wall, cushion under the hips", cue: "Legs rest on the wall, knees can bend",
+      p: { t: 180, h: 176, aN: [-4, 0], aF: [-5, 0], lN: [88, 88, 0], lF: [87, 87, 0] } },
+    { id: "halasana", me: "hard", sa: "Halasana", en: "Plow", de: "Pflug", cat: "inversion", sides: 1, focus: ["back", "hamstrings"], lvl: 2, hold: 5,
+      prop: "Chair seat under the feet", cue: "Feet to the floor or a chair, neck never turns",
+      p: { t: -94, h: -2, aN: [180, 180], aF: [181, 181], lN: [-40, -40, -60], lF: [-41, -41, -60] } },
+    { id: "salamba-sarvangasana", me: "hard", sa: "Salamba Sarvangasana", en: "Shoulder Stand", de: "Schulterstand", cat: "inversion", sides: 1, focus: ["core", "rest"], lvl: 2, hold: 8,
+      prop: "Folded blanket under the shoulders", cue: "Hands support the back, neck never turns",
+      p: { t: -92, h: -2, aN: [180, 92], aF: [181, 93], lN: [90, 90, 90], lF: [91, 91, 90] } },
+    { id: "sirsasana", me: "hard", sa: "Salamba Sirsasana", en: "Headstand", de: "Kopfstand", cat: "inversion", sides: 1, focus: ["core", "balance"], lvl: 3, hold: 8,
+      prop: "A wall behind you while learning", cue: "Weight in the forearms, not the head",
+      p: { t: -90, h: -90, aN: [-118, -2], aF: [-119, -3], lN: [90, 90, 90], lF: [91, 91, 90] } },
+    { id: "pincha-mayurasana", me: "hard", sa: "Pincha Mayurasana", en: "Forearm Stand", de: "Unterarmstand", cat: "inversion", sides: 1, focus: ["shoulders", "balance", "core"], lvl: 3, hold: 5,
+      prop: "A wall behind you while learning", cue: "Press the forearms down, ribs in",
+      p: { t: -90, bend: -4, h: -70, aN: [-92, 0], aF: [-93, 0], lN: [92, 92, 90], lF: [93, 93, 90] } },
+    { id: "adho-mukha-vrksasana", me: "hard", sa: "Adho Mukha Vrksasana", en: "Handstand", de: "Handstand", cat: "inversion", sides: 1, focus: ["shoulders", "balance", "core"], lvl: 3, hold: 3,
+      prop: "A wall behind you while learning", cue: "Push the floor away, legs together",
+      p: { t: -90, h: -80, aN: [-90, -90], aF: [-91, -91], lN: [90, 90, 90], lF: [91, 91, 90] } },
+    // ---- added for the module library ----
+    { id: "utthita-tadasana", me: "easy", sa: "Utthita Tadasana", en: "Star", de: "Stern", cat: "standing", sides: 1, focus: ["legs"], lvl: 1, hold: 3,
+      cue: "Feet wide, reach out through all five points",
+      p: { view: "front", t: 90, h: 90, aN: [12, 14], aF: [168, 166], lN: [-62, -62, 0], lF: [242, 242, 180] } },
+    { id: "utkata-konasana", me: "easy", sa: "Utkata Konasana", en: "Goddess", de: "Göttin", cat: "standing", sides: 1, focus: ["legs", "hips"], lvl: 1, hold: 5,
+      cue: "Knees over the toes, sit low, cactus arms",
+      p: { view: "front", t: 90, h: 90, aN: [5, 92], aF: [175, 88], lN: [-18, -90, 0], lF: [198, -90, 180] } },
+    { id: "indudalasana", me: "easy", sa: "Indudalasana", en: "Standing Side Bend", de: "Seitbeuge im Stehen", cat: "standing", sides: 2, focus: ["side body"], lvl: 1, hold: 3,
+      cue: "Palms together, lean over, both feet grounded",
+      p: { view: "front", t: 98, bend: 12, h: 112, aN: [112, 122], aF: [116, 126], lN: [-92, -90, 0], lF: [-88, -90, 180] } },
+    { id: "skandasana", me: "hard", sa: "Skandasana", en: "Side Lunge", de: "Seitlicher Ausfallschritt", cat: "hip opener", sides: 2, focus: ["hips", "hamstrings"], lvl: 2, hold: 4,
+      prop: "Hands on books, heel of the bent leg may lift", cue: "Sit into one leg, the other leg long, toes up",
+      p: { view: "front", t: 80, h: 85, aN: [-110, 100], aF: [-70, 80], lN: [-12, -102, 0], lF: [198, 198, 90] } },
+    { id: "parivrtta-anjaneyasana", me: "easy", sa: "Parivrtta Anjaneyasana", en: "Lunge Twist", de: "Gedrehter Ausfallschritt", cat: "twist", sides: 2, focus: ["back", "hips"], lvl: 1, hold: 5,
+      prop: "Back knee down on a towel", cue: "Hands to heart, elbow outside the front knee",
+      p: { t: 58, bend: -4, h: 66, aN: [-48, 112], aF: [-50, 110], lN: [0, -65, 0], lF: [240, 180, 180] } },
+  ];
+  const SUN_A = ["tadasana", "urdhva-hastasana", "uttanasana", "ardha-uttanasana", "phalakasana", "chaturanga",
+    "urdhva-mukha-svanasana", "adho-mukha-svanasana", "ardha-uttanasana", "uttanasana", "urdhva-hastasana", "tadasana"];
+  root.YogaPoses = { POSES, SUN_A };
+  if (typeof module !== "undefined") module.exports = root.YogaPoses;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>// Practice generator v2. Builds a timed sequence of steps from the pose library.
+// Input:  { minutes: 30|45|60, style: "vinyasa"|"slow", energy: "low"|"medium"|"high",
+//           focus: subset of ["hamstrings","back","hips","balance","core"], cycle: seconds per breath,
+//           seed, challenges: {poseId: true|false}, me: {poseId: "easy"|"ok"|"hard"} (personal difficulty overrides) }
+// Output: { steps: [{ id, side, secs, breaths, breath, section, how, challenge }], sections, props, offers, totalSecs }
+(function (root) {
+  const LIB = (root.YogaPoses || require("./poses.js")).POSES;
+  const BY = Object.fromEntries(LIB.map(p => [p.id, p]));
+
+  function rng(seed) { // mulberry32
+    let a = seed >>> 0;
+    return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+
+  // Transition hints, keyed "from>to" by pose id ({side} / {other} are filled in).
+  const HOW = {
+    "sukhasana>bharmanasana": "Come onto hands and knees",
+    "sukhasana>malasana": "Come up into a deep squat",
+    "malasana>bharmanasana": "Hands down, knees to the floor",
+    "balasana>adho-mukha-svanasana": "Tuck the toes, lift the hips",
+    "bharmanasana>adho-mukha-svanasana": "Tuck the toes, lift the hips",
+    "bitilasana>adho-mukha-svanasana": "Tuck the toes, lift the hips",
+    "marjaryasana>balasana": "Hips back to the heels",
+    "marjaryasana>uttana-shishosana": "Walk the hands forward, hips stay over the knees",
+    "uttana-shishosana>balasana": "Hips back to the heels",
+    "uttana-shishosana>adho-mukha-svanasana": "Tuck the toes, lift the hips",
+    "adho-mukha-svanasana>uttanasana": "Walk the feet to the hands",
+    "adho-mukha-svanasana>ardha-uttanasana": "Step or hop the feet to the hands",
+    "adho-mukha-svanasana>eka-pada-adho-mukha-svanasana": "Lift the {side} leg up and back",
+    "eka-pada-adho-mukha-svanasana>ashta-chandrasana": "Step the {side} foot forward, rise up",
+    "eka-pada-adho-mukha-svanasana>virabhadrasana-1": "Step the {side} foot forward, back heel down, rise up",
+    "eka-pada-adho-mukha-svanasana>anjaneyasana": "Step the {side} foot forward, back knee down",
+    "eka-pada-adho-mukha-svanasana>virabhadrasana-2": "Step the {side} foot forward, back heel down, open to the side",
+    "eka-pada-adho-mukha-svanasana>eka-pada-rajakapotasana": "Knee forward behind the {side} wrist, lower down",
+    "uttanasana>phalakasana": "Hands down, step back to Plank",
+    "ardha-uttanasana>phalakasana": "Hands down, step back to Plank",
+    "utkatasana>uttanasana": "Straighten the legs, fold",
+    "uttanasana>utkatasana": "Bend the knees, sweep the arms up",
+    "utkatasana>tadasana": "Stand up tall",
+    "uttanasana>bakasana": "Squat, hands down, knees onto the upper arms",
+    "ardha-uttanasana>bakasana": "Squat, hands down, knees onto the upper arms",
+    "ardha-hanumanasana>utthan-pristhasana": "Bend the front knee, both hands inside the front foot",
+    "paripurna-navasana>vasisthasana": "Roll to Plank, then onto the {other} hand",
+    "vasisthasana>salamba-bhujangasana": "Lower down onto the belly, forearms down",
+    "vasisthasana>ardha-pincha-mayurasana": "Down Dog, then lower to the forearms",
+    "balasana>salamba-bhujangasana": "Slide forward onto the belly, forearms down",
+    "uttanasana>adho-mukha-vrksasana": "Walk to the wall, kick up one leg at a time",
+    "adho-mukha-vrksasana>balasana": "Come down slowly, rest in Child's Pose",
+    "urdhva-dhanurasana>urdhva-dhanurasana": "Lower down, rest a breath, press up again",
+    "urdhva-dhanurasana>matsyasana": "Lower slowly, forearms under, lift the chest",
+    "bakasana>phalakasana": "Step or float back to Plank",
+    "adho-mukha-svanasana>virabhadrasana-1": "Step the {side} foot forward, back heel down, rise up",
+    "adho-mukha-svanasana>ashta-chandrasana": "Step the {side} foot forward, rise up",
+    "adho-mukha-svanasana>anjaneyasana": "Step the {side} foot forward, back knee down, rise up",
+    "adho-mukha-svanasana>virabhadrasana-2": "Step the {side} foot forward, back heel down, open to the side",
+    "virabhadrasana-1>virabhadrasana-2": "Open hips and arms to the side",
+    "virabhadrasana-1>phalakasana": "Hands down, step back to Plank",
+    "ashta-chandrasana>virabhadrasana-2": "Back heel down, open hips and arms to the side",
+    "ashta-chandrasana>virabhadrasana-3": "Shift forward, lift the back leg",
+    "virabhadrasana-3>ashta-chandrasana": "Step the back foot down into the lunge",
+    "virabhadrasana-3>ardha-chandrasana": "Hand down, open the hips to the side",
+    "ardha-chandrasana>parsvottanasana": "Lower the lifted foot, hips face forward",
+    "virabhadrasana-2>viparita-virabhadrasana": "Front palm up, reach up and back",
+    "viparita-virabhadrasana>utthita-parsvakonasana": "Forearm to the front thigh, top arm over the ear",
+    "virabhadrasana-2>trikonasana": "Straighten the front leg, reach forward, then down",
+    "virabhadrasana-2>utthita-parsvakonasana": "Forearm to the front thigh, top arm over the ear",
+    "utthita-parsvakonasana>trikonasana": "Straighten the front leg, top arm up",
+    "trikonasana>parsvottanasana": "Turn the hips to face the front leg, hinge forward",
+    "trikonasana>ardha-chandrasana": "Bend the front knee, hand forward, lift the back leg",
+    "anjaneyasana>ardha-hanumanasana": "Hips back over the knee, straighten the front leg",
+    "ardha-hanumanasana>anjaneyasana": "Bend the front knee, hips forward",
+    "anjaneyasana>utthan-pristhasana": "Both hands inside the front foot",
+    "utthan-pristhasana>ardha-hanumanasana": "Hips back, straighten the front leg",
+    "parsvottanasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "ardha-hanumanasana>adho-mukha-svanasana": "Tuck the back toes, step back to Down Dog",
+    "utthan-pristhasana>adho-mukha-svanasana": "Tuck the back toes, step back to Down Dog",
+    "trikonasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "virabhadrasana-2>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "utthita-parsvakonasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "ardha-chandrasana>adho-mukha-svanasana": "Lower the leg, step back to Down Dog",
+    "adho-mukha-svanasana>tadasana": "Walk the feet to the hands, roll up slowly",
+    "uttanasana>tadasana": "Roll up slowly",
+    "tadasana>vrksasana": "Weight into the {other} foot, lift the {side} foot",
+    "tadasana>natarajasana": "Weight into the {other} foot, catch the {side} foot behind",
+    "tadasana>garudasana": "Sit low, cross the {side} leg over",
+    "tadasana>virabhadrasana-3": "Hinge forward, lift the {side} leg back",
+    "tadasana>utthita-hasta-padangusthasana": "Belt around the {side} foot, lift the leg forward",
+    "vrksasana>vrksasana": "Switch sides",
+    "natarajasana>natarajasana": "Switch sides",
+    "garudasana>garudasana": "Unwind, switch sides",
+    "virabhadrasana-3>virabhadrasana-3": "Stand up, switch sides",
+    "utthita-hasta-padangusthasana>utthita-hasta-padangusthasana": "Switch legs",
+    "tadasana>parivrtta-utkatasana": "Chair, hands to heart, twist to the {side}",
+    "parivrtta-utkatasana>parivrtta-utkatasana": "Back to centre, twist the other way",
+    "adho-mukha-svanasana>paripurna-navasana": "Come to sit, lift the feet",
+    "paripurna-navasana>paripurna-navasana": "Rest a breath, lift again",
+    "adho-mukha-svanasana>vasisthasana": "Plank, roll onto the {other} hand",
+    "vasisthasana>vasisthasana": "Back through Plank, other side",
+    "adho-mukha-svanasana>ardha-pincha-mayurasana": "Lower to the forearms",
+    "ardha-pincha-mayurasana>pincha-mayurasana": "Walk in, kick up one leg at a time",
+    "pincha-mayurasana>balasana": "Come down slowly, rest in Child's Pose",
+    "ardha-pincha-mayurasana>balasana": "Knees down, hips back",
+    "adho-mukha-svanasana>salabhasana": "Lower down onto the belly",
+    "adho-mukha-svanasana>salamba-bhujangasana": "Lower down onto the belly, forearms down",
+    "paripurna-navasana>salabhasana": "Roll over onto the belly",
+    "vasisthasana>salabhasana": "Lower down onto the belly",
+    "salamba-bhujangasana>salabhasana": "Arms back, lift chest and legs",
+    "salabhasana>balasana": "Push back to Child's Pose",
+    "balasana>salabhasana": "Slide forward onto the belly",
+    "salabhasana>dhanurasana": "Bend the knees, catch the ankles",
+    "dhanurasana>balasana": "Release slowly, push back to Child's Pose",
+    "balasana>ustrasana": "Kneel up, hands to the lower back",
+    "ustrasana>balasana": "Come up with the chest first, rest",
+    "balasana>setu-bandha-sarvangasana": "Roll onto the back, feet hip-width",
+    "salabhasana>setu-bandha-sarvangasana": "Roll onto the back, feet hip-width",
+    "setu-bandha-sarvangasana>setu-bandha-sarvangasana": "Lower down, one breath, lift again",
+    "setu-bandha-sarvangasana>urdhva-dhanurasana": "Hands by the ears, press up",
+    "urdhva-dhanurasana>setu-bandha-sarvangasana": "Chin in, lower slowly",
+    "urdhva-dhanurasana>apanasana": "Lower slowly, hug the knees",
+    "setu-bandha-sarvangasana>matsyasana": "Lower down, forearms under, lift the chest",
+    "matsyasana>apanasana": "Release, hug the knees",
+    "setu-bandha-sarvangasana>apanasana": "Lower down, hug the knees",
+    "eka-pada-rajakapotasana>eka-pada-rajakapotasana": "Back through Down Dog, other side",
+    "apanasana>supta-padangusthasana": "Belt around the {side} foot, extend the leg up",
+    "setu-bandha-sarvangasana>supta-padangusthasana": "Roll down, belt around the {side} foot",
+    "supta-padangusthasana>supta-padangusthasana": "Switch legs",
+    "supta-padangusthasana>paschimottanasana": "Roll up to sit, legs long",
+    "dandasana>paschimottanasana": "Inhale tall, exhale fold",
+    "supta-padangusthasana>dandasana": "Roll up to sit, legs long",
+    "paschimottanasana>janu-sirsasana": "Bend the {other} knee, sole to the inner thigh",
+    "janu-sirsasana>janu-sirsasana": "Switch legs",
+    "janu-sirsasana>baddha-konasana": "Soles together, knees open",
+    "paschimottanasana>baddha-konasana": "Soles together, knees open",
+    "baddha-konasana>ardha-matsyendrasana": "Cross the {side} foot over, twist",
+    "ardha-matsyendrasana>ardha-matsyendrasana": "Switch sides",
+    "ardha-matsyendrasana>supta-matsyendrasana": "Roll down onto the back",
+    "janu-sirsasana>supta-matsyendrasana": "Roll down onto the back",
+    "baddha-konasana>supta-matsyendrasana": "Roll down onto the back",
+    "paschimottanasana>supta-matsyendrasana": "Roll down onto the back",
+    "supta-padangusthasana>supta-matsyendrasana": "Hug the {side} knee in, let it cross",
+    "supta-matsyendrasana>supta-matsyendrasana": "Through the centre to the other side",
+    "supta-matsyendrasana>ananda-balasana": "Both knees up, hold the feet",
+    "supta-matsyendrasana>viparita-karani": "Scoot the hips to the wall, legs up",
+    "ananda-balasana>savasana": "Lengthen the legs, let everything go",
+    "viparita-karani>savasana": "Slide away from the wall, let everything go",
+    "supta-matsyendrasana>savasana": "Lengthen the legs, let everything go",
+  };
+
+  // Fallback hints by the pose you move into, when no pair-specific hint exists.
+  const TO = {
+    "adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "paripurna-navasana": "Come to sit, lift the feet",
+    "supta-padangusthasana": "Lie on the back, belt around the {side} foot",
+    "ardha-matsyendrasana": "Sit tall, cross the {side} foot over, twist",
+    "eka-pada-rajakapotasana": "From Down Dog, bring the {side} knee forward behind the wrist",
+    "vrksasana": "Stand tall, weight into the {other} foot, lift the {side} foot",
+    "natarajasana": "Stand tall, catch the {side} foot behind",
+    "garudasana": "Stand tall, sit low, cross the {side} leg over",
+    "virabhadrasana-3": "Stand tall, hinge forward, lift the {side} leg back",
+    "utthita-hasta-padangusthasana": "Stand tall, belt around the {side} foot, lift it forward",
+    "baddha-konasana": "Come to sit, soles together",
+    "salabhasana": "Lower down onto the belly",
+    "setu-bandha-sarvangasana": "Lie on the back, feet hip-width",
+    "supta-matsyendrasana": "Lie on the back, hug the {side} knee in, let it cross",
+    "savasana": "Lengthen the legs, let everything go",
+    "uttanasana": "Fold forward, knees soft",
+  };
+
+  function generate(opt) {
+    opt = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, seed: 1, challenges: {}, me: {} }, opt);
+    const slow = opt.style === "slow";
+    const defRounds = { 30: 3, 45: 3, 60: 4 }[opt.minutes] - (slow ? 1 : 0) + (opt.energy === "high" ? 1 : 0) - (opt.energy === "low" ? 1 : 0);
+    const defFlows = opt.minutes === 30 ? 1 : 2;
+    let best = null;
+    for (let rounds = Math.max(1, defRounds - 2); rounds <= defRounds + 2; rounds++)
+      for (let flows = Math.max(1, defFlows - 1); flows <= Math.min(3, defFlows + 1); flows++)
+        for (let sc = 6; sc <= 20; sc++) {
+          const r = build(opt, { rounds, flows, scale: sc / 10 });
+          const cost = Math.abs(r.totalSecs - opt.minutes * 60) + 45 * Math.abs(rounds - defRounds) + 120 * Math.abs(flows - defFlows) + 25 * Math.abs(sc - 10);
+          if (!best || cost < best.cost) best = Object.assign(r, { cost });
+        }
+    return best;
+  }
+
+  function build(opt, K) {
+    const R = rng(opt.seed);
+    const pick = arr => arr[Math.floor(R() * arr.length)];
+    const shuffle = arr => arr.map(v => [R(), v]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+    const slow = opt.style === "slow";
+    const F = f => opt.focus.includes(f);
+    const me = id => opt.me[id] || BY[id].me || "ok";
+    const C = opt.cycle, MOVE = C / 2 + 0.5;
+    const long = opt.minutes >= 45, longest = opt.minutes >= 60;
+    const steps = [], sections = [];
+    let section = "";
+
+    function add(id, o) {
+      o = o || {};
+      const p = BY[id];
+      const scaled = (section === "Standing" || section === "Cool-down" || section === "Backbends" || section === "Balance" || section === "Hips") ? K.scale : 1;
+      const hardBoost = me(id) === "hard" && !o.breath ? 1.3 : 1; // more time to breathe into what is hard for you
+      let breaths = o.breaths != null ? o.breaths : Math.max(1, Math.round((slow ? p.hold * 1.5 : p.hold) * scaled * hardBoost));
+      const flow = o.breath != null;
+      let secs = o.secs != null ? Math.round(o.secs * scaled / 15) * 15 : flow ? MOVE : Math.round(breaths * C);
+      if (o.secs != null) breaths = Math.round(secs / C);
+      steps.push({ id, side: o.side || null, secs, breaths: flow ? 0 : breaths, breath: o.breath || null, section, challenge: !!o.challenge });
+    }
+    const last = () => steps[steps.length - 1];
+    function begin(name) { section = name; sections.push(name); }
+    function both(fn) { fn("right"); fn("left"); }
+    function vinyasa() {
+      add("phalakasana", { breath: "in" }); add("chaturanga", { breath: "out" });
+      add("urdhva-mukha-svanasana", { breath: "in" }); add("adho-mukha-svanasana", { breaths: 2 });
+    }
+    const dog = () => { if (!last() || last().id !== "adho-mukha-svanasana") add("adho-mukha-svanasana", { breaths: 1 }); };
+
+    // challenge offers: shown in the preview, accepted per practice
+    const offers = [];
+    const nOffers = { low: 0, medium: 2, high: 3 }[opt.energy];
+    const candidates = [
+      { id: "bakasana", text: "Crow in the last round of Sun Salutation A" },
+      { id: "urdhva-dhanurasana", text: "Wheel after the second Bridge" },
+      { id: "pincha-mayurasana", text: "Forearm Stand from Dolphin, near a wall", minM: 45 },
+      { id: "adho-mukha-vrksasana", text: "Handstand kick-ups at a wall after the balance poses", minM: 45, energy: "high" },
+    ].filter(c => (!c.minM || opt.minutes >= c.minM) && (!c.energy || c.energy === opt.energy));
+    shuffle(candidates).slice(0, nOffers).forEach(c => offers.push(c));
+    const ok = id => opt.challenges[id] === true && offers.some(o => o.id === id);
+
+    // 1. Arrival
+    begin("Arrival");
+    add("sukhasana", { breaths: long ? 12 : 8 });
+
+    // 2. Warm-up
+    begin("Warm-up");
+    if (long && F("hips")) add("malasana", { breaths: 5 });
+    add("bharmanasana", { breaths: 1 });
+    const cc = long ? 5 : 4;
+    for (let k = 0; k < cc; k++) { add("bitilasana", { breath: "in" }); add("marjaryasana", { breath: "out" }); }
+    if (long) add("uttana-shishosana", { breaths: 4 });
+    add("balasana", { breaths: 3 });
+    add("adho-mukha-svanasana", { breaths: slow ? 8 : 6 });
+    add("uttanasana", { breaths: 4 });
+    add("tadasana", { breaths: 2 });
+
+    // 3. Sun salutations: A rounds, then B rounds for longer or stronger practices
+    begin("Sun Salutations");
+    const sunA = ["tadasana", "urdhva-hastasana", "uttanasana", "ardha-uttanasana", "phalakasana", "chaturanga",
+      "urdhva-mukha-svanasana", "adho-mukha-svanasana", "ardha-uttanasana", "uttanasana", "urdhva-hastasana", "tadasana"];
+    const sunBreath = ["out", "in", "out", "in", "in", "out", "in", null, "in", "out", "in", "out"];
+    const roundsA = K.rounds;
+    for (let r = 0; r < roundsA; r++) {
+      sunA.forEach((id, k) => {
+        if (k === 0 && r > 0) return;
+        if (id === "adho-mukha-svanasana") { add(id, { breaths: r === 0 ? 5 : 3 }); return; }
+        if (k === 4 && r === roundsA - 1 && ok("bakasana")) add("bakasana", { breaths: 3, challenge: true });
+        add(id, { breath: sunBreath[k] });
+      });
+    }
+    const roundsB = (long ? 2 : 0) + (opt.energy === "high" ? 1 : 0) - (slow ? 1 : 0);
+    for (let r = 0; r < Math.max(0, roundsB); r++) {
+      add("utkatasana", { breath: "in" }); add("uttanasana", { breath: "out" }); add("ardha-uttanasana", { breath: "in" });
+      add("phalakasana", { breath: "out" }); add("chaturanga", { breath: "out" }); add("urdhva-mukha-svanasana", { breath: "in" }); add("adho-mukha-svanasana", { breath: "out" });
+      both(s => { add("virabhadrasana-1", { side: s, breath: "in" }); add("phalakasana", { breath: "out" }); add("chaturanga", { breath: "out" }); add("urdhva-mukha-svanasana", { breath: "in" }); add("adho-mukha-svanasana", { breath: "out" }); });
+      last().breath = null; last().breaths = 3; last().secs = Math.round(3 * C);
+      add("ardha-uttanasana", { breath: "in" }); add("uttanasana", { breath: "out" }); add("utkatasana", { breath: "in" }); add("tadasana", { breath: "out" });
+    }
+
+    // 4. Standing flows
+    begin("Standing");
+    const flows = {
+      warriors: s => { add("virabhadrasana-1", { side: s }); add("virabhadrasana-2", { side: s }); add("trikonasana", { side: s }); add("parsvottanasana", { side: s }); },
+      sideAngle: s => { add("virabhadrasana-2", { side: s }); add("viparita-virabhadrasana", { side: s }); add("utthita-parsvakonasana", { side: s }); add("trikonasana", { side: s }); },
+      lunge: s => { add("anjaneyasana", { side: s }); add("ardha-hanumanasana", { side: s }); if (F("hips")) add("utthan-pristhasana", { side: s }); else { add("anjaneyasana", { side: s, breaths: 2 }); } add("ardha-hanumanasana", { side: s }); },
+      balanceFlow: s => { add("ashta-chandrasana", { side: s }); add("virabhadrasana-3", { side: s }); add("ardha-chandrasana", { side: s }); add("parsvottanasana", { side: s }); },
+    };
+    let order = [];
+    if (F("hamstrings")) order.push(pick(["warriors", "lunge"]));
+    if (F("balance")) order.push("balanceFlow");
+    order.push(...shuffle(["warriors", "sideAngle", "lunge", "balanceFlow"]));
+    order = [...new Set(order)].slice(0, K.flows);
+    order.forEach(f => both(s => {
+      if (f === "balanceFlow" || f === "sideAngle") dog();
+      else { dog(); if (opt.energy !== "low" && R() < 0.5) add("eka-pada-adho-mukha-svanasana", { side: s }); }
+      flows[f](s); vinyasa();
+    }));
+
+    // 5. Standing balance (a strength of yours, so it is always there)
+    begin("Balance");
+    add("uttanasana", { breaths: 2 }); add("tadasana", { breaths: 1 });
+    const balancePool = ["vrksasana", "natarajasana", "virabhadrasana-3", "garudasana", "utthita-hasta-padangusthasana"].filter(id => !order.includes("balanceFlow") || id !== "virabhadrasana-3");
+    const nBal = (long ? 2 : 1) + (F("balance") ? 1 : 0);
+    shuffle(balancePool).slice(0, nBal).forEach(id => both(s => add(id, { side: s })));
+    if (ok("adho-mukha-vrksasana")) { add("uttanasana", { breaths: 1 }); add("adho-mukha-vrksasana", { breaths: 5, challenge: true }); add("balasana", { breaths: 3 }); }
+
+    // 6. Core (longer practices or core focus)
+    if (long || F("core")) {
+      begin("Core");
+      add("paripurna-navasana"); add("paripurna-navasana");
+      if (longest || F("core")) both(s => add("vasisthasana", { side: s }));
+      if (ok("pincha-mayurasana")) { add("ardha-pincha-mayurasana", { breaths: 3 }); add("pincha-mayurasana", { challenge: true }); add("balasana", { breaths: 3 }); }
+    }
+
+    // 7. Backbends
+    begin("Backbends");
+    const prone = pick(["salabhasana", "salamba-bhujangasana"]);
+    add(prone); if (prone === "salamba-bhujangasana") add("salabhasana"); else { add("balasana", { breaths: 2 }); add("salabhasana"); }
+    if (long && opt.energy !== "low") { const deep = pick(["dhanurasana", "ustrasana"]); if (deep === "ustrasana") add("balasana", { breaths: 2 }); add(deep); add("balasana", { breaths: 3 }); }
+    add("setu-bandha-sarvangasana"); add("setu-bandha-sarvangasana");
+    if (ok("urdhva-dhanurasana")) { add("urdhva-dhanurasana", { challenge: true }); add("urdhva-dhanurasana", { challenge: true }); }
+    if (longest) add("matsyasana");
+    add("apanasana", { breaths: 3 });
+
+    // 8. Hips (your stiff spot: held longer, with props)
+    if (long || F("hips")) {
+      begin("Hips");
+      const yinish = slow || opt.energy === "low";
+      const hold = id => yinish && BY[id].yin ? { secs: Math.min(BY[id].yin, opt.minutes === 30 ? 2 : 4) * 60 } : {};
+      if (pick([true, false]) || F("hips")) both(s => add("eka-pada-rajakapotasana", Object.assign({ side: s }, hold("eka-pada-rajakapotasana"))));
+      else add("baddha-konasana", hold("baddha-konasana"));
+    }
+
+    // 9. Cool-down
+    begin("Cool-down");
+    const yinish = slow || opt.energy === "low";
+    const yinCap = opt.minutes === 30 ? 2 : 4;
+    const hold = id => yinish && BY[id].yin ? { secs: Math.min(BY[id].yin, yinCap) * 60 } : {};
+    if (F("hamstrings")) both(s => add("supta-padangusthasana", Object.assign({ side: s }, hold("supta-padangusthasana"))));
+    if (long) {
+      add("dandasana", { breaths: 2 }); add("paschimottanasana", hold("paschimottanasana"));
+      both(s => add("janu-sirsasana", Object.assign({ side: s }, hold("janu-sirsasana"))));
+      if (F("back")) both(s => add("ardha-matsyendrasana", { side: s }));
+    }
+    both(s => add("supta-matsyendrasana", Object.assign({ side: s }, hold("supta-matsyendrasana"))));
+    if (yinish) add("viparita-karani", hold("viparita-karani"));
+    else if (long) add("ananda-balasana");
+
+    // 10. Savasana takes the rest of the time (within limits)
+    begin("Savasana");
+    const used = steps.reduce((a, s) => a + s.secs, 0);
+    const minS = { 30: 180, 45: 240, 60: 300 }[opt.minutes], maxS = { 30: 300, 45: 420, 60: 540 }[opt.minutes];
+    const sav = Math.max(minS, Math.min(maxS, opt.minutes * 60 - used));
+    add("savasana", { secs: Math.round(sav / 30) * 30 });
+    last().breaths = 0;
+
+    // transition hints
+    steps.forEach((s, i) => {
+      const prev = steps[i - 1]; if (!prev) return;
+      const h = HOW[prev.id + ">" + s.id] || (prev.id !== s.id && !s.breath ? TO[s.id] : null);
+      if (!h) return;
+      const side = s.side || prev.side || "right";
+      s.how = h.replace("{side}", side).replace("{other}", side === "right" ? "left" : "right");
+    });
+
+    const props = [...new Set(steps.map(s => BY[s.id].prop).filter(Boolean))];
+    const totalSecs = steps.reduce((a, s) => a + s.secs, 0);
+    return { steps, sections, props, offers, totalSecs };
+  }
+
+  root.YogaGenerator = { generate, HOW };
+  if (typeof module !== "undefined") module.exports = root.YogaGenerator;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>// Building-block library for the composer.
+// A step is [poseId, hold] where hold is a breath count (number) or "in"/"out" for a flowing movement on one half-breath.
+// An optional third element sets { side: "right"|"left" } for explicit sides, or { opt: 0.5 } for an optional add-on.
+// In a sided block, every pose that is done on both sides takes the block's current side automatically.
+// States describe where the body is between blocks: stand, dog, kneel, prone, supine, seat.
+// Tags (what a block works or prepares): hamstrings, hips, hipflex, back, shoulders, core, balance, wrists, twist, sidebody, legs, rest.
+(function (root) {
+  const WARMUPS = [
+    { id: "wu-catcow", name: "Cat and Cow", from: "kneel", to: "dog", int: 1, works: ["back", "wrists", "shoulders"],
+      steps: [["bharmanasana", 1], ["bitilasana", "in"], ["marjaryasana", "out"], ["bitilasana", "in"], ["marjaryasana", "out"], ["bitilasana", "in"], ["marjaryasana", "out"], ["bitilasana", "in"], ["marjaryasana", "out"],
+        ["uttana-shishosana", 4, { opt: 0.6 }], ["balasana", 3], ["adho-mukha-svanasana", 6]] },
+    { id: "wu-supine", name: "Lying warm-up", from: "supine", to: "dog", int: 1, works: ["back", "hips", "twist", "legs"],
+      steps: [["apanasana", 4], ["setu-bandha-sarvangasana", "in"], ["apanasana", "out"], ["setu-bandha-sarvangasana", "in"], ["apanasana", "out"], ["setu-bandha-sarvangasana", "in"], ["apanasana", "out"],
+        ["supta-matsyendrasana", 4, { side: "right" }], ["supta-matsyendrasana", 4, { side: "left" }], ["ananda-balasana", 4, { opt: 0.6 }], ["bharmanasana", 1], ["bitilasana", "in"], ["marjaryasana", "out"], ["adho-mukha-svanasana", 6]] },
+    { id: "wu-standing", name: "Standing warm-up", from: "stand", to: "stand", int: 2, works: ["sidebody", "legs", "hips"],
+      steps: [["tadasana", 3], ["indudalasana", 3, { side: "right" }], ["indudalasana", 3, { side: "left" }], ["utthita-tadasana", "in"], ["utkata-konasana", "out"], ["utthita-tadasana", "in"], ["utkata-konasana", "out"], ["utthita-tadasana", "in"], ["utkata-konasana", 4],
+        ["tadasana", 1], ["utkatasana", "in"], ["uttanasana", "out"], ["utkatasana", "in"], ["uttanasana", 4], ["tadasana", 2]] },
+    { id: "wu-lunge", name: "Lunge warm-up", from: "kneel", to: "dog", int: 1, works: ["hipflex", "twist", "back"],
+      steps: [["bharmanasana", 1], ["bitilasana", "in"], ["marjaryasana", "out"], ["bitilasana", "in"], ["marjaryasana", "out"], ["adho-mukha-svanasana", 4],
+        ["anjaneyasana", 3, { side: "right" }], ["parivrtta-anjaneyasana", 3, { side: "right" }], ["adho-mukha-svanasana", 2],
+        ["anjaneyasana", 3, { side: "left" }], ["parivrtta-anjaneyasana", 3, { side: "left" }], ["adho-mukha-svanasana", 4]] },
+  ];
+
+  // Sun salutations: one round, from Mountain back to Mountain. "alt" rounds switch the leading side each round.
+  const SUNS = [
+    { id: "sun-a", name: "Sun Salutation A", int: 2, works: ["hamstrings", "back", "shoulders", "wrists"],
+      round: [["tadasana", "out"], ["urdhva-hastasana", "in"], ["uttanasana", "out"], ["ardha-uttanasana", "in"], ["phalakasana", "in"], ["chaturanga", "out"],
+        ["urdhva-mukha-svanasana", "in"], ["adho-mukha-svanasana", 3], ["ardha-uttanasana", "in"], ["uttanasana", "out"], ["urdhva-hastasana", "in"], ["tadasana", "out"]] },
+    { id: "sun-b", name: "Sun Salutation B", int: 3, works: ["legs", "hipflex", "back", "core"],
+      round: [["utkatasana", "in"], ["uttanasana", "out"], ["ardha-uttanasana", "in"], ["phalakasana", "out"], ["chaturanga", "out"], ["urdhva-mukha-svanasana", "in"], ["adho-mukha-svanasana", "out"],
+        ["virabhadrasana-1", "in", { side: "right" }], ["phalakasana", "out"], ["chaturanga", "out"], ["urdhva-mukha-svanasana", "in"], ["adho-mukha-svanasana", "out"],
+        ["virabhadrasana-1", "in", { side: "left" }], ["phalakasana", "out"], ["chaturanga", "out"], ["urdhva-mukha-svanasana", "in"], ["adho-mukha-svanasana", 3],
+        ["ardha-uttanasana", "in"], ["uttanasana", "out"], ["utkatasana", "in"], ["tadasana", "out"]] },
+    { id: "sun-classic", name: "Classic Sun Salutation", int: 1, alt: true, works: ["hipflex", "back", "hamstrings"],
+      round: [["tadasana", "out"], ["urdhva-hastasana", "in"], ["uttanasana", "out"], ["anjaneyasana", "in", { lead: true }], ["phalakasana", "out"], ["chaturanga", "out"],
+        ["bhujangasana", "in"], ["adho-mukha-svanasana", 3], ["anjaneyasana", "in", { lead: true }], ["uttanasana", "out"], ["urdhva-hastasana", "in"], ["tadasana", "out"]] },
+    { id: "sun-moon", name: "Moon Salutation", int: 1, slow: true, works: ["sidebody", "hips", "hamstrings", "legs"],
+      round: [["tadasana", 1], ["indudalasana", 2, { side: "right" }], ["indudalasana", 2, { side: "left" }], ["utkata-konasana", 2], ["utthita-tadasana", 1],
+        ["trikonasana", 2, { side: "right" }], ["parsvottanasana", 2, { side: "right" }], ["anjaneyasana", 2, { side: "right" }], ["skandasana", 2, { side: "right" }], ["malasana", 2],
+        ["skandasana", 2, { side: "left" }], ["anjaneyasana", 2, { side: "left" }], ["parsvottanasana", 2, { side: "left" }], ["trikonasana", 2, { side: "left" }],
+        ["utthita-tadasana", 1], ["utkata-konasana", 2], ["tadasana", 1]] },
+  ];
+
+  // Flow modules. sided: run once per side; between: what links the two sides.
+  const MODULES = [
+    // standing, from Down Dog back to Down Dog, a vinyasa between the sides
+    { id: "s-warriors", kind: "standing", name: "Warrior flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["hamstrings", "legs", "hips", "sidebody"],
+      steps: [["virabhadrasana-1", 3], ["virabhadrasana-2", 3], ["trikonasana", 3], ["parsvottanasana", 3]] },
+    { id: "s-sideangle", kind: "standing", name: "Side angle flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["sidebody", "legs", "hamstrings", "hips"],
+      steps: [["virabhadrasana-2", 2], ["viparita-virabhadrasana", 2], ["utthita-parsvakonasana", 3], ["trikonasana", 3]] },
+    { id: "s-lunge-ham", kind: "standing", name: "Lunge and half splits", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 1, prepares: ["hamstrings", "hipflex"],
+      steps: [["anjaneyasana", 3], ["ardha-hanumanasana", 4], ["anjaneyasana", 1], ["ardha-hanumanasana", 4]] },
+    { id: "s-lizard", kind: "standing", name: "Lizard flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 1, prepares: ["hips", "hamstrings", "hipflex"],
+      steps: [["anjaneyasana", 2], ["utthan-pristhasana", 5], ["ardha-hanumanasana", 4]] },
+    { id: "s-balance", kind: "standing", name: "Balance flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 3, prepares: ["balance", "hamstrings", "core", "legs"],
+      steps: [["ashta-chandrasana", 2], ["virabhadrasana-3", 4], ["ardha-chandrasana", 4], ["parsvottanasana", 3]] },
+    { id: "s-twist", kind: "standing", name: "Lunge twist flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["twist", "hipflex", "back"],
+      steps: [["ashta-chandrasana", 3], ["parivrtta-anjaneyasana", 4], ["anjaneyasana", 3]] },
+    { id: "s-highlunge", kind: "standing", name: "High lunge flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["legs", "hipflex", "sidebody"],
+      steps: [["eka-pada-adho-mukha-svanasana", 1, { opt: 0.7 }], ["ashta-chandrasana", 3], ["virabhadrasana-2", 3], ["viparita-virabhadrasana", 2], ["utthita-parsvakonasana", 3]] },
+    { id: "s-pyramid", kind: "standing", name: "Pyramid flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["hamstrings", "balance"],
+      steps: [["virabhadrasana-1", 2], ["parsvottanasana", 5], ["virabhadrasana-3", 3]] },
+    // standing, from Mountain to Mountain
+    { id: "s-goddess", kind: "standing", name: "Goddess flow", from: "stand", to: "stand", sided: false, int: 2, prepares: ["hips", "legs", "hamstrings"],
+      steps: [["utthita-tadasana", 2], ["utkata-konasana", 4], ["skandasana", 3, { side: "right" }], ["skandasana", 3, { side: "left" }], ["utkata-konasana", 3], ["utthita-tadasana", 1], ["tadasana", 1]] },
+    { id: "s-chairtwist", kind: "standing", name: "Chair and twist", from: "stand", to: "stand", sided: false, int: 2, prepares: ["twist", "legs", "core"],
+      steps: [["utkatasana", 3], ["parivrtta-utkatasana", 4, { side: "right" }], ["utkatasana", 1], ["parivrtta-utkatasana", 4, { side: "left" }], ["uttanasana", 2], ["tadasana", 1]] },
+    // balance, Mountain to Mountain
+    { id: "b-tree", kind: "balance", name: "Tree", from: "stand", to: "stand", sided: true, int: 1, prepares: ["balance", "hips"], steps: [["vrksasana", 6]] },
+    { id: "b-dancer", kind: "balance", name: "Dancer", from: "stand", to: "stand", sided: true, int: 2, prepares: ["balance", "hipflex", "back", "shoulders"], steps: [["natarajasana", 5]] },
+    { id: "b-w3", kind: "balance", name: "Warrior III", from: "stand", to: "stand", sided: true, int: 2, prepares: ["balance", "hamstrings", "core"], steps: [["virabhadrasana-3", 5]] },
+    { id: "b-eagle", kind: "balance", name: "Eagle", from: "stand", to: "stand", sided: true, int: 2, prepares: ["balance", "hips", "shoulders"], steps: [["utkatasana", 1], ["garudasana", 5]] },
+    { id: "b-handtoe", kind: "balance", name: "Hand to big toe", from: "stand", to: "stand", sided: true, int: 2, prepares: ["balance", "hamstrings"], steps: [["utthita-hasta-padangusthasana", 5]] },
+    // core
+    { id: "c-boat", kind: "core", name: "Boat", from: "seat", to: "seat", sided: false, int: 2, prepares: ["core", "hipflex"], steps: [["paripurna-navasana", 5], ["dandasana", 1], ["paripurna-navasana", 5]] },
+    { id: "c-sideplank", kind: "core", name: "Side plank", from: "dog", to: "dog", sided: true, between: "none", int: 2, prepares: ["core", "shoulders", "wrists"], steps: [["phalakasana", 1], ["vasisthasana", 4], ["adho-mukha-svanasana", 1]] },
+    { id: "c-plankdog", kind: "core", name: "Plank and dog waves", from: "dog", to: "dog", sided: false, int: 2, prepares: ["core", "wrists", "shoulders"],
+      steps: [["phalakasana", "in"], ["adho-mukha-svanasana", "out"], ["phalakasana", "in"], ["adho-mukha-svanasana", "out"], ["phalakasana", "in"], ["adho-mukha-svanasana", "out"], ["phalakasana", 4], ["adho-mukha-svanasana", 2]] },
+    { id: "c-dolphin", kind: "core", name: "Dolphin", from: "dog", to: "kneel", sided: false, int: 2, prepares: ["shoulders", "core"], steps: [["ardha-pincha-mayurasana", 5], ["balasana", 2], ["ardha-pincha-mayurasana", 4], ["balasana", 3]] },
+    // floor backbends
+    { id: "p-locust", kind: "back", name: "Locust", from: "prone", to: "kneel", sided: false, int: 1, prepares: ["back", "shoulders"], steps: [["salabhasana", 4], ["balasana", 2], ["salabhasana", 4], ["balasana", 2]] },
+    { id: "p-sphinx", kind: "back", name: "Sphinx and locust", from: "prone", to: "kneel", sided: false, int: 1, prepares: ["back"], steps: [["salamba-bhujangasana", 6], ["salabhasana", 4], ["balasana", 3]] },
+    { id: "p-bow", kind: "back", name: "Bow", from: "prone", to: "kneel", sided: false, int: 2, deep: true, prepares: ["back", "hipflex", "shoulders"], steps: [["salabhasana", 3], ["dhanurasana", 4], ["balasana", 2], ["dhanurasana", 4], ["balasana", 3]] },
+    { id: "k-camel", kind: "back", name: "Camel", from: "kneel", to: "kneel", sided: false, int: 2, deep: true, prepares: ["back", "hipflex"], steps: [["ustrasana", 4], ["balasana", 3], ["ustrasana", 4], ["balasana", 4]] },
+    { id: "k-puppy", kind: "back", name: "Puppy", from: "kneel", to: "kneel", sided: false, int: 1, prepares: ["shoulders", "back"], steps: [["uttana-shishosana", 6], ["balasana", 2]] },
+    { id: "u-bridge", kind: "back", name: "Bridge", from: "supine", to: "supine", sided: false, int: 1, prepares: ["back", "hipflex", "legs"], steps: [["setu-bandha-sarvangasana", 5], ["setu-bandha-sarvangasana", 5], ["apanasana", 3]] },
+    { id: "u-fish", kind: "back", name: "Fish", from: "supine", to: "supine", sided: false, int: 1, prepares: ["back", "shoulders"], steps: [["matsyasana", 5], ["apanasana", 3]] },
+    // hips
+    { id: "h-pigeon", kind: "hips", name: "Pigeon", from: "dog", to: "dog", sided: true, between: "none", int: 1, prepares: ["hips"], steps: [["eka-pada-adho-mukha-svanasana", 1], ["eka-pada-rajakapotasana", 8], ["adho-mukha-svanasana", 2]] },
+    { id: "h-garland", kind: "hips", name: "Garland", from: "stand", to: "stand", sided: false, int: 1, prepares: ["hips"], steps: [["malasana", 6], ["uttanasana", 2], ["tadasana", 1]] },
+    { id: "t-bound", kind: "hips", name: "Bound angle", from: "seat", to: "seat", sided: false, int: 1, prepares: ["hips"], steps: [["baddha-konasana", 8]] },
+    { id: "t-cowface", kind: "hips", name: "Cow face", from: "seat", to: "seat", sided: true, between: "none", int: 2, prepares: ["hips", "shoulders"], steps: [["gomukhasana", 5]] },
+    { id: "u-happy", kind: "hips", name: "Happy baby", from: "supine", to: "supine", sided: false, int: 1, prepares: ["hips", "back"], steps: [["ananda-balasana", 5]] },
+    // cool-down: hamstrings, twists, rest
+    { id: "t-fold", kind: "cool", name: "Seated fold", from: "seat", to: "seat", sided: false, int: 1, prepares: ["hamstrings", "back"], steps: [["dandasana", 2], ["paschimottanasana", 8]] },
+    { id: "t-headknee", kind: "cool", name: "Head to knee", from: "seat", to: "seat", sided: true, between: "none", int: 1, prepares: ["hamstrings"], steps: [["janu-sirsasana", 6]] },
+    { id: "t-twist", kind: "cool", name: "Seated twist", from: "seat", to: "seat", sided: true, between: "none", int: 1, prepares: ["twist", "back"], steps: [["ardha-matsyendrasana", 5]] },
+    { id: "u-ham", kind: "cool", name: "Lying hamstring stretch", from: "supine", to: "supine", sided: true, between: "none", int: 1, prepares: ["hamstrings"], steps: [["supta-padangusthasana", 7]] },
+    { id: "u-twist", kind: "cool", name: "Supine twist", from: "supine", to: "supine", sided: true, between: "none", int: 1, prepares: ["twist", "back"], steps: [["supta-matsyendrasana", 6]] },
+    { id: "u-legsup", kind: "cool", name: "Legs up the wall", from: "supine", to: "supine", sided: false, int: 1, prepares: ["rest", "hamstrings"], steps: [["viparita-karani", 12]] },
+  ];
+
+  // Peaks: the pose a practice builds toward. needs = what must be prepared first; place = where it sits in the class.
+  const PEAKS = [
+    { id: "pk-halfmoon", pose: "ardha-chandrasana", name: "Half Moon", int: 2, place: "standing", needs: ["hamstrings", "balance", "sidebody"], from: "dog", to: "dog", sided: true, between: "vinyasa",
+      steps: [["virabhadrasana-2", 2], ["trikonasana", 2], ["ardha-chandrasana", 5], ["parsvottanasana", 2]] },
+    { id: "pk-w3", pose: "virabhadrasana-3", name: "Warrior III", int: 2, place: "standing", needs: ["hamstrings", "balance", "core"], from: "dog", to: "dog", sided: true, between: "vinyasa",
+      steps: [["ashta-chandrasana", 2], ["virabhadrasana-3", 5], ["ashta-chandrasana", 1], ["virabhadrasana-3", 4]] },
+    { id: "pk-dancer", pose: "natarajasana", name: "Dancer", int: 2, place: "balance", needs: ["hipflex", "back", "shoulders", "balance"], from: "stand", to: "stand", sided: true,
+      steps: [["natarajasana", 5], ["tadasana", 1], ["natarajasana", 5]], counter: [["uttanasana", 4], ["tadasana", 1]] },
+    { id: "pk-eagle", pose: "garudasana", name: "Eagle", int: 2, place: "balance", needs: ["hips", "shoulders", "balance", "legs"], from: "stand", to: "stand", sided: true,
+      steps: [["utkatasana", 2], ["garudasana", 6]], counter: [["uttanasana", 3], ["tadasana", 1]] },
+    { id: "pk-handtoe", pose: "utthita-hasta-padangusthasana", name: "Hand to Big Toe", int: 2, place: "balance", needs: ["hamstrings", "balance"], thread: true, from: "stand", to: "stand", sided: true,
+      steps: [["vrksasana", 2], ["utthita-hasta-padangusthasana", 6]], counter: [["uttanasana", 4], ["tadasana", 1]] },
+    { id: "pk-crow", pose: "bakasana", name: "Crow", int: 2, place: "standing", needs: ["core", "wrists", "hips"], from: "stand", to: "dog", sided: false,
+      steps: [["malasana", 3], ["bakasana", 3], ["malasana", 2], ["bakasana", 4], ["phalakasana", 1], ["adho-mukha-svanasana", 2]], counter: [["balasana", 4], ["adho-mukha-svanasana", 2]] },
+    { id: "pk-sideplank", pose: "vasisthasana", name: "Side Plank", int: 2, place: "core", needs: ["core", "shoulders", "wrists"], from: "dog", to: "dog", sided: true, between: "none",
+      steps: [["phalakasana", 2], ["vasisthasana", 5], ["phalakasana", 1], ["adho-mukha-svanasana", 2]], counter: [["balasana", 4], ["adho-mukha-svanasana", 1]] },
+    { id: "pk-camel", pose: "ustrasana", name: "Camel", int: 2, place: "floor", needs: ["back", "hipflex", "shoulders"], from: "kneel", to: "kneel", sided: false,
+      steps: [["ustrasana", 4], ["balasana", 3], ["ustrasana", 5]], counter: [["balasana", 6]] },
+    { id: "pk-bow", pose: "dhanurasana", name: "Bow", int: 2, place: "floor", needs: ["back", "hipflex", "shoulders"], from: "prone", to: "kneel", sided: false,
+      steps: [["dhanurasana", 4], ["balasana", 2], ["dhanurasana", 5]], counter: [["balasana", 6]] },
+    { id: "pk-wheel", pose: "urdhva-dhanurasana", name: "Wheel", int: 3, place: "floor", needs: ["back", "shoulders", "hipflex", "wrists"], from: "supine", to: "supine", sided: false,
+      steps: [["setu-bandha-sarvangasana", 3], ["urdhva-dhanurasana", 4], ["setu-bandha-sarvangasana", 1], ["urdhva-dhanurasana", 4]], counter: [["apanasana", 5], ["supta-matsyendrasana", 3, { side: "right" }], ["supta-matsyendrasana", 3, { side: "left" }]] },
+    { id: "pk-halfsplits", pose: "ardha-hanumanasana", name: "Half Splits", int: 1, place: "standing", needs: ["hamstrings", "hipflex"], thread: true, from: "dog", to: "dog", sided: true, between: "vinyasa",
+      steps: [["anjaneyasana", 2], ["ardha-hanumanasana", 6], ["anjaneyasana", 1], ["ardha-hanumanasana", 8]] },
+    { id: "pk-pigeon", pose: "eka-pada-rajakapotasana", name: "Pigeon", int: 1, place: "floor", needs: ["hips", "hipflex"], from: "dog", to: "dog", sided: true, between: "none",
+      steps: [["eka-pada-adho-mukha-svanasana", 1], ["eka-pada-rajakapotasana", 10], ["adho-mukha-svanasana", 2]] },
+    { id: "pk-triangle", pose: "trikonasana", name: "Triangle", int: 1, place: "standing", needs: ["hamstrings", "sidebody", "legs"], from: "dog", to: "dog", sided: true, between: "vinyasa",
+      steps: [["virabhadrasana-2", 3], ["trikonasana", 6], ["utthita-parsvakonasana", 3], ["trikonasana", 4]] },
+    { id: "pk-dolphin", pose: "ardha-pincha-mayurasana", name: "Dolphin", int: 2, place: "core", needs: ["shoulders", "core", "hamstrings"], from: "dog", to: "kneel", sided: false,
+      steps: [["ardha-pincha-mayurasana", 5], ["balasana", 2], ["ardha-pincha-mayurasana", 6], ["balasana", 3]] },
+    { id: "pk-boat", pose: "paripurna-navasana", name: "Boat", int: 2, place: "core", needs: ["core", "hipflex"], from: "seat", to: "seat", sided: false,
+      steps: [["paripurna-navasana", 5], ["dandasana", 1], ["paripurna-navasana", 5], ["dandasana", 1], ["paripurna-navasana", 5]] },
+    { id: "pk-revchair", pose: "parivrtta-utkatasana", name: "Revolved Chair", int: 2, place: "standing", needs: ["twist", "legs", "core"], from: "stand", to: "stand", sided: false,
+      steps: [["utkatasana", 3], ["parivrtta-utkatasana", 5, { side: "right" }], ["utkatasana", 1], ["parivrtta-utkatasana", 5, { side: "left" }], ["uttanasana", 3], ["tadasana", 1]] },
+  ];
+
+  // How to get from one state to another, as steps.
+  const CONNECT = {
+    "stand>dog": [["uttanasana", "out"], ["phalakasana", "in"], ["adho-mukha-svanasana", 1]],
+    "dog>stand": [["uttanasana", 2], ["tadasana", 1]],
+    "dog>prone": [["phalakasana", "in"], ["chaturanga", "out"]],
+    "dog>kneel": [["balasana", 2]],
+    "kneel>dog": [["adho-mukha-svanasana", 2]],
+    "prone>dog": [["balasana", 2], ["adho-mukha-svanasana", 2]],
+    "seat>dog": [["bharmanasana", 1], ["adho-mukha-svanasana", 2]],
+    "supine>dog": [["bharmanasana", 1], ["adho-mukha-svanasana", 2]],
+    "supine>kneel": [["bharmanasana", 1]],
+    "seat>kneel": [["bharmanasana", 1]],
+  };
+  const VINYASA = [["phalakasana", "in"], ["chaturanga", "out"], ["urdhva-mukha-svanasana", "in"], ["adho-mukha-svanasana", 2]];
+
+  root.YogaBlocks = { WARMUPS, SUNS, MODULES, PEAKS, CONNECT, VINYASA };
+  if (typeof module !== "undefined") module.exports = root.YogaBlocks;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>// Composer v3: builds a practice from the building blocks around a peak pose, with memory of recent practices.
+// generate(opt)  → plan { steps, sections, props, offers, totalSecs, meta, why }
+// validate(steps) → { ok, issues }      repair(raw) → raw steps with sides, neutral poses and unknown poses fixed
+// fromSpec(spec, opt) → plan from a class written elsewhere (Claude), checked and timed by the same rules
+// opt: { minutes, style, energy, focus[], cycle, seed, challenges{}, me{poseId: easy|ok|hard|new}, history[{peak, warmup, sun, modules[], loved[]}] }
+(function (root) {
+  const LIB = (root.YogaPoses || require("./poses.js")).POSES;
+  const B = root.YogaBlocks || require("./blocks.js");
+  const OLD = root.YogaGenerator || require("./generator.js");
+  const BY = Object.fromEntries(LIB.map(p => [p.id, p]));
+  const HOW = Object.assign({}, OLD.HOW, {
+    "virabhadrasana-1>parsvottanasana": "Shorten the stance a little, hinge over the front leg",
+    "parsvottanasana>virabhadrasana-3": "Weight into the front foot, lift the back leg",
+    "parsvottanasana>virabhadrasana-1": "Bend the front knee, rise up",
+    "ashta-chandrasana>parivrtta-anjaneyasana": "Back knee down, hands to heart, twist",
+    "parivrtta-anjaneyasana>anjaneyasana": "Unwind, arms up",
+    "utthita-tadasana>utkata-konasana": "Turn the toes out, bend the knees, sit low",
+    "utkata-konasana>utthita-tadasana": "Straighten the legs, arms out",
+    "utkata-konasana>skandasana": "Shift into the {side} leg, other leg long",
+    "skandasana>skandasana": "Move through the middle to the other side",
+    "skandasana>utkata-konasana": "Come back to the middle, sit low",
+    "skandasana>malasana": "Come to the middle into a deep squat",
+    "malasana>skandasana": "Shift into the {side} leg, other leg long",
+    "utthita-tadasana>tadasana": "Step the feet together",
+    "utthita-tadasana>trikonasana": "Turn the {side} foot out, reach and tip over",
+    "trikonasana>utthita-tadasana": "Come up, feet parallel, arms out",
+    "parsvottanasana>anjaneyasana": "Bend the front knee, back knee down",
+    "anjaneyasana>skandasana": "Turn to the side, sit into the {side} leg",
+    "skandasana>anjaneyasana": "Turn to face the {side} leg, back knee down",
+    "anjaneyasana>parsvottanasana": "Lift the back knee, straighten the front leg, hinge forward",
+    "tadasana>indudalasana": "Palms together overhead, lean to the {other}",
+    "indudalasana>indudalasana": "Through the middle, lean the other way",
+    "indudalasana>utkata-konasana": "Step the feet wide, sit low",
+    "indudalasana>utthita-tadasana": "Step the feet wide, arms out",
+    "uttanasana>anjaneyasana": "Step the {side} foot back, knee down",
+    "anjaneyasana>phalakasana": "Step back to Plank",
+    "chaturanga>bhujangasana": "Lower to the floor, lift the chest",
+    "bhujangasana>adho-mukha-svanasana": "Tuck the toes, lift the hips",
+    "adho-mukha-svanasana>anjaneyasana": "Step the {side} foot forward, back knee down",
+    "anjaneyasana>uttanasana": "Step the back foot forward, fold",
+    "adho-mukha-svanasana>phalakasana": "Shift forward to Plank",
+    "phalakasana>adho-mukha-svanasana": "Hips up and back",
+    "phalakasana>vasisthasana": "Roll onto the {other} hand, stack the feet",
+    "vasisthasana>phalakasana": "Back to Plank",
+    "malasana>bakasana": "Hands down, knees onto the upper arms, lean forward",
+    "bakasana>malasana": "Feet down into the squat",
+    "utkatasana>garudasana": "Cross the {side} leg over, wrap the arms",
+    "garudasana>utkatasana": "Unwind into Chair",
+    "vrksasana>utthita-hasta-padangusthasana": "Belt around the {side} foot, extend the leg forward",
+    "natarajasana>tadasana": "Release the foot, stand tall",
+    "tadasana>malasana": "Feet wide, sink into a squat",
+    "malasana>uttanasana": "Lift the hips, fold",
+    "ardha-pincha-mayurasana>balasana": "Knees down, hips back",
+    "balasana>ardha-pincha-mayurasana": "Forearms down, tuck the toes, lift the hips",
+    "dandasana>paripurna-navasana": "Lean back, lift the feet",
+    "paripurna-navasana>dandasana": "Feet down, sit tall",
+    "salabhasana>salabhasana": "Rest a breath, lift again",
+    "salamba-bhujangasana>salabhasana": "Arms back, lift chest and legs",
+    "dhanurasana>dhanurasana": "Rest a breath, catch the ankles again",
+    "ustrasana>ustrasana": "Come up, then go back again",
+    "uttana-shishosana>balasana": "Hips back to the heels",
+    "setu-bandha-sarvangasana>apanasana": "Lower down, hug the knees",
+    "matsyasana>apanasana": "Release, hug the knees",
+    "eka-pada-adho-mukha-svanasana>eka-pada-rajakapotasana": "Bring the {side} knee forward behind the wrist, lower down",
+    "eka-pada-rajakapotasana>adho-mukha-svanasana": "Tuck the back toes, step back to Down Dog",
+    "dandasana>janu-sirsasana": "Bend the {other} knee, sole to the inner thigh",
+    "janu-sirsasana>ardha-matsyendrasana": "Cross the {side} foot over, twist",
+    "baddha-konasana>gomukhasana": "Stack the knees, {side} on top",
+    "gomukhasana>gomukhasana": "Switch the knees",
+    "supta-padangusthasana>ananda-balasana": "Both knees up, hold the feet",
+    "ananda-balasana>supta-matsyendrasana": "Feet down, let the knees fall to the {side}",
+    "uttanasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+  });
+  // How to come into each pose when no pair-specific hint exists.
+  const TO = {
+    "tadasana": "Stand tall at the front of the mat", "urdhva-hastasana": "Arms up", "uttanasana": "Fold forward, knees soft",
+    "ardha-uttanasana": "Halfway lift, long back", "utkatasana": "Bend the knees, sit back, arms up", "ashta-chandrasana": "Step the {side} foot forward, back heel lifted, rise up",
+    "virabhadrasana-1": "Step the {side} foot forward, back heel down, rise up", "virabhadrasana-2": "{side} foot forward, open hips and arms to the side",
+    "trikonasana": "Straighten the front leg, reach forward, then down", "parsvottanasana": "Hips face the {side} leg, hinge forward",
+    "vrksasana": "Weight into the {other} foot, lift the {side} foot", "phalakasana": "Plank", "chaturanga": "Lower halfway, elbows in",
+    "urdhva-mukha-svanasana": "Roll over the toes, chest forward", "adho-mukha-svanasana": "Hips up and back to Down Dog", "bhujangasana": "Lower down, lift the chest",
+    "salabhasana": "Lie on the belly, lift chest and legs", "bharmanasana": "Come onto hands and knees", "marjaryasana": "Round the back", "bitilasana": "Belly down, chest forward",
+    "anjaneyasana": "Step the {side} foot forward, back knee down", "ardha-hanumanasana": "Hips back over the knee, straighten the front leg",
+    "balasana": "Hips back to the heels, rest", "bakasana": "Squat, hands down, knees onto the upper arms", "sukhasana": "Sit cross-legged",
+    "paschimottanasana": "Legs long, fold forward", "janu-sirsasana": "One leg long, {other} sole to the inner thigh, fold over the {side} leg",
+    "setu-bandha-sarvangasana": "Lie on the back, feet hip-width, lift the hips", "urdhva-dhanurasana": "Hands by the ears, press up",
+    "supta-padangusthasana": "Lie on the back, belt around the {side} foot", "supta-matsyendrasana": "Lie on the back, let the {side} knee cross",
+    "ananda-balasana": "Lie on the back, knees up, hold the feet", "savasana": "Lie down, let everything go",
+    "virabhadrasana-3": "Hinge forward, lift the {other} leg back", "natarajasana": "Catch the {other} foot behind, lean forward",
+    "ardha-chandrasana": "Hand down, lift the back leg, open to the side", "utthita-hasta-padangusthasana": "Belt around the {side} foot, lift the leg forward",
+    "garudasana": "Sit low, cross the {side} leg over, wrap the arms", "utthita-parsvakonasana": "Forearm to the front thigh, top arm over the ear",
+    "viparita-virabhadrasana": "Front palm up, reach up and back", "parivrtta-utkatasana": "Chair, hands to heart, twist to the {side}",
+    "malasana": "Feet wide, sink into a squat", "eka-pada-adho-mukha-svanasana": "Lift the {side} leg up and back", "utthan-pristhasana": "Both hands inside the {side} foot",
+    "uttana-shishosana": "Walk the hands forward, hips over the knees", "ustrasana": "Kneel up, hands to the lower back, lift the chest",
+    "eka-pada-rajakapotasana": "Bring the {side} knee forward behind the wrist, lower down", "hanumanasana": "Slide into the splits, books under the hands",
+    "salamba-bhujangasana": "Lie on the belly, forearms down", "dhanurasana": "Bend the knees, catch the ankles", "paripurna-navasana": "Sit, lean back, lift the feet",
+    "vasisthasana": "Roll onto the {other} hand, stack the feet", "ardha-pincha-mayurasana": "Forearms down, lift the hips", "dandasana": "Sit tall, legs long",
+    "baddha-konasana": "Sit, soles together", "ardha-matsyendrasana": "Sit tall, cross the {side} foot over, twist", "gomukhasana": "Sit, stack the knees, {side} on top",
+    "padmasana": "Sit, feet onto the thighs only if easy", "matsyasana": "Lie on the back, forearms under, lift the chest", "apanasana": "Lie on the back, hug the knees",
+    "viparita-karani": "Hips to the wall, legs up", "halasana": "From the shoulders, feet over the head", "salamba-sarvangasana": "Lift the legs, hands support the back",
+    "sirsasana": "Forearms down, crown down, walk in", "pincha-mayurasana": "Forearms down, kick up at the wall", "adho-mukha-vrksasana": "Hands down, kick up at the wall",
+    "utthita-tadasana": "Step the feet wide, arms out", "utkata-konasana": "Toes out, bend the knees, sit low", "indudalasana": "Palms together overhead, lean to the {other}",
+    "skandasana": "Sit into the {side} leg, other leg long", "parivrtta-anjaneyasana": "Hands to heart, elbow outside the {side} knee",
+  };
+
+  function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const FOCUS_TAGS = { hamstrings: ["hamstrings"], back: ["back"], hips: ["hips", "hipflex"], balance: ["balance"], core: ["core"] };
+  const DEEP = new Set(["ustrasana", "dhanurasana", "urdhva-dhanurasana"]);
+  const NEUTRAL = new Set(["balasana", "apanasana", "supta-matsyendrasana", "ardha-matsyendrasana", "adho-mukha-svanasana", "bharmanasana"]);
+  const FLOOR = new Set(["kneel", "prone", "supine", "seat"]);
+  const blockPoses = b => (b.steps || b.round || []).map(s => s[0]);
+
+  function connector(from, to) {
+    if (!from || from === to) return [];
+    if (B.CONNECT[from + ">" + to]) return B.CONNECT[from + ">" + to];
+    if (FLOOR.has(from) && FLOOR.has(to)) return [];
+    const a = from === "dog" ? [] : (B.CONNECT[from + ">dog"] || []);
+    const b = to === "dog" ? [] : (B.CONNECT["dog>" + to] || []);
+    return a.concat(b);
+  }
+
+  // expand block steps into raw steps for one side
+  function expand(steps, ctx, R) {
+    const out = [];
+    steps.forEach(([id, h, o]) => {
+      o = o || {};
+      if (o.opt != null && R() > o.opt) return;
+      const sided = BY[id].sides === 2;
+      const side = o.side || (o.lead ? ctx.lead : null) || (sided ? (ctx.side || "right") : null);
+      out.push({ id, side: sided ? side : null, hold: typeof h === "number" ? h : null, breath: typeof h === "string" ? h : null, challenge: !!o.challenge });
+    });
+    return out;
+  }
+  function runBlock(block, R, first) {
+    if (!block.sided) return expand(block.steps, {}, R);
+    const order = first === "left" ? ["left", "right"] : ["right", "left"];
+    let out = [];
+    order.forEach(side => {
+      out = out.concat(expand(block.steps, { side }, R));
+      if (block.between === "vinyasa") out = out.concat(expand(B.VINYASA, {}, R));
+    });
+    return out;
+  }
+
+  // ---------------- composition ----------------
+  function generate(opt) {
+    opt = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, seed: 1, challenges: {}, me: {}, history: [] }, opt);
+    const me = id => opt.me[id] || BY[id].me || "ok";
+    const slow = opt.style === "slow";
+    const cap = Math.min({ low: 1, medium: 2, high: 3 }[opt.energy], slow ? 2 : 3);
+    const ftags = [...new Set(opt.focus.flatMap(f => FOCUS_TAGS[f] || []))];
+    const hist = (opt.history || []).slice(-4);
+    const W = [1, 0.6, 0.35, 0.2];
+    const recency = id => hist.slice().reverse().reduce((a, h, i) => a + ((h.peak === id || h.warmup === id || h.sun === id || (h.modules || []).includes(id)) ? W[i] : 0), 0);
+    const loved = new Set(hist.flatMap(h => h.loved || []));
+    const hardPoses = new Set(hist.flatMap(h => h.hard || []));
+    const R = rng(opt.seed * 31 + 7);
+    const overlap = (a, b) => a.filter(x => b.includes(x)).length;
+    const usable = b => blockPoses(b).every(id => me(id) !== "new");
+
+    // 1. peak
+    const peaks = B.PEAKS.filter(p => p.int <= cap && me(p.pose) !== "new" && (me(p.pose) !== "hard" || p.thread) && usable(p) && !(p.place === "core" && opt.minutes === 30 && !opt.focus.includes("core")));
+    const peakScore = p => overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
+      + (cap === 1 && p.int === 1 ? 2 : 0) - recency(p.id) * 8 + R() * 4;
+    const peak = (peaks.length ? peaks : B.PEAKS.filter(p => p.id === "pk-triangle")).map(p => [peakScore(p), p]).sort((a, b) => b[0] - a[0])[0][1];
+
+    // 2. warm-up and sun salutation
+    const pickBest = (list, score) => list.map(x => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1];
+    const warm = pickBest(B.WARMUPS.filter(w => w.int <= Math.max(cap, 1) && usable(w)), w => overlap(w.works, ftags) + overlap(w.works, peak.needs) - recency(w.id) * 5 + R() * 3);
+    const suns = B.SUNS.filter(s => (s.int <= cap || (s.id === "sun-b" && cap >= 2 && opt.minutes >= 45)) && usable(s));
+    const sun = pickBest(suns, s => (s.id === "sun-a" ? 1 : 0) + ((slow || cap === 1) && s.slow ? 2.5 : 0) + overlap(s.works, peak.needs) * 0.5 - recency(s.id) * 5 + R() * 3);
+
+    // 3. rank modules: prepare the peak, match the focus, avoid recent ones, keep variety
+    const scoreMod = m => overlap(m.prepares, peak.needs) * 3 + overlap(m.prepares, ftags) * 2 - recency(m.id) * 5 + R() * 2.5
+      + blockPoses(m).filter(id => loved.has(id)).length * 0.5 - blockPoses(m).filter(id => hardPoses.has(id) && !opt.focus.includes("hamstrings")).length * 0.3;
+    const pool = B.MODULES.filter(m => m.int <= cap && usable(m) && !blockPoses(m).includes(peak.pose));
+    const ranked = kind => pool.filter(m => kind.includes(m.kind)).map(m => [scoreMod(m), m]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
+    function takeDiverse(list, n, already) {
+      const chosen = [], used = new Set(already.flatMap(blockPoses));
+      let rest = list.slice();
+      while (chosen.length < n && rest.length) {
+        rest = rest.map(m => [blockPoses(m).filter(id => used.has(id)).length, m]).sort((a, b) => a[0] - b[0] || rest.indexOf(a[1]) - rest.indexOf(b[1])).map(x => x[1]);
+        const m = rest.shift(); chosen.push(m); blockPoses(m).forEach(id => used.add(id));
+      }
+      return chosen;
+    }
+    const RANK = { standing: ranked(["standing"]), balance: ranked(["balance"]), core: ranked(["core"]), back: ranked(["back"]), finish: ranked(["hips", "cool"]).filter(m => m.from !== "stand") };
+
+    const defs = {
+      30: { rounds: 3, stand: 1, bal: 1, core: 0, back: 1, finish: 2 },
+      45: { rounds: 3, stand: 2, bal: 1, core: 1, back: 1, finish: 3 },
+      60: { rounds: 4, stand: 3, bal: 2, core: 1, back: 2, finish: 4 },
+    }[opt.minutes];
+    const D = Object.assign({}, defs);
+    if (opt.energy === "low") { D.stand = Math.max(0, D.stand - 1); D.core = 0; D.finish += 1; D.rounds = Math.max(1, D.rounds - 1); }
+    if (opt.energy === "high") { D.rounds += 1; D.core = Math.max(D.core, 1); }
+    if (opt.focus.includes("balance")) D.bal += 1;
+    if (opt.focus.includes("core")) D.core += 1;
+    if (sun.id === "sun-moon") D.rounds = Math.max(1, Math.round(D.rounds / 2));
+    if (sun.id === "sun-classic") D.rounds = Math.max(2, D.rounds + (D.rounds % 2)); // even: both sides lead equally
+
+    let best = null;
+    for (let dr = -1; dr <= 1; dr++) for (let ds = -1; ds <= 1; ds++) for (let df = -1; df <= 2; df++) for (let sc = 7; sc <= 18; sc++) {
+      const K = { rounds: Math.max(1, D.rounds + dr * (sun.id === "sun-classic" ? 2 : 1)), stand: Math.min(RANK.standing.length, Math.max(0, D.stand + ds)), bal: D.bal, core: D.core, back: D.back, finish: Math.max(1, D.finish + df), scale: sc / 10 };
+      const plan = build(K);
+      const cost = Math.abs(plan.totalSecs - opt.minutes * 60) + 50 * Math.abs(K.rounds - D.rounds) + 110 * Math.abs(K.stand - D.stand) + 60 * Math.abs(K.finish - D.finish) + 15 * Math.abs(sc - 10);
+      if (!best || cost < best.cost) best = Object.assign(plan, { cost });
+    }
+    return best;
+
+    function build(K) {
+      const R2 = rng(opt.seed * 131 + 3);
+      const raw = [];
+      let state = "seat", section = "";
+      const push = (steps, extra) => steps.forEach(s => raw.push(Object.assign({ section }, s, extra || {})));
+      const go = to => push(expand(connector(state, to), {}, R2));
+      const startSide = () => R2() < 0.3 ? "left" : "right";
+      const used = [];
+      function place(block, extra) { go(block.from); push(runBlock(block, R2, startSide()), extra); state = block.to; used.push(block.id); }
+
+      section = "Arrival"; push([{ id: "sukhasana", hold: opt.minutes >= 45 ? 12 : 8 }]);
+      section = "Warm-up"; place(warm);
+
+      section = sun.name.includes("Moon") ? "Moon Salutation" : "Sun Salutations";
+      const sunStart = raw.length;
+      go("stand");
+      const roundsStart = raw.length; let firstLen = 0;
+      const accCrow = opt.challenges.bakasana === true && peak.pose !== "bakasana";
+      for (let r = 0; r < K.rounds; r++) {
+        const lead = r % 2 === 0 ? "right" : "left";
+        let round = expand(sun.round, { lead }, R2);
+        if (r > 0 && round[0].id === "tadasana") round = round.slice(1);
+        if (r === 0) round.forEach(s => { if (s.id === "adho-mukha-svanasana" && s.hold) s.hold = 5; });
+        if (accCrow && r === K.rounds - 1 && sun.id !== "sun-moon") {
+          const i = round.findIndex(s => s.id === "phalakasana");
+          if (i > 0) round.splice(i, 0, { id: "bakasana", hold: 3, challenge: true });
+        }
+        push(round);
+        if (r === 0) firstLen = raw.length - roundsStart;
+      }
+      state = "stand";
+
+      // standing modules (gentle first), peak if it belongs here
+      const standing = takeDiverse(RANK.standing, K.stand, [peak]).sort((a, b) => a.int - b.int);
+      section = "Standing";
+      standing.forEach(m => place(m));
+      if (peak.place === "standing") { section = "Peak · " + peak.name; place(peak, { peak: true }); if (peak.counter) push(expand(peak.counter, {}, R2)); }
+
+      section = "Balance";
+      const bal = takeDiverse(RANK.balance, peak.place === "balance" ? Math.max(0, K.bal - 1) : K.bal, standing.concat([peak]));
+      bal.forEach(m => place(m));
+      if (peak.place === "balance") { section = "Peak · " + peak.name; place(peak, { peak: true }); if (peak.counter) push(expand(peak.counter, {}, R2)); }
+      const accHand = opt.challenges["adho-mukha-vrksasana"] === true;
+      if (accHand) { section = "Balance"; go("stand"); push([{ id: "uttanasana", hold: 1 }, { id: "adho-mukha-vrksasana", hold: 5, challenge: true }, { id: "balasana", hold: 3 }]); state = "kneel"; }
+
+      const core = takeDiverse(RANK.core, peak.place === "core" ? Math.max(0, K.core - 1) : K.core, []);
+      if (core.length || peak.place === "core") {
+        section = "Core";
+        core.forEach(m => place(m));
+        if (opt.challenges["pincha-mayurasana"] === true && (core.some(m => m.id === "c-dolphin") || peak.id === "pk-dolphin")) {
+          go("dog"); push([{ id: "ardha-pincha-mayurasana", hold: 2 }, { id: "pincha-mayurasana", hold: 5, challenge: true }, { id: "balasana", hold: 3 }]); state = "kneel";
+        }
+        if (peak.place === "core") { section = "Peak · " + peak.name; place(peak, { peak: true }); if (peak.counter) push(expand(peak.counter, {}, R2)); }
+      }
+
+      // backbends: belly, kneeling, then back; a floor peak sits in its group
+      section = "Backbends";
+      let back = takeDiverse(RANK.back, K.back, [peak]);
+      const wantBridge = peak.id === "pk-wheel" || opt.challenges["urdhva-dhanurasana"] === true;
+      if (wantBridge && !back.some(m => m.id === "u-bridge")) back = back.slice(0, Math.max(0, K.back - 1)).concat(B.MODULES.filter(m => m.id === "u-bridge"));
+      const rank = { prone: 0, kneel: 1, supine: 2 };
+      const group = back.concat(peak.place === "floor" && peak.from !== "dog" ? [peak] : []).sort((a, b) => (rank[a.from] ?? 1) - (rank[b.from] ?? 1) || (a === peak ? 1 : 0) - (b === peak ? 1 : 0));
+      let deep = false;
+      group.forEach(m => {
+        if (m === peak) { section = "Peak · " + peak.name; place(peak, { peak: true }); if (peak.counter) push(expand(peak.counter, {}, R2)); section = "Backbends"; }
+        else place(m);
+        if (m.deep || DEEP.has(m.pose)) deep = true;
+        if (m.id === "u-bridge" && opt.challenges["urdhva-dhanurasana"] === true && peak.id !== "pk-wheel") {
+          push([{ id: "urdhva-dhanurasana", hold: 4, challenge: true }, { id: "urdhva-dhanurasana", hold: 4, challenge: true }, { id: "apanasana", hold: 4 }]);
+        }
+      });
+      if (deep) { if (state === "supine") push([{ id: "apanasana", hold: 4 }]); else push([{ id: "balasana", hold: 4 }]); }
+
+      // hips, seated and lying finish
+      section = peak.place === "floor" && peak.from === "dog" ? "Hips" : "Cool-down";
+      if (peak.place === "floor" && peak.from === "dog") { section = "Peak · " + peak.name; place(peak, { peak: true }); if (peak.counter) push(expand(peak.counter, {}, R2)); }
+      let finish = takeDiverse(RANK.finish, K.finish, [peak].concat(back));
+      if (opt.focus.includes("hamstrings") && !finish.some(m => m.prepares.includes("hamstrings"))) finish = finish.slice(0, Math.max(0, K.finish - 1)).concat(RANK.finish.filter(m => m.prepares.includes("hamstrings")).slice(0, 1));
+      const yinish = slow || opt.energy === "low";
+      const frank = { dog: 0, seat: 1, supine: 2 };
+      finish.sort((a, b) => (frank[a.from] ?? 1) - (frank[b.from] ?? 1) || (a.prepares.includes("rest") ? 1 : 0) - (b.prepares.includes("rest") ? 1 : 0));
+      section = "Cool-down";
+      finish.forEach(m => {
+        const before = raw.length; place(m);
+        if (yinish) raw.slice(before).forEach(s => { const y = BY[s.id].yin; if (y && s.hold) s.secs = Math.min(y, opt.minutes === 30 ? 2 : 4) * 60; });
+      });
+      if (!finish.some(m => m.id === "u-twist") && !used.includes("u-twist")) place(B.MODULES.find(m => m.id === "u-twist"));
+      go("supine");
+
+      section = "Savasana";
+      push([{ id: "savasana", hold: 0 }]);
+      const meta = { peak: peak.id, peakPose: peak.pose, peakName: peak.name, warmup: warm.id, sun: sun.id, modules: used.filter(id => id !== peak.id && id !== warm.id),
+        sunName: sun.name, sunRounds: K.rounds, sunLead: roundsStart - sunStart, sunRoundLen: firstLen, sunAlt: !!sun.alt };
+      const plan = finalize(raw, opt, K.scale, me);
+      return Object.assign(plan, { meta, offers: offersFor(peak, used), why: whyText(peak, standing.concat(bal, core, back, finish), warm, sun) });
+    }
+
+    function offersFor(peak, used) {
+      const nOffers = { low: 0, medium: 2, high: 3 }[opt.energy];
+      const c = [];
+      if (peak.pose !== "bakasana" && me("bakasana") !== "new" && sun.id !== "sun-moon") c.push({ id: "bakasana", text: "Crow in the last sun salutation round" });
+      if (peak.id !== "pk-wheel" && me("urdhva-dhanurasana") !== "new") c.push({ id: "urdhva-dhanurasana", text: "Wheel after Bridge" });
+      if (opt.energy === "high" && opt.minutes >= 45 && me("pincha-mayurasana") !== "new" && (used.includes("c-dolphin") || peak.id === "pk-dolphin")) c.push({ id: "pincha-mayurasana", text: "Forearm Stand from Dolphin, at a wall" });
+      if (opt.energy === "high" && opt.minutes >= 45 && me("adho-mukha-vrksasana") !== "new") c.push({ id: "adho-mukha-vrksasana", text: "Handstand kick-ups at a wall after the balance poses" });
+      return c.slice(0, nOffers);
+    }
+  }
+
+  function whyText(peak, blocks, warm, sun) {
+    const prep = blocks.filter(b => b.prepares && !['cool', 'hips'].includes(b.kind) && b.prepares.some(t => peak.needs.includes(t))).map(b => b.name);
+    const uniq = [...new Set(prep)].slice(0, 3);
+    return `Built around ${peak.name}. ${uniq.length ? uniq.join(", ") + " prepare" + (uniq.length === 1 ? "s" : "") + " " : "Preparation for "}${peak.needs.join(", ")}. Warm-up: ${warm.name}, then ${sun.name}.`;
+  }
+
+  // timing: holds in breaths, flows on half a breath; Savasana takes the remaining time
+  function finalize(raw, opt, scale, me) {
+    me = me || (id => (opt.me && opt.me[id]) || BY[id].me || "ok");
+    const C = opt.cycle || 6, MOVE = C / 2 + 0.5, slow = opt.style === "slow";
+    const R3 = rng((opt.seed || 1) * 977 + 11);
+    const steps = raw.map(s => {
+      const out = { id: s.id, side: s.side || null, section: s.section || "", breath: s.breath || null, challenge: !!s.challenge, peak: !!s.peak, breaths: 0, secs: 0 };
+      if (s.breath) { out.secs = MOVE; return out; }
+      if (s.id === "savasana") return out;
+      const scaled = /Standing|Balance|Backbends|Cool-down|Hips|Core|Peak/.test(out.section) ? scale : 1;
+      if (s.secs) { out.secs = Math.round(s.secs * scaled / 15) * 15; out.breaths = Math.round(out.secs / C); return out; }
+      let b = (s.hold || BY[s.id].hold || 3) * scaled * (slow ? 1.35 : 1) * (me(s.id) === "hard" ? 1.3 : 1);
+      if (b >= 3 && R3() < 0.3) b += R3() < 0.5 ? -1 : 1;
+      out.breaths = Math.max(1, Math.min(12, Math.round(b))); out.secs = Math.round(out.breaths * C);
+      return out;
+    });
+    const used = steps.reduce((a, s) => a + s.secs, 0);
+    const minS = { 30: 180, 45: 240, 60: 300 }[opt.minutes] || 240, maxS = { 30: 300, 45: 420, 60: 540 }[opt.minutes] || 420;
+    const sav = steps.find(s => s.id === "savasana");
+    if (sav) sav.secs = Math.round(Math.max(minS, Math.min(maxS, opt.minutes * 60 - used)) / 30) * 30;
+    // hints
+    steps.forEach((s, i) => {
+      const prev = steps[i - 1]; if (!prev) return;
+      const h = HOW[prev.id + ">" + s.id] || (prev.id !== s.id ? TO[s.id] : null);
+      if (!h) return;
+      const side = s.side || prev.side || "right";
+      s.how = h.replace(/\{side\}/g, side).replace(/\{other\}/g, side === "right" ? "left" : "right");
+    });
+    const sections = [...new Set(steps.map(s => s.section))];
+    const props = [...new Set(steps.map(s => BY[s.id].prop).filter(Boolean))];
+    return { steps, sections, props, totalSecs: steps.reduce((a, s) => a + s.secs, 0) };
+  }
+
+  // ---------------- rules ----------------
+  function validate(steps, opt) {
+    const issues = [];
+    const me = id => (opt && opt.me && opt.me[id]) || (BY[id] && BY[id].me) || "ok";
+    steps.forEach(s => { if (!BY[s.id]) issues.push(`Unknown pose: ${s.id}`); });
+    const known = steps.filter(s => BY[s.id]);
+    const count = {};
+    known.forEach(s => { if (BY[s.id].sides === 2) { if (!s.side) issues.push(`${BY[s.id].en} needs a side`); else { count[s.id] = count[s.id] || { right: 0, left: 0 }; count[s.id][s.side]++; } } });
+    Object.entries(count).forEach(([id, c]) => { if (c.right !== c.left) issues.push(`${BY[id].en}: right ${c.right}× but left ${c.left}×`); });
+    let deepAt = -1;
+    known.forEach((s, i) => {
+      if (DEEP.has(s.id)) deepAt = i;
+      else if (deepAt >= 0 && NEUTRAL.has(s.id)) deepAt = -1;
+      else if (deepAt >= 0 && BY[s.id].cat === "forward fold") { issues.push(`${BY[s.id].en} right after a deep backbend, without a neutral pose between`); deepAt = -1; }
+      if (me(s.id) === "new" && !s.challenge) issues.push(`${BY[s.id].en} is untested for you`);
+    });
+    if (!known.length || known[known.length - 1].id !== "savasana") issues.push("Does not end in Savasana");
+    return { ok: !issues.length, issues };
+  }
+  function repair(raw, opt) {
+    const me = id => (opt && opt.me && opt.me[id]) || (BY[id] && BY[id].me) || "ok";
+    let out = raw.filter(s => BY[s.id] && (me(s.id) !== "new" || s.challenge));
+    // sides: a one-sided pose without a side becomes right; an unpaired run gets mirrored right after it
+    out.forEach(s => { if (BY[s.id].sides === 2 && !s.side) s.side = "right"; if (BY[s.id].sides !== 2) s.side = null; });
+    // an unpaired run of one-sided poses (e.g. Warrior II right, Triangle right) is mirrored as a whole right after the run
+    const fixed = [];
+    const balance = arr => { const c = {}; arr.forEach(x => { if (BY[x.id].sides === 2) { c[x.id] = c[x.id] || 0; c[x.id] += x.side === "right" ? 1 : -1; } }); return c; };
+    let i = 0;
+    while (i < out.length) {
+      const s = out[i];
+      if (BY[s.id].sides !== 2) { fixed.push(s); i++; continue; }
+      let j = i; while (j < out.length && BY[out[j].id].sides === 2 && out[j].side === s.side) j++;
+      const run = out.slice(i, j); run.forEach(x => fixed.push(x));
+      const rest = out.slice(j);
+      const after = balance(fixed.concat(rest));
+      const need = run.filter(x => after[x.id] !== 0);
+      if (need.length) {
+        const mirrored = need.map(x => Object.assign({}, x, { side: x.side === "right" ? "left" : "right" }));
+        const mb = balance(fixed.concat(mirrored, rest));
+        if (need.every(x => mb[x.id] === 0 || Math.abs(mb[x.id]) < Math.abs(after[x.id]))) mirrored.forEach(x => fixed.push(x));
+      }
+      i = j;
+    }
+    out = fixed;
+    // neutral pose after a deep backbend before any forward fold
+    const res = []; let deep = false;
+    out.forEach(s => {
+      if (deep && BY[s.id].cat === "forward fold") { res.push({ id: "apanasana", hold: 4, section: s.section }); deep = false; }
+      if (DEEP.has(s.id)) deep = true; else if (NEUTRAL.has(s.id)) deep = false;
+      res.push(s);
+    });
+    if (!res.length || res[res.length - 1].id !== "savasana") res.push({ id: "savasana", hold: 0, section: "Savasana" });
+    return res;
+  }
+
+  // a class written elsewhere (e.g. by Claude): { title, peak, sections: [{ name, steps: [{ id, side, breaths, breath }] }] }
+  function fromSpec(spec, opt) {
+    opt = Object.assign({ minutes: 30, cycle: 6, seed: 1, me: {} }, opt);
+    let raw = [];
+    (spec.sections || []).forEach(sec => (sec.steps || []).forEach(s => {
+      if (!s || !s.id) return;
+      raw.push({ id: String(s.id), side: s.side === "left" || s.side === "right" ? s.side : null, hold: typeof s.breaths === "number" ? s.breaths : null,
+        breath: s.breath === "in" || s.breath === "out" ? s.breath : null, section: String(sec.name || "Flow").slice(0, 40), peak: BY[s.id] && s.id === spec.peak });
+    }));
+    const dropped = raw.filter(s => !BY[s.id]).map(s => s.id);
+    raw = repair(raw, opt);
+    let best = null;
+    for (let sc = 5; sc <= 20; sc++) {
+      const plan = finalize(raw, opt, sc / 10);
+      const cost = Math.abs(plan.totalSecs - opt.minutes * 60) + 15 * Math.abs(sc - 10);
+      if (!best || cost < best.cost) best = Object.assign(plan, { cost });
+    }
+    const check = validate(best.steps, opt);
+    return Object.assign(best, { offers: [], meta: { peak: spec.peak ? "claude:" + spec.peak : "claude", peakPose: spec.peak || null, source: "claude", modules: [] },
+      why: (spec.title ? spec.title + ". " : "") + (spec.why || "Composed by Claude and checked against the sequencing rules."),
+      dropped, checks: check });
+  }
+
+  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, TO, HOW };
+  if (typeof module !== "undefined") module.exports = root.YogaComposer;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>
+(() => {
+  const E = window.PoseEngine, G = window.YogaComposer, POSES = window.YogaPoses.POSES;
+  const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
+  const $ = id => document.getElementById(id);
+  const CAT = { style: "cat" };
+  const fig = (pose, mirror) => mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, CAT)}</g>` : E.svgInner(pose, CAT);
+  const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+  const sideTxt = s => s === "right" ? "Right" : s === "left" ? "Left" : "";
+  const LEVEL = { 1: "Basic", 2: "Intermediate", 3: "Advanced" };
+  const holdTxt = st => st.breath ? (st.breath === "in" ? "inhale" : "exhale") : st.secs >= 90 ? mmss(st.secs) + " min" : `${st.breaths} breaths`;
+  const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+
+  // ---------- settings ----------
+  let S = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, sound: "bowls", volume: 60 }, store.get("matcat-settings", {}));
+  if (S.sound === "drone") S.sound = "bowls"; // the Om drone was removed
+  const saveS = () => store.set("matcat-settings", S);
+  function paintSeg() {
+    document.querySelectorAll(".seg[data-key]").forEach(seg => {
+      const k = seg.dataset.key;
+      seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", (seg.dataset.multi ? S[k].includes(b.dataset.v) : String(S[k]) === b.dataset.v) ? "true" : "false"));
+    });
+  }
+  document.querySelectorAll(".seg[data-key]").forEach(seg => seg.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const k = seg.dataset.key, v = b.dataset.v;
+    if (seg.dataset.multi) S[k] = S[k].includes(v) ? S[k].filter(x => x !== v) : S[k].concat(v);
+    else S[k] = (k === "minutes" || k === "cycle") ? Number(v) : v;
+    paintSeg(); saveS();
+  }));
+  paintSeg();
+  $("vol").value = S.volume;
+  $("vol").addEventListener("input", () => { S.volume = Number($("vol").value); saveS(); Sound.setVolume(); });
+  $("heroCat").innerHTML = fig(BY["sukhasana"].p);
+
+  const SCREENS = ["build", "preview", "live", "done", "library"];
+  function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); document.body.classList.toggle("is-live", id === "live"); try { window.scrollTo(0, 0); } catch (e) {} }
+
+  // ---------- stored data (ratings + practice log) ----------
+  let db = null, ME = store.get("matcat-ratings", {});
+  (async () => {
+    await null; // let the rest of the script set up first, also when there is no Claude viewer
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { db = null; }
+    if (!db) { renderLibrary(); return; }
+    try {
+      const snap = await db.collection("practices").orderBy("at", "desc").limit(6).get();
+      HIST = snap.docs.map(d => d.data()).filter(r => r && r.meta && r.meta.peak).reverse().map(r => Object.assign({}, r.meta, { loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] }));
+    } catch (e) {}
+    db.collection("ratings").onSnapshot(snap => {
+      const m = {}; snap.docs.forEach(d => { const v = d.data(); if (v && v.me) m[d.id] = v.me; });
+      ME = m; store.set("matcat-ratings", ME); renderLibrary();
+    }, () => {});
+  })();
+  async function rate(id, v) {
+    ME = Object.assign({}, ME, { [id]: v }); store.set("matcat-ratings", ME); renderLibrary();
+    if (db) { try { await db.doc("ratings/" + id).set({ me: v, at: new Date().toISOString() }); } catch (e) { $("libIntro").textContent = "Couldn't save that rating right now. It is kept on this device."; } }
+  }
+
+  // ---------- sound: synthesized singing bowls and an optional breath-paced drone ----------
+  const Sound = (() => {
+    let ac = null, master = null, verb = null, drone = null;
+    function ctx() {
+      if (ac) return ac;
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      master = ac.createGain(); master.connect(ac.destination);
+      // small generated room so the bowls ring out softly
+      const len = ac.sampleRate * 2.8, ir = ac.createBuffer(2, len, ac.sampleRate);
+      for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+      verb = ac.createConvolver(); verb.buffer = ir;
+      const wet = ac.createGain(); wet.gain.value = 0.35; verb.connect(wet).connect(master);
+      setVolume();
+      return ac;
+    }
+    function setVolume() { if (master) master.gain.value = S.sound === "off" ? 0 : Math.pow(S.volume / 100, 1.6); }
+    function bowl(f, strength, decay) {
+      if (S.sound === "off") return;
+      try {
+        const a = ctx(), t = a.currentTime;
+        const partials = [[1, 1, 1], [2.76, .5, .62], [5.4, .22, .4], [8.93, .09, .25]];
+        partials.forEach(([r, amp, dk]) => [-0.7, 0.7].forEach(det => {
+          const o = a.createOscillator(), g = a.createGain();
+          o.type = "sine"; o.frequency.value = f * r + det;
+          const peak = 0.11 * amp * strength, d = decay * dk;
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+          o.connect(g); g.connect(master); g.connect(verb); o.start(t); o.stop(t + d + 0.1);
+        }));
+      } catch (e) {}
+    }
+    function startDrone() {
+      return; // drone removed; kept off until a recorded soundscape replaces it
+      try {
+        const a = ctx(), out = a.createGain(), lp = a.createBiquadFilter(), bp = a.createBiquadFilter();
+        lp.type = "lowpass"; lp.frequency.value = 900; bp.type = "bandpass"; bp.frequency.value = 480; bp.Q.value = 0.9;
+        out.gain.value = 0; out.connect(master); out.connect(verb);
+        lp.connect(out); bp.connect(out);
+        const oscs = [[136.1, .5, "sine"], [136.4, .3, "triangle"], [272.2, .16, "sine"], [408.3, .06, "sine"], [68.05, .22, "sine"]].map(([f, g, type]) => {
+          const o = a.createOscillator(), gg = a.createGain(); o.type = type; o.frequency.value = f; gg.gain.value = g;
+          o.connect(gg); gg.connect(lp); gg.connect(bp); o.start(); return o;
+        });
+        drone = { out, oscs };
+      } catch (e) {}
+    }
+    function breathe(level) { if (drone) drone.out.gain.setTargetAtTime(0.05 + 0.1 * level, ac.currentTime, 0.25); }
+    function stopDrone() { if (!drone) return; const d = drone; drone = null; d.out.gain.setTargetAtTime(0, ac.currentTime, 0.8); setTimeout(() => d.oscs.forEach(o => { try { o.stop(); } catch (e) {} }), 4000); }
+    function resume() { try { ctx(); if (ac.state === "suspended") ac.resume(); setVolume(); } catch (e) {} }
+    return { bowl, startDrone, stopDrone, breathe, resume, setVolume };
+  })();
+  $("testSound").addEventListener("click", () => { Sound.resume(); Sound.bowl(174.6, 1, 7); setTimeout(() => Sound.bowl(523, .35, 3), 1800); });
+
+  // ---------- preview ----------
+  let plan = null, seed = Date.now() % 100000, challenges = {}, source = "composer";
+  let HIST = [];
+  function localHistory() { return store.get("matcat-log", []).map(r => Object.assign({}, r.meta || {}, { loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] })).filter(h => h.peak).slice(-6); }
+  function buildPlan() {
+    source = "composer";
+    plan = G.generate(Object.assign({}, S, { seed, challenges, me: ME, history: HIST.length ? HIST : localHistory() }));
+    renderPreview(); show("preview");
+  }
+  $("buildBtn").addEventListener("click", () => { challenges = {}; seed = (Date.now() + Math.floor(Math.random() * 1e6)) % 1000000; buildPlan(); });
+  $("shuffleBtn").addEventListener("click", () => { if (source === "claude") { surprise(); return; } seed = (seed * 7919 + 13) % 1000000; challenges = {}; buildPlan(); });
+  $("backBtn").addEventListener("click", () => show("build"));
+  $("againBtn").addEventListener("click", () => show("build"));
+
+  // ---------- surprise me: Claude writes a class, the same rules check and time it ----------
+  let sampleFn = null, sampleCtl = null;
+  (async () => {
+    try { sampleFn = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sampleFn = null; }
+    $("surpriseBtn").hidden = !sampleFn; $("surpriseNote").hidden = !sampleFn;
+  })();
+  function surprisePrompt() {
+    const mine = id => ME[id] || BY[id].me;
+    const lib = POSES.filter(p => mine(p.id) !== "new").map(p => `${p.id} | ${p.en} | ${p.cat} | ${p.sides === 2 ? "both sides" : "centre"} | level ${p.lvl} | for me: ${mine(p.id)}`).join("\n");
+    const hist = (HIST.length ? HIST : localHistory()).slice(-4).map(h => `${h.peakName || h.peak}${h.loved && h.loved.length ? " (loved: " + h.loved.join(", ") + ")" : ""}`).join("; ");
+    return `You are an experienced Vinyasa teacher writing one yoga class for Michael, to be guided live by an app.
+About Michael: very strong legs, good at strength, dynamic transitions, backbends, twists and balance. Hard for him: straight-leg hamstring work (forward folds, splits), deep hip "pretzel" poses, binds behind the back. Inversions are untested; use none unless listed as allowed.
+Today: ${S.minutes} minutes, style ${S.style === "slow" ? "slow flow" : "Vinyasa"}, energy ${S.energy}, focus ${S.focus.join(", ") || "none"}. Breath length ${S.cycle} s.
+Recent peaks (pick something different): ${hist || "none yet"}.
+
+Write a creative, well-sequenced class: arrival, warm-up, a sun salutation variation, standing work, balance, a peak pose with real preparation, backbends or core as fits, cool-down, Savasana. Both sides for every pose marked "both sides" (right then left, same holds). Put a neutral pose (Child's Pose, Knees to Chest or a twist) between a deep backbend and any forward fold. Hard-for-me poses: shorter, with props in mind. Flowing movements use "breath": "in" or "out" (one movement per half breath); holds use "breaths": 1–12. Aim for about ${Math.round(S.minutes * 60 / S.cycle * 0.8)} breaths in total before Savasana; the app fine-tunes the timing.
+
+Use ONLY these pose ids (id | name | type | sides | level | difficulty for Michael):
+${lib}
+
+Answer with JSON only, no prose, in exactly this shape:
+{"title": "short name for the class", "peak": "pose id of the peak", "why": "one sentence on the idea of the class",
+ "sections": [{"name": "Arrival", "steps": [{"id": "sukhasana", "breaths": 8}]}, {"name": "Warm-up", "steps": [{"id": "bitilasana", "breath": "in"}, {"id": "marjaryasana", "breath": "out"}]}, {"name": "Standing", "steps": [{"id": "virabhadrasana-2", "side": "right", "breaths": 5}, {"id": "virabhadrasana-2", "side": "left", "breaths": 5}]}]}`;
+  }
+  async function surprise() {
+    if (!sampleFn) return;
+    show("preview");
+    $("thinking").hidden = false; $("thinkingTxt").textContent = "Claude is composing your class…";
+    $("sections").innerHTML = ""; $("topCards").innerHTML = ""; $("sumTitle").textContent = "Surprise me"; $("sumMeta").textContent = ""; $("sumWhy").textContent = "";
+    $("startBtn").disabled = true; $("shuffleBtn").disabled = true;
+    sampleCtl = new AbortController();
+    try {
+      const spec = await sampleFn.json(surprisePrompt(), { signal: sampleCtl.signal, cache: false, onText: () => { $("thinkingTxt").textContent = "Claude is writing the sequence…"; } });
+      plan = G.fromSpec(spec, Object.assign({}, S, { me: ME, seed }));
+      if (!plan.steps.length || plan.steps.length < 8) throw { code: "empty" };
+      source = "claude"; challenges = {};
+      renderPreview();
+    } catch (e) {
+      const msg = { not_granted: "Claude wasn't allowed to answer, so here is a class from the app instead.", rate_limited: "Claude is busy right now, so here is a class from the app instead.", cancelled: "Stopped. Here is a class from the app instead." }[e && e.code] || "Claude's answer couldn't be used, so here is a class from the app instead.";
+      buildPlan(); $("sumWhy").textContent = msg + " " + $("sumWhy").textContent;
+    } finally {
+      $("thinking").hidden = true; $("startBtn").disabled = false; $("shuffleBtn").disabled = false; sampleCtl = null;
+    }
+  }
+  $("surpriseBtn").addEventListener("click", () => { challenges = {}; surprise(); });
+  $("stopBtn").addEventListener("click", () => { if (sampleCtl) sampleCtl.abort(); });
+
+  function chip(st) {
+    const p = BY[st.id];
+    return `<div class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${p.en}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></div>`;
+  }
+  function groupFlow(list) {
+    const out = [];
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i], n1 = list[i + 1], n2 = list[i + 2];
+      if (s.id === "phalakasana" && n1 && n1.id === "chaturanga" && n2 && n2.id === "urdhva-mukha-svanasana") {
+        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>Plank · Chaturanga · Up Dog</small></div>`); i += 2; continue;
+      }
+      if (n1 && list[i + 2] && list[i + 2].id === s.id && list[i + 3] && list[i + 3].id === n1.id && s.breath && n1.breath) {
+        let c = 0; while (list[i + 2 * c] && list[i + 2 * c].id === s.id && list[i + 2 * c + 1] && list[i + 2 * c + 1].id === n1.id) c++;
+        out.push(chip(s) + chip(n1) + `<span class="rounds">× ${c}</span>`); i += 2 * c - 1; continue;
+      }
+      out.push(chip(s));
+    }
+    return out.join("");
+  }
+  function groupSun(list) {
+    const m = plan.meta || {};
+    if (!m.sunRoundLen) return groupFlow(list);
+    const lead = list.slice(0, m.sunLead), round = list.slice(m.sunLead, m.sunLead + m.sunRoundLen);
+    let html = groupFlow(lead) + `<span class="note">${m.sunName}${m.sunAlt ? " · the leading leg alternates each round" : ""}</span>` + groupFlow(round) + `<span class="rounds">× ${m.sunRounds}</span>`;
+    if (list.some(s => s.challenge)) html += `<span class="note">Last round: Crow before stepping back to Plank.</span>`;
+    return html;
+  }
+  function renderPreview() {
+    $("sumTitle").textContent = (source === "claude" ? "By Claude · " : "") + `${S.minutes} min ${S.style === "slow" ? "slow flow" : "Vinyasa"}` + (plan.meta && plan.meta.peakName ? ` · ${plan.meta.peakName}` : "");
+    $("sumWhy").textContent = (plan.why || "") + (plan.dropped && plan.dropped.length ? ` Skipped unknown poses: ${plan.dropped.join(", ")}.` : "");
+    $("shuffleBtn").textContent = source === "claude" ? "Ask Claude again" : "Shuffle";
+    $("sumMeta").textContent = `${S.energy} energy${S.focus.length ? " · " + S.focus.join(", ") : ""} · ${S.cycle} s breath`;
+    let top = "";
+    plan.offers.forEach(o => {
+      const on = challenges[o.id] === true;
+      top += `<div class="card"><span class="label">Challenge offer</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${BY[o.id].en} · <i>${BY[o.id].sa}</i></b><span class="muted">${o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">Add it</button><button type="button" data-v="no" aria-pressed="${!on}">Not today</button></div></div></div></div>`;
+    });
+    if (plan.props.length) top += `<div class="card"><span class="label">Have ready</span><ul class="props">${plan.props.map(p => `<li>${p}</li>`).join("")}</ul></div>`;
+    $("topCards").innerHTML = top;
+    $("topCards").querySelectorAll("[data-offer]").forEach(seg => seg.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      challenges[seg.dataset.offer] = b.dataset.v === "yes"; buildPlan();
+    }));
+    $("sections").innerHTML = plan.sections.map(name => {
+      const list = plan.steps.filter(s => s.section === name);
+      const secs = list.reduce((a, s) => a + s.secs, 0);
+      return `<div class="sec"><div class="sec-head"><h3>${name}</h3><span class="muted">${mmss(secs)}</span></div><div class="strip">${(name === "Sun Salutations" || name === "Moon Salutation") && source !== "claude" ? groupSun(list) : groupFlow(list)}</div></div>`;
+    }).join("");
+  }
+
+  // ---------- full screen ----------
+  const fsOK = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+  $("fsBtn").hidden = !fsOK; $("fsStartWrap").hidden = !fsOK;
+  async function enterFS() {
+    if (!fsOK || document.fullscreenElement) return;
+    try { await document.documentElement.requestFullscreen({ navigationUI: "hide" }); } catch (e) { return; }
+    try { await screen.orientation.lock("landscape"); } catch (e) {}
+  }
+  function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+  document.addEventListener("fullscreenchange", () => { $("fsBtn").textContent = document.fullscreenElement ? "Exit full screen" : "Full screen"; });
+  $("fsBtn").addEventListener("click", () => document.fullscreenElement ? exitFS() : enterFS());
+
+  // ---------- screen on ----------
+  let lock = null;
+  const video = $("keepAwake");
+  function setWake(on, txt) { $("wake").dataset.on = on ? "1" : "0"; $("wakeTxt").textContent = txt; }
+  async function requestLock() {
+    if ("wakeLock" in navigator) {
+      try {
+        lock = await navigator.wakeLock.request("screen");
+        setWake(true, "screen on");
+        lock.addEventListener("release", () => { lock = null; if (running) setWake(false, "tap to keep the screen on"); });
+        return;
+      } catch (e) {}
+    }
+    try { await video.play(); setWake(true, "screen on"); } catch (e) { setWake(false, "screen may sleep"); }
+  }
+  function releaseLock() { if (lock) { lock.release().catch(() => {}); lock = null; } video.pause(); }
+  document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible" && !lock) requestLock(); });
+
+  // ---------- live ----------
+  let idx = 0, left = 0, running = false, paused = false, last = 0, shown = null, shownMirror = false, anim = 0, total = 0, startedAt = 0, phaseT = 0, quietTimer = 0;
+  const elapsedBefore = i => plan.steps.slice(0, i).reduce((a, s) => a + s.secs, 0);
+  function drawFig(pose, mirror) { $("lFig").innerHTML = fig(pose, mirror); }
+  function animateTo(pose, mirror) {
+    cancelAnimationFrame(anim);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!shown || reduce || mirror !== shownMirror) { drawFig(pose, mirror); shown = pose; shownMirror = mirror; return; }
+    const from = shown, t0 = performance.now(), dur = 800;
+    const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const step = now => { const t = Math.min(1, (now - t0) / dur); const p = E.lerp(from, pose, ease(t)); drawFig(p, mirror); shown = p; if (t < 1) anim = requestAnimationFrame(step); else shown = pose; };
+    shownMirror = mirror; anim = requestAnimationFrame(step);
+  }
+  function enter(i) {
+    if (i >= plan.steps.length) { finish(true); return; }
+    idx = Math.max(0, i);
+    const st = plan.steps[idx], p = BY[st.id], prev = plan.steps[idx - 1];
+    left = st.secs; phaseT = 0;
+    if (!prev || prev.section !== st.section) Sound.bowl(174.6, 1, 8);
+    else if (!st.breath && st.breaths >= 3 && st.id !== prev.id) Sound.bowl(523.3, .3, 3);
+    else if (!st.breath && st.id === prev.id) Sound.bowl(523.3, .2, 2.5);
+    $("lSect").textContent = st.section;
+    $("lSa").textContent = p.sa; $("lEn").textContent = p.en; $("lDe").textContent = p.de;
+    $("lCue").textContent = (st.challenge ? "Challenge · " : "") + (p.cue || "");
+    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? sideTxt(st.side) + " side" : "";
+    const bw = $("lBreath");
+    if (st.breath) { bw.dataset.b = st.breath; bw.textContent = st.breath === "in" ? "inhale" : "exhale"; } else { bw.dataset.b = ""; bw.textContent = ""; }
+    $("lDots").innerHTML = st.breath || st.breaths > 12 || !st.breaths ? "" : Array.from({ length: st.breaths }, () => "<i></i>").join("");
+    const nx = plan.steps[idx + 1];
+    if (nx) { $("nFig").innerHTML = fig(BY[nx.id].p, nx.side === "left"); $("nName").textContent = BY[nx.id].en + (nx.side ? " · " + sideTxt(nx.side) : ""); $("nHow").textContent = nx.how || BY[nx.id].sa; }
+    else { $("nFig").innerHTML = ""; $("nName").textContent = "End of practice"; $("nHow").textContent = ""; }
+    animateTo(p.p, st.side === "left");
+    paint();
+  }
+  // breath level 0..1: flow steps rise on the inhale and fall on the exhale; holds follow the breath cycle
+  function breathLevel(st) {
+    const sm = x => 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, Math.max(0, x)));
+    if (st.breath === "in") return sm(phaseT / st.secs);
+    if (st.breath === "out") return 1 - sm(phaseT / st.secs);
+    if (st.id === "savasana") return 0.35 + 0.1 * Math.sin(phaseT / 10 * 2 * Math.PI);
+    const c = S.cycle, x = (phaseT % c) / c;
+    return x < 0.5 ? sm(x * 2) : 1 - sm((x - 0.5) * 2);
+  }
+  function paint() {
+    const st = plan.steps[idx];
+    const done = elapsedBefore(idx) + (st.secs - left);
+    $("lBar").style.width = (100 * done / total).toFixed(2) + "%";
+    $("lTime").textContent = `${mmss(total - done)} left`;
+    $("lCount").textContent = !st.breath && (st.breaths > 12 || !st.breaths || st.secs >= 60) ? mmss(left) : "";
+    const dots = $("lDots").children;
+    if (dots.length) { const lit = Math.min(dots.length, Math.floor((st.secs - left) / (st.secs / dots.length)) + 1); for (let k = 0; k < dots.length; k++) dots[k].classList.toggle("on", k < lit); }
+    const lvl = breathLevel(st);
+    $("ring").style.transform = `scale(${(0.8 + 0.2 * lvl).toFixed(3)})`;
+    Sound.breathe(lvl);
+  }
+  function loop(now) {
+    if (!running) return;
+    const dt = Math.min(0.5, (now - last) / 1000); last = now;
+    if (!paused) { left -= dt; phaseT += dt; if (left <= 0) enter(idx + 1); else paint(); }
+    if (running) requestAnimationFrame(loop);
+  }
+  function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? "Resume" : "Pause"; }
+
+  // controls fade after a few quiet seconds; the first tap only brings them back
+  function wake() { $("live").classList.remove("quiet"); clearTimeout(quietTimer); quietTimer = setTimeout(() => { if (running && !paused) $("live").classList.add("quiet"); }, 4000); }
+  $("live").addEventListener("click", e => {
+    if (running && !lock && video.paused) requestLock();
+    if ($("live").classList.contains("quiet") && e.target.closest("button")) { e.preventDefault(); e.stopPropagation(); }
+    wake();
+  }, true);
+
+  $("startBtn").addEventListener("click", () => {
+    Sound.resume();
+    if ($("fsStart").checked) enterFS();
+    total = plan.totalSecs; running = true; shown = null; startedAt = Date.now();
+    setPaused(false); show("live"); requestLock(); Sound.startDrone(); wake();
+    enter(0); last = performance.now(); requestAnimationFrame(loop);
+  });
+  $("pauseBtn").addEventListener("click", () => { setPaused(!paused); wake(); });
+  $("skipBtn").addEventListener("click", () => enter(idx + 1));
+  $("prevBtn").addEventListener("click", () => enter(Math.max(0, (plan.steps[idx].secs - left) < 2 ? idx - 1 : idx)));
+  $("plusBtn").addEventListener("click", () => { left += 15; plan.steps[idx].secs += 15; total += 15; paint(); });
+  $("endBtn").addEventListener("click", () => finish(false));
+  document.addEventListener("keydown", e => { if (!running) return; if (e.code === "Space") { e.preventDefault(); setPaused(!paused); } if (e.code === "ArrowRight") enter(idx + 1); if (e.code === "ArrowLeft") enter(Math.max(0, idx - 1)); });
+
+  // ---------- done + feedback ----------
+  let session = null, fb = { overall: null, intensity: null, marks: {} };
+  function finish(complete) {
+    if (!running) return;
+    running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
+    if (complete) { Sound.bowl(174.6, 1, 9); setTimeout(() => Sound.bowl(174.6, .8, 9), 3500); setTimeout(() => Sound.bowl(174.6, .6, 10), 7000); }
+    exitFS();
+    const secs = Math.round((Date.now() - startedAt) / 1000);
+    session = { at: new Date().toISOString(), minutes: S.minutes, style: S.style, energy: S.energy, focus: S.focus, cycle: S.cycle, seed,
+      plannedSecs: plan.totalSecs, actualSecs: secs, completed: !!complete, reachedStep: idx + 1, totalSteps: plan.steps.length,
+      challenges: plan.offers.map(o => ({ id: o.id, accepted: challenges[o.id] === true })),
+      poses: [...new Set(plan.steps.map(s => s.id))], source, meta: plan.meta || null };
+    fb = { overall: null, intensity: null, marks: {} };
+    $("doneCat").innerHTML = fig(BY["savasana"].p);
+    $("doneMeta").textContent = `${mmss(secs)} on the mat${complete ? "" : " · ended early"}`;
+    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false;
+    paintFb();
+    show("done");
+  }
+  function paintFb() {
+    $("fbOverall").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(fb.overall) === b.dataset.v ? "true" : "false"));
+    $("fbIntensity").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.intensity === b.dataset.v ? "true" : "false"));
+    $("fbMarks").innerHTML = session.poses.filter(id => id !== "savasana").map(id => `<button type="button" data-id="${id}" data-m="${fb.marks[id] || ""}">${fb.marks[id] === "love" ? "♡ " : fb.marks[id] === "hard" ? "! " : ""}${BY[id].en}</button>`).join("");
+  }
+  $("fbOverall").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.overall = Number(b.dataset.v); paintFb(); });
+  $("fbIntensity").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.intensity = b.dataset.v; paintFb(); });
+  $("fbMarks").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const id = b.dataset.id; fb.marks[id] = fb.marks[id] === "love" ? "hard" : fb.marks[id] === "hard" ? undefined : "love"; paintFb(); });
+  $("fbSave").addEventListener("click", async () => {
+    const rec = Object.assign({}, session, { feedback: { overall: fb.overall, intensity: fb.intensity, note: $("fbNote").value.trim(),
+      loved: Object.keys(fb.marks).filter(k => fb.marks[k] === "love"), hard: Object.keys(fb.marks).filter(k => fb.marks[k] === "hard") } });
+    const log = store.get("matcat-log", []); log.push(rec); store.set("matcat-log", log.slice(-60));
+    if (!db) { $("fbStatus").textContent = "Saved on this device. Open the page inside Claude to keep the log where Claude can read it."; return; }
+    $("fbSave").disabled = true; $("fbStatus").textContent = "Saving…";
+    if (rec.meta && rec.meta.peak) HIST = HIST.concat([Object.assign({}, rec.meta, { loved: rec.feedback.loved, hard: rec.feedback.hard })]).slice(-6);
+    try { await db.collection("practices").add(rec); $("fbStatus").textContent = "Saved. The next practices will build on it."; }
+    catch (e) { $("fbSave").disabled = false; $("fbStatus").textContent = "Couldn't save right now. It is kept on this device; try Save again in a moment."; }
+  });
+
+  // ---------- library ----------
+  let fLevel = "all", fMe = "all";
+  $("libBtn").addEventListener("click", () => { renderLibrary(); show("library"); });
+  $("libBack").addEventListener("click", () => show("build"));
+  function segFilter(el, set) { el.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; set(b.dataset.v); el.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); renderLibrary(); }); }
+  segFilter($("fLevel"), v => fLevel = v); segFilter($("fMe"), v => fMe = v);
+  function renderLibrary() {
+    const rated = Object.keys(ME).length;
+    $("libIntro").textContent = `${POSES.length} poses. Levels are general; "for me" starts as a proposal from what you told me and becomes yours when you tap it (${rated} rated so far).`;
+    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "unrated" ? !ME[p.id] : (ME[p.id] || p.me) === fMe)));
+    $("libGrid").innerHTML = list.map(p => {
+      const mine = ME[p.id] || p.me;
+      return `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
+        <span class="s">${p.sa}</span><span class="e">${p.en}</span><span class="d">${p.de}</span>
+        <span class="lvl">${[1, 2, 3].map(k => `<i class="${k <= p.lvl ? "on" : ""}"></i>`).join("")} ${LEVEL[p.lvl]}</span>
+        <div class="mine" data-id="${p.id}">${["easy", "ok", "hard", "new"].map(v => `<button type="button" data-v="${v}" aria-pressed="${mine === v}" title="${v === "new" ? "Untested: kept out of practices, offered only as a safe step" : ""}">${v === "ok" ? "OK" : v === "new" ? "New" : v[0].toUpperCase() + v.slice(1)}</button>`).join("")}</div>
+        ${ME[p.id] ? "" : `<span class="proposed">proposed</span>`}</div>`;
+    }).join("") || `<p class="muted">No poses match these filters.</p>`;
+  }
+  $("libGrid").addEventListener("click", e => { const b = e.target.closest(".mine button"); if (!b) return; rate(b.parentElement.dataset.id, b.dataset.v); });
+  renderLibrary();
+})();
+</script>
+
+</body>
+</html>
