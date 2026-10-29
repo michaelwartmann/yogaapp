@@ -1,0 +1,692 @@
+<title>Mat Cat Yoga</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap">
+<style>
+/* Layout: dusk-quiet single page — build, preview, live (landscape: breathing circle + cat left, words right; stacks in portrait), done with feedback, and the pose library */
+:root {
+  --bg: #f1eef4;
+  --surface: #f9f7fb;
+  --ink: #2f2a3a;
+  --muted: #7b7389;
+  --line: #e0dbe7;
+  --accent: #d9823f;
+  --accent-ink: #ffffff;
+  --ring: #e3dcef;
+  --ring-edge: #d3c8e4;
+  --inhale: #5f8fb4;
+  --exhale: #b9764a;
+  --good: #4f9a72;
+  --hard: #c0663f;
+  --cat-shadow: #ddd6e6;
+  --strap: #8a7cc8;
+  --font-display: "Quicksand", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1a1722; --surface: #221e2c; --ink: #ece7f3; --muted: #a49cb2; --line: #332d40;
+    --accent: #f0a35e; --accent-ink: #24170c; --ring: #2a2538; --ring-edge: #3a3350;
+    --inhale: #8fbede; --exhale: #e2a57a; --good: #7cc79e; --hard: #ec9370; --cat-shadow: #2b2637; --strap: #b0a5ec;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1722; --surface: #221e2c; --ink: #ece7f3; --muted: #a49cb2; --line: #332d40;
+  --accent: #f0a35e; --accent-ink: #24170c; --ring: #2a2538; --ring-edge: #3a3350;
+  --inhale: #8fbede; --exhale: #e2a57a; --good: #7cc79e; --hard: #ec9370; --cat-shadow: #2b2637; --strap: #b0a5ec;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 28px;
+}
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+p { margin: 0; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.screen { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+.muted { color: var(--muted); }
+.label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 700; }
+.btn { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.big { padding: 13px 28px; font-size: 1.05rem; }
+.btn.quiet { border-color: transparent; color: var(--muted); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 7px 15px; font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+input[type="range"] { accent-color: var(--accent); width: min(260px, 100%); }
+
+/* build */
+.hero { display: flex; align-items: center; gap: 18px; }
+.hero .halo { position: relative; width: 140px; flex: none; }
+.hero .halo::before { content: ""; position: absolute; inset: 8% 6% 14%; border-radius: 50%; background: var(--ring); }
+.hero svg { position: relative; width: 100%; height: auto; aspect-ratio: 260 / 230; display: block; }
+.hero h1 { font-size: clamp(1.7rem, 6vw, 2.3rem); }
+.form { display: grid; gap: 20px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.links { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* preview */
+.summary h2 { font-size: 1.8rem; }
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.card { background: var(--surface); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.offer { display: flex; align-items: center; gap: 12px; }
+.offer svg { width: 76px; flex: none; height: auto; aspect-ratio: 260 / 230; }
+.props { margin: 0; padding-left: 1.1em; }
+.sec { display: flex; flex-direction: column; gap: 10px; }
+.sec-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.sec-head h3 { font-size: 1.2rem; }
+.strip { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 88px; background: var(--surface); border-radius: 14px; padding: 4px 4px 8px; text-align: center; }
+.chip svg { width: 80px; height: auto; aspect-ratio: 260 / 230; }
+.chip b { font-size: 0.72rem; line-height: 1.15; font-weight: 700; }
+.chip small { font-size: 0.66rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip.flowy { justify-content: center; min-height: 104px; border: 1px dashed var(--line); background: transparent; }
+.chip.challenge { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.chip.peak { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.why { max-width: 70ch; }
+.thinking { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 24px 0; }
+.mine button[aria-pressed="true"][data-v="new"] { background: var(--inhale); border-color: var(--inhale); color: var(--bg); }
+.rounds { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); padding: 0 8px; }
+.note { font-size: 0.85rem; color: var(--muted); flex-basis: 100%; }
+.startbar { position: sticky; bottom: 0; background: var(--bg); padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--line); }
+
+/* live: one fixed screen, nothing scrolls; rows = top bar, progress, stage + words, controls */
+body.is-live { overflow: hidden; }
+#live { position: fixed; inset: 0; z-index: 5; max-width: none; margin: 0; background: var(--bg);
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: clamp(4px, 1.4dvh, 10px);
+  padding: max(8px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.topbar { display: flex; align-items: center; gap: 12px; font-size: 0.86rem; color: var(--muted); min-height: 28px; min-width: 0; }
+.topbar .sect { font-family: var(--font-display); font-size: 1rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.topbar .time { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.topbar .btn { padding: 4px 10px; font-size: 0.82rem; white-space: nowrap; }
+.wake { display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; white-space: nowrap; }
+.wake i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
+.wake[data-on="1"] i { background: var(--good); }
+.wake[data-on="0"] i { background: var(--hard); }
+.bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar span { display: block; height: 100%; width: 0; background: var(--accent); opacity: .7; }
+.livegrid { min-height: 0; height: 100%; display: grid; gap: clamp(8px, 2.5vw, 22px); grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); align-items: center; }
+.stage { position: relative; min-width: 0; min-height: 0; height: 100%; display: grid; place-items: center; }
+.stage .ring { position: absolute; height: 82%; max-width: 92%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, var(--ring) 58%, transparent 71%); box-shadow: 0 0 0 1px var(--ring-edge); transform: scale(.86); will-change: transform; top: 50%; left: 50%; translate: -50% -52%; }
+.stage svg { position: relative; height: 100%; max-height: 100%; width: auto; max-width: 100%; aspect-ratio: 260 / 230; display: block; }
+.side-badge { position: absolute; top: 0; left: 0; border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: 0.78rem; color: var(--muted); background: var(--bg); }
+.panel { display: flex; flex-direction: column; justify-content: center; gap: clamp(4px, 1.8dvh, 14px); min-width: 0; min-height: 0; max-height: 100%; overflow: hidden; }
+.sa { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.25rem, min(4.2vw, 8dvh), 2.8rem); line-height: 1.08; overflow-wrap: anywhere; }
+.en { font-weight: 600; font-size: clamp(0.95rem, min(2.2vw, 4.4dvh), 1.25rem); margin-top: 2px; }
+.de { color: var(--muted); font-size: clamp(0.85rem, min(1.9vw, 3.8dvh), 1rem); }
+.cue { color: var(--muted); font-size: clamp(0.85rem, min(1.9vw, 3.8dvh), 0.98rem); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.breathbox { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-height: 1.8rem; }
+.breathword { font-family: var(--font-display); font-size: clamp(1.15rem, min(3.4vw, 7dvh), 2rem); letter-spacing: 0.04em; }
+.breathword[data-b="in"] { color: var(--inhale); }
+.breathword[data-b="out"] { color: var(--exhale); }
+.dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--muted); opacity: .6; }
+.dots i.on { background: var(--accent); border-color: var(--accent); opacity: 1; }
+.count { font-variant-numeric: tabular-nums; font-family: var(--font-display); font-size: clamp(1.05rem, 5dvh, 1.4rem); color: var(--muted); }
+.next { display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: clamp(4px, 1.4dvh, 10px); min-width: 0; }
+.next svg { width: clamp(44px, 14dvh, 78px); flex: none; height: auto; aspect-ratio: 260 / 230; opacity: .85; }
+.next .t { display: flex; flex-direction: column; min-width: 0; }
+.next .t b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.howline { font-size: 0.86rem; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.controls { display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap; transition: opacity .6s; min-width: 0; }
+.controls .btn { padding: clamp(6px, 1.6dvh, 11px) clamp(10px, 2.6vw, 18px); white-space: nowrap; flex: 0 1 auto; min-width: 0; }
+#pauseBtn { min-width: 96px; }
+#live.quiet .controls, #live.quiet .topbar .btn { opacity: .12; }
+@media (max-height: 430px) { .cue, .howline { -webkit-line-clamp: 1; } .de { display: none; } .wake span { display: none; } }
+@media (orientation: portrait) {
+  .livegrid { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; align-items: stretch; }
+  .panel { justify-content: flex-start; }
+}
+@media (orientation: portrait) and (max-width: 520px) { .sa { font-size: clamp(1.5rem, 7.5vw, 2.4rem); } .wake span { display: none; } }
+@media (max-width: 420px) { .controls { gap: 6px; } .controls .btn { padding-inline: 10px; font-size: .9rem; } #pauseBtn { min-width: 84px; } #plusBtn { display: none; } }
+
+/* done */
+.done { align-items: center; text-align: center; }
+.done .catwrap { width: min(320px, 85%); }
+.done svg { width: 100%; height: auto; aspect-ratio: 260 / 230; }
+.fb { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 18px; text-align: left; }
+.fb textarea { width: 100%; min-height: 84px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 10px 12px; resize: vertical; }
+.marks { display: flex; flex-wrap: wrap; gap: 6px; }
+.marks button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 12px; font-size: 0.86rem; }
+.marks button[data-m="love"] { border-color: var(--good); color: var(--good); }
+.marks button[data-m="hard"] { border-color: var(--hard); color: var(--hard); }
+.status { font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
+
+/* library */
+.lib-tools { display: flex; flex-direction: column; gap: 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.pcard { background: var(--surface); border-radius: 18px; padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pcard svg { width: 100%; height: auto; aspect-ratio: 260 / 230; }
+.pcard .s { font-family: var(--font-display); font-weight: 500; font-size: 1.02rem; line-height: 1.2; }
+.pcard .e { font-weight: 700; font-size: 0.86rem; }
+.pcard .d { color: var(--muted); font-size: 0.84rem; }
+.lvl { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.lvl i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.lvl i.on { background: var(--muted); }
+.mine { display: flex; gap: 4px; margin-top: 6px; }
+.mine button { flex: 1; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 4px 0; font-size: 0.76rem; font-weight: 600; }
+.mine button[aria-pressed="true"][data-v="easy"] { background: var(--good); border-color: var(--good); color: var(--bg); }
+.mine button[aria-pressed="true"][data-v="ok"] { background: var(--muted); border-color: var(--muted); color: var(--bg); }
+.mine button[aria-pressed="true"][data-v="hard"] { background: var(--hard); border-color: var(--hard); color: var(--bg); }
+.proposed { font-size: 0.7rem; color: var(--muted); font-style: italic; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stage .ring { transform: scale(.93) !important; } }
+</style>
+
+<section class="screen" id="build">
+  <div class="hero">
+    <div class="halo"><svg id="heroCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
+    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <h1>Today's practice</h1>
+      <p class="muted">Choose the time and how you feel.</p>
+    </div>
+  </div>
+  <div class="form">
+    <div class="field"><span class="label">Time</span><div class="seg" data-key="minutes"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
+    <div class="field"><span class="label">Style</span><div class="seg" data-key="style"><button type="button" data-v="vinyasa">Vinyasa</button><button type="button" data-v="slow">Slow flow</button></div></div>
+    <div class="field"><span class="label">Energy</span><div class="seg" data-key="energy"><button type="button" data-v="low">Low</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="high">High</button></div></div>
+    <div class="field"><span class="label">Focus</span><div class="seg" data-key="focus" data-multi="1"><button type="button" data-v="hamstrings">Hamstrings</button><button type="button" data-v="back">Back</button><button type="button" data-v="hips">Hips</button><button type="button" data-v="balance">Balance</button><button type="button" data-v="core">Core</button></div></div>
+    <div class="field"><span class="label">Breath length</span><div class="seg" data-key="cycle"><button type="button" data-v="5">5 s</button><button type="button" data-v="6">6 s</button><button type="button" data-v="7">7 s</button></div></div>
+    <div class="field"><span class="label">Sound</span><div class="seg" data-key="sound"><button type="button" data-v="bowls">Bowls</button><button type="button" data-v="off">Silent</button></div>
+      <label class="row muted" for="vol" style="font-size:.88rem">Volume <input type="range" id="vol" min="0" max="100" step="5"> <button class="btn quiet" id="testSound" type="button">Listen</button></label>
+    </div>
+    <div class="row"><button class="btn primary big" id="buildBtn" type="button">Build practice</button><button class="btn big" id="surpriseBtn" type="button" hidden>Surprise me</button><button class="btn" id="libBtn" type="button">Pose library</button></div>
+    <p class="muted" id="surpriseNote" style="font-size:.88rem" hidden>Surprise me asks Claude to write a class just for you. It takes about half a minute and uses your Claude account.</p>
+  </div>
+</section>
+
+<section class="screen" id="preview" hidden>
+  <div class="summary" style="display:flex;flex-direction:column;gap:4px">
+    <h2 id="sumTitle"></h2>
+    <span class="muted" id="sumMeta"></span>
+    <p class="why" id="sumWhy"></p>
+  </div>
+  <div class="thinking" id="thinking" hidden><p class="muted" id="thinkingTxt">Claude is composing your class…</p><button class="btn" id="stopBtn" type="button">Stop</button></div>
+  <div class="cards" id="topCards"></div>
+  <div id="sections" style="display:flex;flex-direction:column;gap:26px"></div>
+  <div class="startbar">
+    <button class="btn primary big" id="startBtn" type="button">Begin</button>
+    <label class="row muted" for="fsStart" id="fsStartWrap" style="font-size:.9rem"><input type="checkbox" id="fsStart" checked> Full screen</label>
+    <button class="btn" id="shuffleBtn" type="button">Shuffle</button>
+    <button class="btn quiet" id="backBtn" type="button">Settings</button>
+  </div>
+</section>
+
+<section class="screen" id="live" hidden>
+  <div class="topbar">
+    <span class="sect" id="lSect"></span>
+    <span class="wake" id="wake" data-on=""><i></i><span id="wakeTxt"></span></span>
+    <span class="time" id="lTime"></span>
+    <button class="btn quiet" id="fsBtn" type="button" hidden>Full screen</button>
+  </div>
+  <div class="bar"><span id="lBar"></span></div>
+  <div class="livegrid">
+    <div class="stage">
+      <div class="ring" id="ring"></div>
+      <svg id="lFig" viewBox="0 0 260 230" role="img" aria-label="Current pose"></svg>
+      <span class="side-badge" id="lSide" hidden></span>
+    </div>
+    <div class="panel">
+      <div aria-live="polite">
+        <div class="sa" id="lSa"></div>
+        <div class="en" id="lEn"></div>
+        <div class="de" id="lDe"></div>
+      </div>
+      <p class="cue" id="lCue"></p>
+      <div class="breathbox">
+        <span class="breathword" id="lBreath"></span>
+        <div class="dots" id="lDots"></div>
+        <span class="count" id="lCount"></span>
+      </div>
+      <div class="next">
+        <svg id="nFig" viewBox="0 0 260 230" aria-hidden="true"></svg>
+        <div class="t"><span class="label">Next</span><b id="nName"></b><span class="howline" id="nHow"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <button class="btn" id="prevBtn" type="button">Back</button>
+    <button class="btn primary" id="pauseBtn" type="button">Pause</button>
+    <button class="btn" id="skipBtn" type="button">Skip</button>
+    <button class="btn" id="plusBtn" type="button">+15 s</button>
+    <button class="btn quiet" id="endBtn" type="button">End</button>
+  </div>
+  <video id="keepAwake" muted playsinline loop preload="auto" style="position:absolute;width:1px;height:1px;opacity:.01;pointer-events:none" aria-hidden="true">
+    <source src="__WEBM__" type="video/webm"><source src="__MP4__" type="video/mp4">
+  </video>
+</section>
+
+<section class="screen done" id="done" hidden>
+  <div class="catwrap"><svg id="doneCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
+  <h2 style="font-size:2.1rem">Namaste</h2>
+  <p class="muted" id="doneMeta"></p>
+  <div class="fb">
+    <div class="field"><span class="label">How was it</span><div class="seg" id="fbOverall"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button></div></div>
+    <div class="field"><span class="label">Intensity</span><div class="seg" id="fbIntensity"><button type="button" data-v="too easy">Too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too much">Too much</button></div></div>
+    <div class="field"><span class="label">Poses · tap once for loved, twice for hard</span><div class="marks" id="fbMarks"></div></div>
+    <div class="field"><label class="label" for="fbNote">Notes</label><textarea id="fbNote" placeholder="What felt good, what was missing, what to change"></textarea></div>
+    <div class="row"><button class="btn primary big" id="fbSave" type="button">Save</button><button class="btn quiet" id="againBtn" type="button">Build another</button></div>
+    <p class="status" id="fbStatus" aria-live="polite"></p>
+  </div>
+</section>
+
+<section class="screen" id="library" hidden>
+  <div class="row" style="justify-content:space-between">
+    <h2 style="font-size:1.8rem">Pose library</h2>
+    <button class="btn" id="libBack" type="button">Done</button>
+  </div>
+  <p class="muted" id="libIntro"></p>
+  <div class="lib-tools">
+    <div class="seg" id="fLevel"><button type="button" data-v="all" aria-pressed="true">All levels</button><button type="button" data-v="1">Basic</button><button type="button" data-v="2">Intermediate</button><button type="button" data-v="3">Advanced</button></div>
+    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="easy">Easy for me</button><button type="button" data-v="ok">OK for me</button><button type="button" data-v="hard">Hard for me</button><button type="button" data-v="new">Untested</button><button type="button" data-v="unrated">Not yet rated</button></div>
+  </div>
+  <div class="grid" id="libGrid"></div>
+</section>
+
+<script>/*ENGINE*/</script>
+<script>/*POSES*/</script>
+<script>/*GENERATOR*/</script>
+<script>/*BLOCKS*/</script>
+<script>/*COMPOSER*/</script>
+<script>
+(() => {
+  const E = window.PoseEngine, G = window.YogaComposer, POSES = window.YogaPoses.POSES;
+  const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
+  const $ = id => document.getElementById(id);
+  const CAT = { style: "cat" };
+  const fig = (pose, mirror) => mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, CAT)}</g>` : E.svgInner(pose, CAT);
+  const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+  const sideTxt = s => s === "right" ? "Right" : s === "left" ? "Left" : "";
+  const LEVEL = { 1: "Basic", 2: "Intermediate", 3: "Advanced" };
+  const holdTxt = st => st.breath ? (st.breath === "in" ? "inhale" : "exhale") : st.secs >= 90 ? mmss(st.secs) + " min" : `${st.breaths} breaths`;
+  const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+
+  // ---------- settings ----------
+  let S = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, sound: "bowls", volume: 60 }, store.get("matcat-settings", {}));
+  if (S.sound === "drone") S.sound = "bowls"; // the Om drone was removed
+  const saveS = () => store.set("matcat-settings", S);
+  function paintSeg() {
+    document.querySelectorAll(".seg[data-key]").forEach(seg => {
+      const k = seg.dataset.key;
+      seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", (seg.dataset.multi ? S[k].includes(b.dataset.v) : String(S[k]) === b.dataset.v) ? "true" : "false"));
+    });
+  }
+  document.querySelectorAll(".seg[data-key]").forEach(seg => seg.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const k = seg.dataset.key, v = b.dataset.v;
+    if (seg.dataset.multi) S[k] = S[k].includes(v) ? S[k].filter(x => x !== v) : S[k].concat(v);
+    else S[k] = (k === "minutes" || k === "cycle") ? Number(v) : v;
+    paintSeg(); saveS();
+  }));
+  paintSeg();
+  $("vol").value = S.volume;
+  $("vol").addEventListener("input", () => { S.volume = Number($("vol").value); saveS(); Sound.setVolume(); });
+  $("heroCat").innerHTML = fig(BY["sukhasana"].p);
+
+  const SCREENS = ["build", "preview", "live", "done", "library"];
+  function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); document.body.classList.toggle("is-live", id === "live"); try { window.scrollTo(0, 0); } catch (e) {} }
+
+  // ---------- stored data (ratings + practice log) ----------
+  let db = null, ME = store.get("matcat-ratings", {});
+  (async () => {
+    await null; // let the rest of the script set up first, also when there is no Claude viewer
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { db = null; }
+    if (!db) { renderLibrary(); return; }
+    try {
+      const snap = await db.collection("practices").orderBy("at", "desc").limit(6).get();
+      HIST = snap.docs.map(d => d.data()).filter(r => r && r.meta && r.meta.peak).reverse().map(r => Object.assign({}, r.meta, { loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] }));
+    } catch (e) {}
+    db.collection("ratings").onSnapshot(snap => {
+      const m = {}; snap.docs.forEach(d => { const v = d.data(); if (v && v.me) m[d.id] = v.me; });
+      ME = m; store.set("matcat-ratings", ME); renderLibrary();
+    }, () => {});
+  })();
+  async function rate(id, v) {
+    ME = Object.assign({}, ME, { [id]: v }); store.set("matcat-ratings", ME); renderLibrary();
+    if (db) { try { await db.doc("ratings/" + id).set({ me: v, at: new Date().toISOString() }); } catch (e) { $("libIntro").textContent = "Couldn't save that rating right now. It is kept on this device."; } }
+  }
+
+  // ---------- sound: synthesized singing bowls and an optional breath-paced drone ----------
+  const Sound = (() => {
+    let ac = null, master = null, verb = null, drone = null;
+    function ctx() {
+      if (ac) return ac;
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      master = ac.createGain(); master.connect(ac.destination);
+      // small generated room so the bowls ring out softly
+      const len = ac.sampleRate * 2.8, ir = ac.createBuffer(2, len, ac.sampleRate);
+      for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+      verb = ac.createConvolver(); verb.buffer = ir;
+      const wet = ac.createGain(); wet.gain.value = 0.35; verb.connect(wet).connect(master);
+      setVolume();
+      return ac;
+    }
+    function setVolume() { if (master) master.gain.value = S.sound === "off" ? 0 : Math.pow(S.volume / 100, 1.6); }
+    function bowl(f, strength, decay) {
+      if (S.sound === "off") return;
+      try {
+        const a = ctx(), t = a.currentTime;
+        const partials = [[1, 1, 1], [2.76, .5, .62], [5.4, .22, .4], [8.93, .09, .25]];
+        partials.forEach(([r, amp, dk]) => [-0.7, 0.7].forEach(det => {
+          const o = a.createOscillator(), g = a.createGain();
+          o.type = "sine"; o.frequency.value = f * r + det;
+          const peak = 0.11 * amp * strength, d = decay * dk;
+          g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+          o.connect(g); g.connect(master); g.connect(verb); o.start(t); o.stop(t + d + 0.1);
+        }));
+      } catch (e) {}
+    }
+    function startDrone() {
+      return; // drone removed; kept off until a recorded soundscape replaces it
+      try {
+        const a = ctx(), out = a.createGain(), lp = a.createBiquadFilter(), bp = a.createBiquadFilter();
+        lp.type = "lowpass"; lp.frequency.value = 900; bp.type = "bandpass"; bp.frequency.value = 480; bp.Q.value = 0.9;
+        out.gain.value = 0; out.connect(master); out.connect(verb);
+        lp.connect(out); bp.connect(out);
+        const oscs = [[136.1, .5, "sine"], [136.4, .3, "triangle"], [272.2, .16, "sine"], [408.3, .06, "sine"], [68.05, .22, "sine"]].map(([f, g, type]) => {
+          const o = a.createOscillator(), gg = a.createGain(); o.type = type; o.frequency.value = f; gg.gain.value = g;
+          o.connect(gg); gg.connect(lp); gg.connect(bp); o.start(); return o;
+        });
+        drone = { out, oscs };
+      } catch (e) {}
+    }
+    function breathe(level) { if (drone) drone.out.gain.setTargetAtTime(0.05 + 0.1 * level, ac.currentTime, 0.25); }
+    function stopDrone() { if (!drone) return; const d = drone; drone = null; d.out.gain.setTargetAtTime(0, ac.currentTime, 0.8); setTimeout(() => d.oscs.forEach(o => { try { o.stop(); } catch (e) {} }), 4000); }
+    function resume() { try { ctx(); if (ac.state === "suspended") ac.resume(); setVolume(); } catch (e) {} }
+    return { bowl, startDrone, stopDrone, breathe, resume, setVolume };
+  })();
+  $("testSound").addEventListener("click", () => { Sound.resume(); Sound.bowl(174.6, 1, 7); setTimeout(() => Sound.bowl(523, .35, 3), 1800); });
+
+  // ---------- preview ----------
+  let plan = null, seed = Date.now() % 100000, challenges = {}, source = "composer";
+  let HIST = [];
+  function localHistory() { return store.get("matcat-log", []).map(r => Object.assign({}, r.meta || {}, { loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] })).filter(h => h.peak).slice(-6); }
+  function buildPlan() {
+    source = "composer";
+    plan = G.generate(Object.assign({}, S, { seed, challenges, me: ME, history: HIST.length ? HIST : localHistory() }));
+    renderPreview(); show("preview");
+  }
+  $("buildBtn").addEventListener("click", () => { challenges = {}; seed = (Date.now() + Math.floor(Math.random() * 1e6)) % 1000000; buildPlan(); });
+  $("shuffleBtn").addEventListener("click", () => { if (source === "claude") { surprise(); return; } seed = (seed * 7919 + 13) % 1000000; challenges = {}; buildPlan(); });
+  $("backBtn").addEventListener("click", () => show("build"));
+  $("againBtn").addEventListener("click", () => show("build"));
+
+  // ---------- surprise me: Claude writes a class, the same rules check and time it ----------
+  let sampleFn = null, sampleCtl = null;
+  (async () => {
+    try { sampleFn = window.claude && window.claude.use ? await window.claude.use("sample") : null; } catch (e) { sampleFn = null; }
+    $("surpriseBtn").hidden = !sampleFn; $("surpriseNote").hidden = !sampleFn;
+  })();
+  function surprisePrompt() {
+    const mine = id => ME[id] || BY[id].me;
+    const lib = POSES.filter(p => mine(p.id) !== "new").map(p => `${p.id} | ${p.en} | ${p.cat} | ${p.sides === 2 ? "both sides" : "centre"} | level ${p.lvl} | for me: ${mine(p.id)}`).join("\n");
+    const hist = (HIST.length ? HIST : localHistory()).slice(-4).map(h => `${h.peakName || h.peak}${h.loved && h.loved.length ? " (loved: " + h.loved.join(", ") + ")" : ""}`).join("; ");
+    return `You are an experienced Vinyasa teacher writing one yoga class for Michael, to be guided live by an app.
+About Michael: very strong legs, good at strength, dynamic transitions, backbends, twists and balance. Hard for him: straight-leg hamstring work (forward folds, splits), deep hip "pretzel" poses, binds behind the back. Inversions are untested; use none unless listed as allowed.
+Today: ${S.minutes} minutes, style ${S.style === "slow" ? "slow flow" : "Vinyasa"}, energy ${S.energy}, focus ${S.focus.join(", ") || "none"}. Breath length ${S.cycle} s.
+Recent peaks (pick something different): ${hist || "none yet"}.
+
+Write a creative, well-sequenced class: arrival, warm-up, a sun salutation variation, standing work, balance, a peak pose with real preparation, backbends or core as fits, cool-down, Savasana. Both sides for every pose marked "both sides" (right then left, same holds). Put a neutral pose (Child's Pose, Knees to Chest or a twist) between a deep backbend and any forward fold. Hard-for-me poses: shorter, with props in mind. Flowing movements use "breath": "in" or "out" (one movement per half breath); holds use "breaths": 1–12. Aim for about ${Math.round(S.minutes * 60 / S.cycle * 0.8)} breaths in total before Savasana; the app fine-tunes the timing.
+
+Use ONLY these pose ids (id | name | type | sides | level | difficulty for Michael):
+${lib}
+
+Answer with JSON only, no prose, in exactly this shape:
+{"title": "short name for the class", "peak": "pose id of the peak", "why": "one sentence on the idea of the class",
+ "sections": [{"name": "Arrival", "steps": [{"id": "sukhasana", "breaths": 8}]}, {"name": "Warm-up", "steps": [{"id": "bitilasana", "breath": "in"}, {"id": "marjaryasana", "breath": "out"}]}, {"name": "Standing", "steps": [{"id": "virabhadrasana-2", "side": "right", "breaths": 5}, {"id": "virabhadrasana-2", "side": "left", "breaths": 5}]}]}`;
+  }
+  async function surprise() {
+    if (!sampleFn) return;
+    show("preview");
+    $("thinking").hidden = false; $("thinkingTxt").textContent = "Claude is composing your class…";
+    $("sections").innerHTML = ""; $("topCards").innerHTML = ""; $("sumTitle").textContent = "Surprise me"; $("sumMeta").textContent = ""; $("sumWhy").textContent = "";
+    $("startBtn").disabled = true; $("shuffleBtn").disabled = true;
+    sampleCtl = new AbortController();
+    try {
+      const spec = await sampleFn.json(surprisePrompt(), { signal: sampleCtl.signal, cache: false, onText: () => { $("thinkingTxt").textContent = "Claude is writing the sequence…"; } });
+      plan = G.fromSpec(spec, Object.assign({}, S, { me: ME, seed }));
+      if (!plan.steps.length || plan.steps.length < 8) throw { code: "empty" };
+      source = "claude"; challenges = {};
+      renderPreview();
+    } catch (e) {
+      const msg = { not_granted: "Claude wasn't allowed to answer, so here is a class from the app instead.", rate_limited: "Claude is busy right now, so here is a class from the app instead.", cancelled: "Stopped. Here is a class from the app instead." }[e && e.code] || "Claude's answer couldn't be used, so here is a class from the app instead.";
+      buildPlan(); $("sumWhy").textContent = msg + " " + $("sumWhy").textContent;
+    } finally {
+      $("thinking").hidden = true; $("startBtn").disabled = false; $("shuffleBtn").disabled = false; sampleCtl = null;
+    }
+  }
+  $("surpriseBtn").addEventListener("click", () => { challenges = {}; surprise(); });
+  $("stopBtn").addEventListener("click", () => { if (sampleCtl) sampleCtl.abort(); });
+
+  function chip(st) {
+    const p = BY[st.id];
+    return `<div class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${p.en}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></div>`;
+  }
+  function groupFlow(list) {
+    const out = [];
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i], n1 = list[i + 1], n2 = list[i + 2];
+      if (s.id === "phalakasana" && n1 && n1.id === "chaturanga" && n2 && n2.id === "urdhva-mukha-svanasana") {
+        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>Plank · Chaturanga · Up Dog</small></div>`); i += 2; continue;
+      }
+      if (n1 && list[i + 2] && list[i + 2].id === s.id && list[i + 3] && list[i + 3].id === n1.id && s.breath && n1.breath) {
+        let c = 0; while (list[i + 2 * c] && list[i + 2 * c].id === s.id && list[i + 2 * c + 1] && list[i + 2 * c + 1].id === n1.id) c++;
+        out.push(chip(s) + chip(n1) + `<span class="rounds">× ${c}</span>`); i += 2 * c - 1; continue;
+      }
+      out.push(chip(s));
+    }
+    return out.join("");
+  }
+  function groupSun(list) {
+    const m = plan.meta || {};
+    if (!m.sunRoundLen) return groupFlow(list);
+    const lead = list.slice(0, m.sunLead), round = list.slice(m.sunLead, m.sunLead + m.sunRoundLen);
+    let html = groupFlow(lead) + `<span class="note">${m.sunName}${m.sunAlt ? " · the leading leg alternates each round" : ""}</span>` + groupFlow(round) + `<span class="rounds">× ${m.sunRounds}</span>`;
+    if (list.some(s => s.challenge)) html += `<span class="note">Last round: Crow before stepping back to Plank.</span>`;
+    return html;
+  }
+  function renderPreview() {
+    $("sumTitle").textContent = (source === "claude" ? "By Claude · " : "") + `${S.minutes} min ${S.style === "slow" ? "slow flow" : "Vinyasa"}` + (plan.meta && plan.meta.peakName ? ` · ${plan.meta.peakName}` : "");
+    $("sumWhy").textContent = (plan.why || "") + (plan.dropped && plan.dropped.length ? ` Skipped unknown poses: ${plan.dropped.join(", ")}.` : "");
+    $("shuffleBtn").textContent = source === "claude" ? "Ask Claude again" : "Shuffle";
+    $("sumMeta").textContent = `${S.energy} energy${S.focus.length ? " · " + S.focus.join(", ") : ""} · ${S.cycle} s breath`;
+    let top = "";
+    plan.offers.forEach(o => {
+      const on = challenges[o.id] === true;
+      top += `<div class="card"><span class="label">Challenge offer</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${BY[o.id].en} · <i>${BY[o.id].sa}</i></b><span class="muted">${o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">Add it</button><button type="button" data-v="no" aria-pressed="${!on}">Not today</button></div></div></div></div>`;
+    });
+    if (plan.props.length) top += `<div class="card"><span class="label">Have ready</span><ul class="props">${plan.props.map(p => `<li>${p}</li>`).join("")}</ul></div>`;
+    $("topCards").innerHTML = top;
+    $("topCards").querySelectorAll("[data-offer]").forEach(seg => seg.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      challenges[seg.dataset.offer] = b.dataset.v === "yes"; buildPlan();
+    }));
+    $("sections").innerHTML = plan.sections.map(name => {
+      const list = plan.steps.filter(s => s.section === name);
+      const secs = list.reduce((a, s) => a + s.secs, 0);
+      return `<div class="sec"><div class="sec-head"><h3>${name}</h3><span class="muted">${mmss(secs)}</span></div><div class="strip">${(name === "Sun Salutations" || name === "Moon Salutation") && source !== "claude" ? groupSun(list) : groupFlow(list)}</div></div>`;
+    }).join("");
+  }
+
+  // ---------- full screen ----------
+  const fsOK = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+  $("fsBtn").hidden = !fsOK; $("fsStartWrap").hidden = !fsOK;
+  async function enterFS() {
+    if (!fsOK || document.fullscreenElement) return;
+    try { await document.documentElement.requestFullscreen({ navigationUI: "hide" }); } catch (e) { return; }
+    try { await screen.orientation.lock("landscape"); } catch (e) {}
+  }
+  function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+  document.addEventListener("fullscreenchange", () => { $("fsBtn").textContent = document.fullscreenElement ? "Exit full screen" : "Full screen"; });
+  $("fsBtn").addEventListener("click", () => document.fullscreenElement ? exitFS() : enterFS());
+
+  // ---------- screen on ----------
+  let lock = null;
+  const video = $("keepAwake");
+  function setWake(on, txt) { $("wake").dataset.on = on ? "1" : "0"; $("wakeTxt").textContent = txt; }
+  async function requestLock() {
+    if ("wakeLock" in navigator) {
+      try {
+        lock = await navigator.wakeLock.request("screen");
+        setWake(true, "screen on");
+        lock.addEventListener("release", () => { lock = null; if (running) setWake(false, "tap to keep the screen on"); });
+        return;
+      } catch (e) {}
+    }
+    try { await video.play(); setWake(true, "screen on"); } catch (e) { setWake(false, "screen may sleep"); }
+  }
+  function releaseLock() { if (lock) { lock.release().catch(() => {}); lock = null; } video.pause(); }
+  document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible" && !lock) requestLock(); });
+
+  // ---------- live ----------
+  let idx = 0, left = 0, running = false, paused = false, last = 0, shown = null, shownMirror = false, anim = 0, total = 0, startedAt = 0, phaseT = 0, quietTimer = 0;
+  const elapsedBefore = i => plan.steps.slice(0, i).reduce((a, s) => a + s.secs, 0);
+  function drawFig(pose, mirror) { $("lFig").innerHTML = fig(pose, mirror); }
+  function animateTo(pose, mirror) {
+    cancelAnimationFrame(anim);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!shown || reduce || mirror !== shownMirror) { drawFig(pose, mirror); shown = pose; shownMirror = mirror; return; }
+    const from = shown, t0 = performance.now(), dur = 800;
+    const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const step = now => { const t = Math.min(1, (now - t0) / dur); const p = E.lerp(from, pose, ease(t)); drawFig(p, mirror); shown = p; if (t < 1) anim = requestAnimationFrame(step); else shown = pose; };
+    shownMirror = mirror; anim = requestAnimationFrame(step);
+  }
+  function enter(i) {
+    if (i >= plan.steps.length) { finish(true); return; }
+    idx = Math.max(0, i);
+    const st = plan.steps[idx], p = BY[st.id], prev = plan.steps[idx - 1];
+    left = st.secs; phaseT = 0;
+    if (!prev || prev.section !== st.section) Sound.bowl(174.6, 1, 8);
+    else if (!st.breath && st.breaths >= 3 && st.id !== prev.id) Sound.bowl(523.3, .3, 3);
+    else if (!st.breath && st.id === prev.id) Sound.bowl(523.3, .2, 2.5);
+    $("lSect").textContent = st.section;
+    $("lSa").textContent = p.sa; $("lEn").textContent = p.en; $("lDe").textContent = p.de;
+    $("lCue").textContent = (st.challenge ? "Challenge · " : "") + (p.cue || "");
+    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? sideTxt(st.side) + " side" : "";
+    const bw = $("lBreath");
+    if (st.breath) { bw.dataset.b = st.breath; bw.textContent = st.breath === "in" ? "inhale" : "exhale"; } else { bw.dataset.b = ""; bw.textContent = ""; }
+    $("lDots").innerHTML = st.breath || st.breaths > 12 || !st.breaths ? "" : Array.from({ length: st.breaths }, () => "<i></i>").join("");
+    const nx = plan.steps[idx + 1];
+    if (nx) { $("nFig").innerHTML = fig(BY[nx.id].p, nx.side === "left"); $("nName").textContent = BY[nx.id].en + (nx.side ? " · " + sideTxt(nx.side) : ""); $("nHow").textContent = nx.how || BY[nx.id].sa; }
+    else { $("nFig").innerHTML = ""; $("nName").textContent = "End of practice"; $("nHow").textContent = ""; }
+    animateTo(p.p, st.side === "left");
+    paint();
+  }
+  // breath level 0..1: flow steps rise on the inhale and fall on the exhale; holds follow the breath cycle
+  function breathLevel(st) {
+    const sm = x => 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, Math.max(0, x)));
+    if (st.breath === "in") return sm(phaseT / st.secs);
+    if (st.breath === "out") return 1 - sm(phaseT / st.secs);
+    if (st.id === "savasana") return 0.35 + 0.1 * Math.sin(phaseT / 10 * 2 * Math.PI);
+    const c = S.cycle, x = (phaseT % c) / c;
+    return x < 0.5 ? sm(x * 2) : 1 - sm((x - 0.5) * 2);
+  }
+  function paint() {
+    const st = plan.steps[idx];
+    const done = elapsedBefore(idx) + (st.secs - left);
+    $("lBar").style.width = (100 * done / total).toFixed(2) + "%";
+    $("lTime").textContent = `${mmss(total - done)} left`;
+    $("lCount").textContent = !st.breath && (st.breaths > 12 || !st.breaths || st.secs >= 60) ? mmss(left) : "";
+    const dots = $("lDots").children;
+    if (dots.length) { const lit = Math.min(dots.length, Math.floor((st.secs - left) / (st.secs / dots.length)) + 1); for (let k = 0; k < dots.length; k++) dots[k].classList.toggle("on", k < lit); }
+    const lvl = breathLevel(st);
+    $("ring").style.transform = `scale(${(0.8 + 0.2 * lvl).toFixed(3)})`;
+    Sound.breathe(lvl);
+  }
+  function loop(now) {
+    if (!running) return;
+    const dt = Math.min(0.5, (now - last) / 1000); last = now;
+    if (!paused) { left -= dt; phaseT += dt; if (left <= 0) enter(idx + 1); else paint(); }
+    if (running) requestAnimationFrame(loop);
+  }
+  function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? "Resume" : "Pause"; }
+
+  // controls fade after a few quiet seconds; the first tap only brings them back
+  function wake() { $("live").classList.remove("quiet"); clearTimeout(quietTimer); quietTimer = setTimeout(() => { if (running && !paused) $("live").classList.add("quiet"); }, 4000); }
+  $("live").addEventListener("click", e => {
+    if (running && !lock && video.paused) requestLock();
+    if ($("live").classList.contains("quiet") && e.target.closest("button")) { e.preventDefault(); e.stopPropagation(); }
+    wake();
+  }, true);
+
+  $("startBtn").addEventListener("click", () => {
+    Sound.resume();
+    if ($("fsStart").checked) enterFS();
+    total = plan.totalSecs; running = true; shown = null; startedAt = Date.now();
+    setPaused(false); show("live"); requestLock(); Sound.startDrone(); wake();
+    enter(0); last = performance.now(); requestAnimationFrame(loop);
+  });
+  $("pauseBtn").addEventListener("click", () => { setPaused(!paused); wake(); });
+  $("skipBtn").addEventListener("click", () => enter(idx + 1));
+  $("prevBtn").addEventListener("click", () => enter(Math.max(0, (plan.steps[idx].secs - left) < 2 ? idx - 1 : idx)));
+  $("plusBtn").addEventListener("click", () => { left += 15; plan.steps[idx].secs += 15; total += 15; paint(); });
+  $("endBtn").addEventListener("click", () => finish(false));
+  document.addEventListener("keydown", e => { if (!running) return; if (e.code === "Space") { e.preventDefault(); setPaused(!paused); } if (e.code === "ArrowRight") enter(idx + 1); if (e.code === "ArrowLeft") enter(Math.max(0, idx - 1)); });
+
+  // ---------- done + feedback ----------
+  let session = null, fb = { overall: null, intensity: null, marks: {} };
+  function finish(complete) {
+    if (!running) return;
+    running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
+    if (complete) { Sound.bowl(174.6, 1, 9); setTimeout(() => Sound.bowl(174.6, .8, 9), 3500); setTimeout(() => Sound.bowl(174.6, .6, 10), 7000); }
+    exitFS();
+    const secs = Math.round((Date.now() - startedAt) / 1000);
+    session = { at: new Date().toISOString(), minutes: S.minutes, style: S.style, energy: S.energy, focus: S.focus, cycle: S.cycle, seed,
+      plannedSecs: plan.totalSecs, actualSecs: secs, completed: !!complete, reachedStep: idx + 1, totalSteps: plan.steps.length,
+      challenges: plan.offers.map(o => ({ id: o.id, accepted: challenges[o.id] === true })),
+      poses: [...new Set(plan.steps.map(s => s.id))], source, meta: plan.meta || null };
+    fb = { overall: null, intensity: null, marks: {} };
+    $("doneCat").innerHTML = fig(BY["savasana"].p);
+    $("doneMeta").textContent = `${mmss(secs)} on the mat${complete ? "" : " · ended early"}`;
+    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false;
+    paintFb();
+    show("done");
+  }
+  function paintFb() {
+    $("fbOverall").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(fb.overall) === b.dataset.v ? "true" : "false"));
+    $("fbIntensity").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.intensity === b.dataset.v ? "true" : "false"));
+    $("fbMarks").innerHTML = session.poses.filter(id => id !== "savasana").map(id => `<button type="button" data-id="${id}" data-m="${fb.marks[id] || ""}">${fb.marks[id] === "love" ? "♡ " : fb.marks[id] === "hard" ? "! " : ""}${BY[id].en}</button>`).join("");
+  }
+  $("fbOverall").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.overall = Number(b.dataset.v); paintFb(); });
+  $("fbIntensity").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.intensity = b.dataset.v; paintFb(); });
+  $("fbMarks").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const id = b.dataset.id; fb.marks[id] = fb.marks[id] === "love" ? "hard" : fb.marks[id] === "hard" ? undefined : "love"; paintFb(); });
+  $("fbSave").addEventListener("click", async () => {
+    const rec = Object.assign({}, session, { feedback: { overall: fb.overall, intensity: fb.intensity, note: $("fbNote").value.trim(),
+      loved: Object.keys(fb.marks).filter(k => fb.marks[k] === "love"), hard: Object.keys(fb.marks).filter(k => fb.marks[k] === "hard") } });
+    const log = store.get("matcat-log", []); log.push(rec); store.set("matcat-log", log.slice(-60));
+    if (!db) { $("fbStatus").textContent = "Saved on this device. Open the page inside Claude to keep the log where Claude can read it."; return; }
+    $("fbSave").disabled = true; $("fbStatus").textContent = "Saving…";
+    if (rec.meta && rec.meta.peak) HIST = HIST.concat([Object.assign({}, rec.meta, { loved: rec.feedback.loved, hard: rec.feedback.hard })]).slice(-6);
+    try { await db.collection("practices").add(rec); $("fbStatus").textContent = "Saved. The next practices will build on it."; }
+    catch (e) { $("fbSave").disabled = false; $("fbStatus").textContent = "Couldn't save right now. It is kept on this device; try Save again in a moment."; }
+  });
+
+  // ---------- library ----------
+  let fLevel = "all", fMe = "all";
+  $("libBtn").addEventListener("click", () => { renderLibrary(); show("library"); });
+  $("libBack").addEventListener("click", () => show("build"));
+  function segFilter(el, set) { el.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; set(b.dataset.v); el.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); renderLibrary(); }); }
+  segFilter($("fLevel"), v => fLevel = v); segFilter($("fMe"), v => fMe = v);
+  function renderLibrary() {
+    const rated = Object.keys(ME).length;
+    $("libIntro").textContent = `${POSES.length} poses. Levels are general; "for me" starts as a proposal from what you told me and becomes yours when you tap it (${rated} rated so far).`;
+    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "unrated" ? !ME[p.id] : (ME[p.id] || p.me) === fMe)));
+    $("libGrid").innerHTML = list.map(p => {
+      const mine = ME[p.id] || p.me;
+      return `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
+        <span class="s">${p.sa}</span><span class="e">${p.en}</span><span class="d">${p.de}</span>
+        <span class="lvl">${[1, 2, 3].map(k => `<i class="${k <= p.lvl ? "on" : ""}"></i>`).join("")} ${LEVEL[p.lvl]}</span>
+        <div class="mine" data-id="${p.id}">${["easy", "ok", "hard", "new"].map(v => `<button type="button" data-v="${v}" aria-pressed="${mine === v}" title="${v === "new" ? "Untested: kept out of practices, offered only as a safe step" : ""}">${v === "ok" ? "OK" : v === "new" ? "New" : v[0].toUpperCase() + v.slice(1)}</button>`).join("")}</div>
+        ${ME[p.id] ? "" : `<span class="proposed">proposed</span>`}</div>`;
+    }).join("") || `<p class="muted">No poses match these filters.</p>`;
+  }
+  $("libGrid").addEventListener("click", e => { const b = e.target.closest(".mine button"); if (!b) return; rate(b.parentElement.dataset.id, b.dataset.v); });
+  renderLibrary();
+})();
+</script>
