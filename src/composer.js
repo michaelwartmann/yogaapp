@@ -122,9 +122,9 @@
   // expand block steps into raw steps for one side
   function expand(steps, ctx, R) {
     const out = [];
-    steps.forEach(([id, h, o]) => {
+    steps.forEach(([id, h, o], i) => {
       o = o || {};
-      if (o.opt != null && R() > o.opt) return;
+      if (o.opt != null && (ctx.keep ? !ctx.keep[i] : R() > o.opt)) return;
       const sided = BY[id].sides === 2;
       const side = o.side || (o.lead ? ctx.lead : null) || (sided ? (ctx.side || "right") : null);
       out.push({ id, side: sided ? side : null, hold: typeof h === "number" ? h : null, breath: typeof h === "string" ? h : null, challenge: !!o.challenge });
@@ -134,9 +134,10 @@
   function runBlock(block, R, first) {
     if (!block.sided) return expand(block.steps, {}, R);
     const order = first === "left" ? ["left", "right"] : ["right", "left"];
+    const keep = block.steps.map(([, , o]) => !(o && o.opt != null) || R() <= o.opt); // optional add-ons: same choice on both sides
     let out = [];
     order.forEach(side => {
-      out = out.concat(expand(block.steps, { side }, R));
+      out = out.concat(expand(block.steps, { side, keep }, R));
       if (block.between === "vinyasa") out = out.concat(expand(B.VINYASA, {}, R));
     });
     return out;
@@ -144,7 +145,7 @@
 
   // ---------------- composition ----------------
   function generate(opt) {
-    opt = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, seed: 1, challenges: {}, me: {}, history: [] }, opt);
+    opt = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, seed: 1, challenges: {}, me: {}, history: [], swap: {} }, opt);
     const me = id => opt.me[id] || BY[id].me || "ok";
     const slow = opt.style === "slow";
     const cap = Math.min({ low: 1, medium: 2, high: 3 }[opt.energy], slow ? 2 : 3);
@@ -160,14 +161,15 @@
 
     // 1. peak
     const peaks = B.PEAKS.filter(p => p.int <= cap && me(p.pose) !== "new" && (me(p.pose) !== "hard" || p.thread) && usable(p) && !(p.place === "core" && opt.minutes === 30 && !opt.focus.includes("core")));
-    const peakScore = p => overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
+    const peakScore = p => (opt.peaks && opt.peaks.includes(p.id) ? 7 : 0) + overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
       + (cap === 1 && p.int === 1 ? 2 : 0) - recency(p.id) * 8 + R() * 4;
     const peak = (peaks.length ? peaks : B.PEAKS.filter(p => p.id === "pk-triangle")).map(p => [peakScore(p), p]).sort((a, b) => b[0] - a[0])[0][1];
 
     // 2. warm-up and sun salutation
     const pickBest = (list, score) => list.map(x => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1];
     const warm = pickBest(B.WARMUPS.filter(w => w.int <= Math.max(cap, 1) && usable(w)), w => overlap(w.works, ftags) + overlap(w.works, peak.needs) - recency(w.id) * 5 + R() * 3);
-    const suns = B.SUNS.filter(s => (s.int <= cap || (s.id === "sun-b" && cap >= 2 && opt.minutes >= 45)) && usable(s));
+    let suns = B.SUNS.filter(s => (s.int <= cap || (s.id === "sun-b" && cap >= 2 && opt.minutes >= 45)) && usable(s));
+    if (!suns.length) suns.push(B.SUNS.find(s => s.id === "sun-classic"));
     const sun = pickBest(suns, s => (s.id === "sun-a" ? 1 : 0) + ((slow || cap === 1) && s.slow ? 2.5 : 0) + overlap(s.works, peak.needs) * 0.5 - recency(s.id) * 5 + R() * 3);
 
     // 3. rank modules: prepare the peak, match the focus, avoid recent ones, keep variety
@@ -187,7 +189,7 @@
     const RANK = { standing: ranked(["standing"]), balance: ranked(["balance"]), core: ranked(["core"]), back: ranked(["back"]), finish: ranked(["hips", "cool"]).filter(m => m.from !== "stand") };
 
     const defs = {
-      30: { rounds: 3, stand: 1, bal: 1, core: 0, back: 1, finish: 2 },
+      30: { rounds: 2, stand: 1, bal: 1, core: 0, back: 1, finish: 2 },
       45: { rounds: 3, stand: 2, bal: 1, core: 1, back: 1, finish: 3 },
       60: { rounds: 4, stand: 3, bal: 2, core: 1, back: 2, finish: 4 },
     }[opt.minutes];
@@ -200,19 +202,28 @@
     if (sun.id === "sun-classic") D.rounds = Math.max(2, D.rounds + (D.rounds % 2)); // even: both sides lead equally
 
     let best = null;
-    for (let dr = -1; dr <= 1; dr++) for (let ds = -1; ds <= 1; ds++) for (let df = -1; df <= 2; df++) for (let sc = 7; sc <= 18; sc++) {
-      const K = { rounds: Math.max(1, D.rounds + dr * (sun.id === "sun-classic" ? 2 : 1)), stand: Math.min(RANK.standing.length, Math.max(0, D.stand + ds)), bal: D.bal, core: D.core, back: D.back, finish: Math.max(1, D.finish + df), scale: sc / 10 };
+    const tryK = (dr, ds, df, sc) => {
+      const K = { rounds: sun.id === "sun-classic" ? Math.max(2, D.rounds + dr * 2) : Math.max(1, D.rounds + dr), stand: Math.min(RANK.standing.length * 2, Math.max(0, D.stand + ds)), bal: D.bal, core: D.core, back: D.back, finish: Math.max(1, D.finish + df), scale: sc / 10 };
       const plan = build(K);
-      const cost = Math.abs(plan.totalSecs - opt.minutes * 60) + 50 * Math.abs(K.rounds - D.rounds) + 110 * Math.abs(K.stand - D.stand) + 60 * Math.abs(K.finish - D.finish) + 15 * Math.abs(sc - 10);
+      const pace = opt.pace != null ? opt.pace : ({ 30: 3.5, 45: 1.2, 60: 0.8 }[opt.minutes] || 1); // each pose change costs a little: calmer classes, fewer changes
+      const cost = pace * plan.steps.length + Math.abs(plan.totalSecs - opt.minutes * 60) + 50 * Math.abs(K.rounds - D.rounds) + 110 * Math.abs(K.stand - D.stand) + (opt.minutes === 30 ? 35 : 60) * Math.abs(K.finish - D.finish) + 15 * Math.abs(sc - 10);
       if (!best || cost < best.cost) best = Object.assign(plan, { cost });
-    }
+    };
+    for (let dr = -1; dr <= 2; dr++) for (let ds = -1; ds <= 2; ds++) for (let df = -1; df <= 3; df++) for (let sc = 7; sc <= 18; sc++) tryK(dr, ds, df, sc);
+    // still well short (fast breath, few poses allowed): flow sequences twice and add rounds, as teachers do
+    if (best.totalSecs < opt.minutes * 60 - 60) for (let dr = 0; dr <= 5; dr++) for (let ds = 0; ds <= 6; ds++) for (let df = 0; df <= 3; df++) for (let sc = 10; sc <= 18; sc += 2) tryK(dr, ds, df, sc);
     return best;
 
     function build(K) {
       const R2 = rng(opt.seed * 131 + 3);
       const raw = [];
       let state = "seat", section = "";
-      const push = (steps, extra) => steps.forEach(s => raw.push(Object.assign({ section }, s, extra || {})));
+      // adaptations: opt.swap replaces a pose with a gentler one everywhere (or drops it with null), e.g. Up Dog → Cobra
+      const push = (steps, extra) => steps.forEach(s => {
+        const sw = opt.swap || {};
+        if (Object.prototype.hasOwnProperty.call(sw, s.id)) { if (!sw[s.id]) return; s = Object.assign({}, s, { id: sw[s.id], side: BY[sw[s.id]].sides === 2 ? s.side : null }); }
+        raw.push(Object.assign({ section }, s, extra || {}));
+      });
       const go = to => push(expand(connector(state, to), {}, R2));
       const startSide = () => R2() < 0.3 ? "left" : "right";
       const used = [];
@@ -241,7 +252,8 @@
       state = "stand";
 
       // standing modules (gentle first), peak if it belongs here
-      const standing = takeDiverse(RANK.standing, K.stand, [peak]).sort((a, b) => a.int - b.int);
+      let standing = takeDiverse(RANK.standing, Math.min(K.stand, RANK.standing.length), [peak]).sort((a, b) => a.int - b.int);
+      if (K.stand > standing.length) standing = standing.concat(standing.slice(0, K.stand - standing.length)); // second time through
       section = "Standing";
       standing.forEach(m => place(m));
       if (peak.place === "standing") { section = "Peak · " + peak.name; place(peak, { peak: true }); if (peak.counter) push(expand(peak.counter, {}, R2)); }
@@ -294,7 +306,7 @@
         const before = raw.length; place(m);
         if (yinish) raw.slice(before).forEach(s => { const y = BY[s.id].yin; if (y && s.hold) s.secs = Math.min(y, opt.minutes === 30 ? 2 : 4) * 60; });
       });
-      if (!finish.some(m => m.id === "u-twist") && !used.includes("u-twist")) place(B.MODULES.find(m => m.id === "u-twist"));
+      if (opt.minutes > 30 && !finish.some(m => m.id === "u-twist") && !used.includes("u-twist")) place(B.MODULES.find(m => m.id === "u-twist"));
       go("supine");
 
       section = "Savasana";
@@ -327,6 +339,17 @@
     me = me || (id => (opt.me && opt.me[id]) || BY[id].me || "ok");
     const C = opt.cycle || 6, MOVE = C / 2 + 0.5, slow = opt.style === "slow";
     const R3 = rng((opt.seed || 1) * 977 + 11);
+    // two identical holds in a row (e.g. Tabletop from a connector, then Tabletop to start the warm-up) become one longer hold;
+    // deliberate repeats (Bridge, Wheel) and the salutations stay as they are
+    const REPEAT = new Set(["setu-bandha-sarvangasana", "urdhva-dhanurasana"]);
+    raw = raw.reduce((acc, s) => {
+      const p = acc[acc.length - 1];
+      if (p && p.id === s.id && (p.side || null) === (s.side || null) && !p.breath && !s.breath && !REPEAT.has(s.id) && s.id !== "savasana" && !/Salutation/.test(s.section || "")) {
+        acc[acc.length - 1] = Object.assign({}, p, { hold: (p.hold || BY[p.id].hold || 2) + (s.hold || BY[s.id].hold || 2), secs: p.secs && s.secs ? p.secs + s.secs : p.secs || s.secs });
+        return acc;
+      }
+      acc.push(s); return acc;
+    }, []);
     const steps = raw.map(s => {
       const out = { id: s.id, side: s.side || null, section: s.section || "", breath: s.breath || null, challenge: !!s.challenge, peak: !!s.peak, breaths: 0, secs: 0 };
       if (s.breath) { out.secs = MOVE; return out; }
@@ -335,7 +358,7 @@
       if (s.secs) { out.secs = Math.round(s.secs * scaled / 15) * 15; out.breaths = Math.round(out.secs / C); return out; }
       let b = (s.hold || BY[s.id].hold || 3) * scaled * (slow ? 1.35 : 1) * (me(s.id) === "hard" ? 1.3 : 1);
       if (b >= 3 && R3() < 0.3) b += R3() < 0.5 ? -1 : 1;
-      out.breaths = Math.max(1, Math.min(12, Math.round(b))); out.secs = Math.round(out.breaths * C);
+      out.breaths = Math.max(1, Math.min(Math.max(12, Math.round(72 / C)), Math.round(b))); out.secs = Math.round(out.breaths * C);
       return out;
     });
     const used = steps.reduce((a, s) => a + s.secs, 0);
@@ -433,6 +456,20 @@
       dropped, checks: check });
   }
 
-  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, TO, HOW };
+  // Re-fit an edited plan (pose removed or swapped) to its length; keeps order, sides and the peak.
+  function retime(steps, opt) {
+    const raw = steps.filter(s => s.id !== "savasana").map(s => ({ id: s.id, side: s.side, section: s.section, peak: s.peak, challenge: s.challenge,
+      breath: s.breath, hold: s.breath ? null : s.baseBreaths || s.breaths || null })).concat([{ id: "savasana", hold: 0, section: "Savasana" }]);
+    const fixed = repair(raw, opt);
+    let best = null;
+    for (let sc = 6; sc <= 16; sc++) {
+      const plan = finalize(fixed.map(s => Object.assign({}, s, { hold: s.hold ? s.hold * sc / 10 : s.hold })), opt, 1);
+      const cost = Math.abs(plan.totalSecs - opt.minutes * 60) + 12 * Math.abs(sc - 10);
+      if (!best || cost < best.cost) best = Object.assign(plan, { cost });
+    }
+    return best;
+  }
+
+  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, retime, TO, HOW };
   if (typeof module !== "undefined") module.exports = root.YogaComposer;
 })(typeof window !== "undefined" ? window : globalThis);

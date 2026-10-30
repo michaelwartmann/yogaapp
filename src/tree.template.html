@@ -1,0 +1,237 @@
+<title>Animal Tree</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: explorer for the profile graph — menu (animal, theme, length) on top, the age × pace grid, then the selected position with a sample class */
+:root {
+  --bg: #f1eef4;
+  --surface: #f9f7fb;
+  --ink: #2f2a3a;
+  --muted: #7b7389;
+  --line: #ddd6e5;
+  --accent: #d9823f;
+  --accent-soft: #f6e3d2;
+  --edge: #b9afc8;
+  --cat-shadow: #ddd6e6;
+  --strap: #8a7cc8;
+  --font-display: "Quicksand", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #1a1722; --surface: #221e2c; --ink: #ece7f3; --muted: #a49cb2; --line: #352f42; --accent: #f0a35e; --accent-soft: #3b2c22; --edge: #4c4460; --cat-shadow: #2b2637; --strap: #b0a5ec; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #1a1722; --surface: #221e2c; --ink: #ece7f3; --muted: #a49cb2; --line: #352f42; --accent: #f0a35e; --accent-soft: #3b2c22; --edge: #4c4460; --cat-shadow: #2b2637; --strap: #b0a5ec; color-scheme: dark; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
+main { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.7rem, 5vw, 2.3rem); }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.lede { max-width: 68ch; color: var(--muted); }
+.label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 800; }
+button, input { font: inherit; color: inherit; }
+input, textarea { box-sizing: border-box; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.seg { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.seg button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 700; }
+.seg button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.btn { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 7px 14px; font-weight: 700; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* search */
+.search { position: relative; width: min(320px, 100%); }
+.search input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 9px 16px; }
+.sugg { position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; z-index: 3; }
+.sugg button { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 8px 14px; }
+.sugg button:hover, .sugg button:focus-visible { background: var(--accent-soft); }
+
+/* graph */
+.graphwrap { overflow-x: auto; padding-bottom: 6px; }
+.graph { display: grid; grid-template-columns: 96px repeat(5, auto); align-items: center; min-width: 480px; max-width: 760px; }
+.graph .colhead { text-align: center; font-family: var(--font-display); font-weight: 600; padding-bottom: 6px; }
+.graph .colhead small { display: block; font-family: var(--font-body); font-weight: 400; font-size: 0.72rem; color: var(--muted); }
+.graph .rowhead { font-size: 0.78rem; color: var(--muted); line-height: 1.2; padding-right: 8px; }
+.graph .rowhead b { display: block; color: var(--ink); font-family: var(--font-display); font-size: 0.95rem; }
+.node { border: 1.5px solid var(--line); background: var(--surface); border-radius: 14px; padding: 8px 6px; text-align: center; min-width: 96px; min-height: 52px; display: flex; flex-direction: column; justify-content: center; transition: border-color .15s, background .15s; }
+.node b { display: block; font-family: var(--font-display); font-weight: 600; font-size: 1rem; line-height: 1.15; }
+.node small { display: block; font-size: 0.72rem; color: var(--muted); line-height: 1.2; }
+.node:hover { border-color: var(--muted); }
+.node[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.node.near { border-color: var(--accent); border-style: dashed; }
+.hedge { height: 0; border-top: 2px dashed var(--edge); margin: 0 4px; min-width: 18px; }
+.vedge { width: 0; height: 16px; border-left: 2.5px solid var(--edge); justify-self: center; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.86rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { display: inline-block; }
+.legend .v { width: 0; height: 16px; border-left: 2.5px solid var(--edge); }
+.legend .h { width: 22px; border-top: 2px dashed var(--edge); }
+
+/* detail */
+.detail { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .detail { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); align-items: start; } }
+.card { background: var(--surface); border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.big { font-family: var(--font-display); font-size: 2rem; line-height: 1.1; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.9rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+.moves { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.moves button { border: 1px solid var(--line); background: transparent; border-radius: 12px; padding: 6px 10px; text-align: left; font-size: 0.86rem; }
+.moves button:disabled { opacity: .35; cursor: default; }
+.moves button b { display: block; font-family: var(--font-display); font-size: 0.98rem; }
+.fbres { font-size: 0.9rem; min-height: 1.4em; }
+.metrics { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.9rem; }
+.metrics b { font-variant-numeric: tabular-nums; }
+.sec { display: flex; flex-direction: column; gap: 6px; }
+.sec h3 { font-size: 1rem; }
+.strip { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { display: flex; flex-direction: column; align-items: center; width: 76px; background: var(--bg); border-radius: 12px; padding: 2px 3px 6px; text-align: center; }
+.chip svg { width: 70px; height: auto; aspect-ratio: 260 / 230; }
+.chip b { font-size: 0.66rem; line-height: 1.15; font-weight: 700; }
+.chip small { font-size: 0.62rem; color: var(--muted); }
+.chip.peak { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.chip.swapped { box-shadow: inset 0 0 0 1.5px var(--accent); }
+</style>
+
+<main>
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <h1>Animal Tree</h1>
+    <p class="lede">Everyone carries a code like <b>calm young heron</b>. The animal is chosen once and stays. Its age is the level, from baby to ancient, and grows through feedback on the poses. The first word is the pace, from calm to swift, and changes through feedback on the tempo. The theme and the length are picked fresh every day.</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div class="row" style="justify-content:space-between">
+      <div class="row"><span class="label">Animal</span><div class="seg" id="animalSeg"></div></div>
+      <div class="row"><span class="label">Names</span><div class="seg" id="langSeg"><button type="button" data-v="en">EN</button><button type="button" data-v="de">DE</button></div></div>
+    </div>
+    <div class="row"><span class="label">Today</span><div class="seg" id="themeSeg"></div></div>
+    <div class="row"><span class="label">Length</span><div class="seg" id="lenSeg"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
+    <div class="row">
+      <div class="search">
+        <label class="label" for="q" style="display:block;margin-bottom:4px">Try a code</label>
+        <input id="q" type="text" autocomplete="off" placeholder="e.g. ruhiger junger Reiher">
+      </div>
+      <span class="muted" id="qRes" style="font-size:.9rem"></span>
+    </div>
+    <div class="graphwrap"><div class="graph" id="graph" role="group" aria-label="Level and pace grid"></div></div>
+    <div class="legend"><span><i class="v"></i> age (level): grows when the poses feel too easy, or after three "just right"</span><span><i class="h"></i> pace: changes when the tempo feels too slow or too fast</span></div>
+  </section>
+
+  <section class="detail">
+    <div class="card" id="nodeCard"></div>
+    <div class="card" id="sampleCard"></div>
+  </section>
+</main>
+
+<script>/*ENGINE*/</script>
+<script>/*POSES*/</script>
+<script>/*GENERATOR*/</script>
+<script>/*BLOCKS*/</script>
+<script>/*COMPOSER*/</script>
+<script>/*PROFILE*/</script>
+<script>
+(() => {
+  const P = window.YogaProfile, C = window.YogaComposer, E = window.PoseEngine, POSES = window.YogaPoses.POSES;
+  const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
+  const $ = id => document.getElementById(id);
+  const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+  const fig = (pose, mirror) => mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, { style: "cat" })}</g>` : E.svgInner(pose, { style: "cat" });
+  const cap = t => t[0].toUpperCase() + t.slice(1);
+  let lang = "en", minutes = 30, theme = "flow", st = { animal: "heron", level: 2, tempo: 1, streak: 0 }, seed = 11;
+  try { const v = JSON.parse(localStorage.getItem("animal-tree-v2") || "null"); if (v) { lang = v.lang || lang; minutes = v.minutes || minutes; theme = v.theme || theme; if (v.st && P.ANIMAL[v.st.animal]) st = v.st; } } catch (e) {}
+  const save = () => { try { localStorage.setItem("animal-tree-v2", JSON.stringify({ lang, minutes, theme, st })); } catch (e) {} };
+  const SHOW = ["heron", "otter", "bear", "owl", "fox", "turtle"];
+  const seg = (id, val) => $(id).querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === String(val) ? "true" : "false"));
+
+  function renderMenus() {
+    const shown = SHOW.includes(st.animal) ? SHOW : SHOW.concat(st.animal);
+    $("animalSeg").innerHTML = shown.map(id => `<button type="button" data-v="${id}">${lang === "de" ? P.ANIMAL[id].de : P.ANIMAL[id].en}</button>`).join("");
+    $("themeSeg").innerHTML = P.THEMES.map(t => `<button type="button" data-v="${t.id}">${lang === "de" ? t.de : t.en}</button>`).join("");
+    seg("animalSeg", st.animal); seg("themeSeg", theme); seg("lenSeg", minutes); seg("langSeg", lang);
+  }
+  $("animalSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; st = Object.assign({}, st, { animal: b.dataset.v }); render(); });
+  $("themeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; theme = b.dataset.v; render(); });
+  $("lenSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; minutes = Number(b.dataset.v); render(); });
+  $("langSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; lang = b.dataset.v; render(); });
+
+  function renderGraph() {
+    let h = `<div></div>`;
+    P.TEMPOS.forEach((t, i) => { h += `<div class="colhead">${cap(lang === "de" ? t.de : t.en)}<small>${P.TEMPO_CFG[i].cycle} s breath</small></div>`; if (i < 2) h += `<div></div>`; });
+    for (let lv = 5; lv >= 1; lv--) {
+      const L = P.LEVELS[lv - 1];
+      h += `<div class="rowhead"><b>${cap(lang === "de" ? P.AGES[lv - 1].de : P.AGES[lv - 1].en)}</b>${lang === "de" ? L.de : L.name}</div>`;
+      [1, 2, 3].forEach(tp => {
+        const here = { animal: st.animal, level: lv, tempo: tp }, sel = lv === st.level && tp === st.tempo;
+        const near = Math.abs(lv - st.level) + Math.abs(tp - st.tempo) === 1;
+        h += `<button type="button" class="node${near ? " near" : ""}" data-l="${lv}" data-t="${tp}" aria-pressed="${sel}"><b>${P.code(here, lang)}</b><small>${P.code(here, lang === "de" ? "en" : "de")}</small></button>`;
+        if (tp < 3) h += `<div class="hedge" aria-hidden="true"></div>`;
+      });
+      if (lv > 1) { h += `<div></div>`; [1, 2, 3].forEach(tp => { h += `<div class="vedge" aria-hidden="true"></div>`; if (tp < 3) h += `<div></div>`; }); }
+    }
+    $("graph").innerHTML = h;
+  }
+  $("graph").addEventListener("click", e => { const b = e.target.closest(".node"); if (!b) return; st = Object.assign({}, st, { level: Number(b.dataset.l), tempo: Number(b.dataset.t), streak: 0 }); render(); });
+
+  function renderNode() {
+    const L = P.LEVELS[st.level - 1], T = P.TEMPO_CFG[st.tempo - 1], th = P.THEME[theme];
+    const o = P.options(st, { theme, minutes });
+    const swaps = Object.entries(L.swap).map(([a, b]) => b ? `${BY[a].en} → ${BY[b].en}` : `no ${BY[a].en}`).join(", ") || "none";
+    $("nodeCard").innerHTML = `
+      <div><span class="label">Level ${st.level} of 5 · pace ${st.tempo} of 3</span><div class="big">${cap(P.code(st, lang))}</div><span class="muted">${P.code(st, lang === "de" ? "en" : "de")}</span></div>
+      <p>${L.text} ${T.text}</p>
+      <dl class="kv">
+        <dt>Poses</dt><dd>up to level ${L.maxLvl} (${POSES.filter(p => p.lvl <= L.maxLvl).length} of ${POSES.length})</dd>
+        <dt>Adaptations</dt><dd>${swaps}</dd>
+        <dt>Tempo</dt><dd>${o.style === "slow" ? "slow flow" : "vinyasa"}, ${o.energy} intensity, ${o.cycle} s breath</dd>
+        <dt>Today</dt><dd>${lang === "de" ? th.de : th.en}: ${th.text}</dd>
+      </dl>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span class="label">Try the feedback</span>
+        <div class="seg" id="fbPoses"><button type="button" data-v="too easy">Poses too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too hard">Too hard</button></div>
+        <div class="seg" id="fbPace"><button type="button" data-v="too slow">Pace too slow</button><button type="button" data-v="too fast">Too fast</button></div>
+        <p class="fbres" id="fbRes" aria-live="polite"></p>
+      </div>`;
+    const go = fb => {
+      const nx = P.next(st, fb), an = (lang === "de" ? P.ANIMAL[st.animal].de : P.ANIMAL[st.animal].en.toLowerCase());
+      $("fbRes").textContent = nx.story.length ? `Your ${an} ${nx.story.join(" and ")}: ${P.code(nx.state, lang)}.` : `Same ${an} again (${nx.state.streak || 0} of 3 good practices towards growing up).`;
+      st = nx.state; save();
+      if (nx.story.length) setTimeout(render, 1100);
+    };
+    $("fbPoses").addEventListener("click", e => { const b = e.target.closest("button"); if (b) go({ poses: b.dataset.v }); });
+    $("fbPace").addEventListener("click", e => { const b = e.target.closest("button"); if (b) go({ pace: b.dataset.v }); });
+  }
+
+  function renderSample() {
+    const t0 = performance.now();
+    const p = C.generate(P.options(st, { theme, minutes, seed }));
+    const ms = Math.round(performance.now() - t0), L = P.LEVELS[st.level - 1];
+    const changes = p.steps.length - 1, holds = p.steps.filter(s => !s.breath && s.id !== "savasana");
+    const mix = [1, 2, 3].map(k => p.steps.filter(s => BY[s.id].lvl === k).length);
+    const swappedIn = new Set(Object.values(L.swap).filter(Boolean));
+    const chip = s => `<div class="chip${s.peak ? " peak" : ""}${swappedIn.has(s.id) ? " swapped" : ""}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[s.id].p, s.side === "left")}</svg><b>${BY[s.id].en}${s.side ? " · " + s.side[0].toUpperCase() : ""}</b><small>${s.breath ? (s.breath === "in" ? "inhale" : "exhale") : s.id === "savasana" ? mmss(s.secs) : s.breaths + " br"}</small></div>`;
+    const sections = p.sections.map(name => { const list = p.steps.filter(s => s.section === name); return `<div class="sec"><h3>${name} <span class="muted" style="font-weight:400;font-size:.85rem">${mmss(list.reduce((a, s) => a + s.secs, 0))}</span></h3><div class="strip">${list.map(chip).join("")}</div></div>`; }).join("");
+    $("sampleCard").innerHTML = `
+      <div class="row" style="justify-content:space-between"><div><span class="label">Sample class · ${P.THEME[theme].en} · ${minutes} min</span><h2 style="font-size:1.35rem">${p.meta.peakName ? "Peak: " + p.meta.peakName : "Practice"}</h2></div>
+        <button class="btn" id="again" type="button">Another one</button></div>
+      <p class="muted">${p.why}</p>
+      <div class="metrics"><span><b>${mmss(p.totalSecs)}</b> total</span><span><b>${changes}</b> pose changes</span><span>one every <b>${(p.totalSecs / changes).toFixed(0)} s</b></span>
+        <span>holds avg <b>${(holds.reduce((a, s) => a + s.secs, 0) / Math.max(1, holds.length)).toFixed(0)} s</b></span><span>pose levels <b>${mix.join(" / ")}</b></span></div>
+      <div style="display:flex;flex-direction:column;gap:14px">${sections}</div>
+      <p class="muted" style="font-size:.82rem">Outlined in orange: an adapted pose. Outlined dark: the peak. Built in ${ms} ms.</p>`;
+    $("again").addEventListener("click", () => { seed = (seed * 7919 + 13) % 100000; renderSample(); });
+  }
+
+  $("q").addEventListener("input", () => {
+    const r = P.parse($("q").value);
+    if (r.animal && r.level && r.tempo) { st = { animal: r.animal, level: r.level, tempo: r.tempo, streak: 0 }; $("qRes").textContent = "Found: " + P.code(st, "en") + " · " + P.code(st, "de"); render(true); }
+    else $("qRes").textContent = $("q").value.trim() ? `Recognised: ${[r.animal && "animal", r.level && "age", r.tempo && "pace"].filter(Boolean).join(", ") || "nothing yet"}` : "";
+  });
+
+  function render(keepQ) { renderMenus(); renderGraph(); renderNode(); renderSample(); save(); }
+  render();
+})();
+</script>

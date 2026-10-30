@@ -69,7 +69,7 @@
       near: "var(--fig, #1d2b25)", far: "var(--fig-far, #8aa198)" },
     bean: { head: 15, arm: 11, leg: 13, torso: 24, torsoFront: 30, neck: 10, face: true,
       near: "var(--m-body, #5c9a82)", far: "var(--m-far, #a8ccbd)" },
-    cat: { head: 18, arm: 13, leg: 15, torso: 30, torsoFront: 38, neck: 12, cat: true,
+    cat: { head: 18, arm: 13, leg: 15, torso: 30, torsoFront: 38, neck: 12, cat: true, line: "var(--cat-line, #24170f)", lw: 2.2,
       near: "var(--cat-body, #f2a157)", far: "var(--cat-shade, #de8a45)" },
   };
   function svgInner(pose, o) {
@@ -82,9 +82,12 @@
     const line = pts => pts.map((p, i) => (i ? "L" : "M") + X(p) + " " + Y(p)).join(" ");
     const front = J.w > 0.5;
     const nearC = S.near, farC = front ? nearC : S.far;
-    const limb = (pts, c, sw) => `<path d="${line(pts)}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
-    const torso = `<path d="M${X(J.hip)} ${Y(J.hip)} Q${X(J.spineC)} ${Y(J.spineC)} ${X(J.sh)} ${Y(J.sh)}" fill="none" stroke="${nearC}" stroke-width="${front ? S.torsoFront : S.torso}" stroke-linecap="round"/>`;
-    const neck = limb([J.sh, J.neck], nearC, S.neck);
+    const plain = (pts, c, sw) => `<path d="${line(pts)}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    // contour: the same shape drawn a little wider in the line colour underneath, so every arm and leg reads clearly
+    const limb = (pts, c, sw) => (S.line ? plain(pts, S.line, sw + 2 * S.lw) : "") + plain(pts, c, sw);
+    const tw = front ? S.torsoFront : S.torso, tpath = `M${X(J.hip)} ${Y(J.hip)} Q${X(J.spineC)} ${Y(J.spineC)} ${X(J.sh)} ${Y(J.sh)}`;
+    const torso = (S.line ? `<path d="${tpath}" fill="none" stroke="${S.line}" stroke-width="${tw + 2 * S.lw}" stroke-linecap="round"/>` : "") + `<path d="${tpath}" fill="none" stroke="${nearC}" stroke-width="${tw}" stroke-linecap="round"/>`;
+    const neck = plain([J.sh, J.neck], nearC, S.neck);
     const r = S.head, c = J.head, hA = J.hAng;
     const at = (base, ang, d) => step(base, ang, d);
     let ears = "", face = "", tail = "";
@@ -125,14 +128,16 @@
         const cen = { x: (a.x + b2.x + tip.x) / 3, y: (a.y + b2.y + tip.y) / 3 };
         const sh2 = q => ({ x: cen.x + (q.x - cen.x) * 0.5, y: cen.y + (q.y - cen.y) * 0.5 + 0 });
         const tri = (A, B, C, f, sw) => `<path d="M${X(A)} ${Y(A)} L${X(B)} ${Y(B)} L${X(C)} ${Y(C)} Z" fill="${f}" stroke="${f}" stroke-width="${sw}" stroke-linejoin="round"/>`;
-        return tri(a, tip, b2, nearC, 5) + tri(sh2(a), sh2(tip), sh2(b2), pink, 2);
+        return (S.line ? tri(a, tip, b2, S.line, 5 + 2 * S.lw) : "") + tri(a, tip, b2, nearC, 5) + tri(sh2(a), sh2(tip), sh2(b2), pink, 2);
       };
       ears = ear(1) + ear(-1);
       // tail continues the spine past the hips and curls up
       const tp = front ? [at(J.hip, -40, 24), at(J.hip, -5, 40), at(J.hip, 25, 44)]
                        : [at(J.hip, J.t + 150, 22), at(J.hip, J.t + 118, 38), at(J.hip, J.t + 82, 40)];
-      if (Math.min(...tp.map(q => q.y)) > 3)
-        tail = `<path d="M${X(J.hip)} ${Y(J.hip)} C${X(tp[0])} ${Y(tp[0])} ${X(tp[1])} ${Y(tp[1])} ${X(tp[2])} ${Y(tp[2])}" fill="none" stroke="${tailC}" stroke-width="9" stroke-linecap="round"/>`;
+      if (Math.min(...tp.map(q => q.y)) > 3) {
+        const tpd = `M${X(J.hip)} ${Y(J.hip)} C${X(tp[0])} ${Y(tp[0])} ${X(tp[1])} ${Y(tp[1])} ${X(tp[2])} ${Y(tp[2])}`;
+        tail = `<path d="${tpd}" fill="none" stroke="${S.line}" stroke-width="${9 + 2 * S.lw}" stroke-linecap="round"/><path d="${tpd}" fill="none" stroke="${tailC}" stroke-width="9" stroke-linecap="round"/>`;
+      }
       // cream belly patch on the front of the torso
       const mid = { x: (J.hip.x + J.sh.x) / 2, y: (J.hip.y + J.sh.y) / 2 };
       const tl = Math.hypot(J.sh.x - J.hip.x, J.sh.y - J.hip.y);
@@ -163,7 +168,7 @@
       const sw = (b.maxX - b.minX) / 2 * 0.85 + 12;
       shadow = `<ellipse cx="${(VB.w / 2).toFixed(1)}" cy="${VB.floor + 5}" rx="${sw.toFixed(1)}" ry="6" fill="var(--cat-shadow, #e3cfb3)"/>`;
     }
-    const head = ears + `<circle cx="${X(c)}" cy="${Y(c)}" r="${r}" fill="${nearC}"/>` + face;
+    const head = ears + `<circle cx="${X(c)}" cy="${Y(c)}" r="${r}" fill="${nearC}"${S.line ? ` stroke="${S.line}" stroke-width="${S.lw}"` : ""}/>` + face;
     const strap = pose.strap ? `<path d="${line(pose.strap === "F" ? [J.armF[2], J.legF[2]] : [J.armN[2], J.legN[3]])}" stroke="var(--strap, #6a5acd)" stroke-width="3" stroke-linecap="round"/>` : "";
     const floor = o.floor === false ? "" : shadow ? shadow : `<line x1="8" x2="${VB.w - 8}" y1="${VB.floor + 5}" y2="${VB.floor + 5}" stroke="var(--floor, #c9d4ce)" stroke-width="3" stroke-linecap="round"/>`;
     // tall poses (inversions) are scaled down around the floor so they stay inside the frame
