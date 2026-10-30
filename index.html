@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f1eef4">
+<title>Mat Cat Yoga</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mat Cat">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -218,8 +225,13 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 .sheet .head { display: flex; gap: 12px; align-items: center; }
 .sheet .head svg { width: 84px; flex: none; height: auto; aspect-ratio: 260 / 230; }
 .sheet .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.langbar { max-width: 1040px; margin: 0 auto 2px; display: flex; justify-content: flex-end; }
+.langbar .seg button { padding: 4px 12px; font-size: .82rem; letter-spacing: .04em; }
+body.is-live .langbar { display: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stage .ring { transform: scale(.93) !important; } }
 </style>
+
+<div class="langbar"><div class="seg" id="langSeg" role="group" aria-label="Language · Sprache"><button type="button" data-v="en" lang="en">EN</button><button type="button" data-v="de" lang="de">DE</button></div></div>
 
 <section class="screen" id="welcome">
   <div class="hero">
@@ -230,7 +242,7 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     </div>
   </div>
   <div id="wKnown" hidden style="display:flex;flex-direction:column;gap:14px">
-    <div class="codecard"><span class="label">Welcome back</span><span class="phrase" id="wPhrase"></span><span class="phrase-de" id="wPhraseDe"></span></div>
+    <div class="codecard"><span class="label">Welcome back</span><span class="phrase" id="wPhrase"></span><span class="phrase-de" id="wPhraseDe"></span><span class="muted" id="wNature"></span></div>
     <div class="row"><button class="btn primary big" id="wContinue" type="button">Continue</button><button class="linkbtn" id="wNotMe" type="button">Not you? Enter another animal</button></div>
   </div>
   <div id="wUnknown" style="display:flex;flex-direction:column;gap:14px">
@@ -240,6 +252,7 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
       <div class="sugg" id="codeSugg" hidden></div>
     </div>
     <div class="found" id="codeFound"></div>
+    <div id="oldNote" hidden class="codecard" style="gap:10px"><span>Animals now say something about you. Your age and pace stay; three small tests find your new animal.</span><div class="row"><button class="btn primary" id="oldGo" type="button">Do the three tests</button></div></div>
     <div id="codeAsk" hidden style="display:flex;flex-direction:column;gap:10px">
       <span class="muted" id="codeAskTxt"></span>
       <div class="seg" id="askAge"></div>
@@ -252,11 +265,16 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 
 <section class="screen" id="pick" hidden>
   <div style="display:flex;flex-direction:column;gap:6px">
-    <h2 style="font-size:1.8rem">Choose your animal</h2>
-    <p class="muted">It stays yours. As you practise it grows up, from baby to ancient. Pick one you like, that makes it easy to remember.</p>
+    <span class="label" id="pickLabel">Your nature</span>
+    <h2 style="font-size:1.8rem" id="natTitle"></h2>
+    <p id="natText" style="max-width:62ch"></p>
   </div>
-  <div class="animals" id="animalGrid"></div>
-  <div class="startbar"><button class="btn primary big" id="pickGo" type="button" disabled>Next</button><button class="btn quiet" id="pickBack" type="button">Back</button></div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Choose your animal</span>
+    <div class="animals" id="animalGrid"></div>
+  </div>
+  <details id="otherNatures"><summary class="muted" style="cursor:pointer">Doesn't fit? Choose another nature</summary><div id="natList" style="display:flex;flex-direction:column;gap:14px;margin-top:12px"></div></details>
+  <div class="startbar"><button class="btn primary big" id="pickGo" type="button" disabled>That's me</button><button class="btn quiet" id="pickBack" type="button">Back</button></div>
 </section>
 
 <section class="screen" id="assess" hidden>
@@ -287,10 +305,12 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
       <span class="label">Today, for the</span>
       <h1 id="tPhrase" style="font-size:clamp(1.5rem,5.5vw,2.1rem)"></h1>
       <span class="muted" id="tPhraseDe"></span>
+      <span class="muted" id="tNature" style="font-size:.88rem"></span>
       <button class="linkbtn" id="tChange" type="button" style="align-self:flex-start">Not you?</button>
     </div>
   </div>
   <div class="form">
+    <p id="recheck" hidden class="muted" style="font-size:.9rem">Ten practices done. Bodies change: <button class="linkbtn" id="recheckGo" type="button">redo the three small tests</button>?</p>
     <div class="field"><span class="label">What do you feel like?</span><div class="seg" id="themeSeg"></div><span class="muted" id="themeText" style="font-size:.88rem"></span></div>
     <div class="field"><span class="label">Time</span><div class="seg" data-key="minutes"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
     <div class="field"><span class="label">Take care today</span><div class="seg" id="careSeg"></div></div>
@@ -1507,7 +1527,7 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 
     // 1. peak
     const peaks = B.PEAKS.filter(p => p.int <= cap && me(p.pose) !== "new" && (me(p.pose) !== "hard" || p.thread) && usable(p) && !(p.place === "core" && opt.minutes === 30 && !opt.focus.includes("core")));
-    const peakScore = p => (opt.peaks && opt.peaks.includes(p.id) ? 7 : 0) + overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
+    const peakScore = p => (opt.peaks && opt.peaks.includes(p.id) ? 7 : 0) + (opt.naturePeaks && opt.naturePeaks.includes(p.id) ? 3 : 0) + overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
       + (cap === 1 && p.int === 1 ? 2 : 0) - recency(p.id) * 8 + R() * 4;
     const peak = (peaks.length ? peaks : B.PEAKS.filter(p => p.id === "pk-triangle")).map(p => [peakScore(p), p]).sort((a, b) => b[0] - a[0])[0][1];
 
@@ -1544,6 +1564,7 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     if (opt.energy === "high") { D.rounds += 1; D.core = Math.max(D.core, 1); }
     if (opt.focus.includes("balance")) D.bal += 1;
     if (opt.focus.includes("core")) D.core += 1;
+    if (opt.extraCore) D.core += opt.extraCore; // natures that work on strength
     if (sun.id === "sun-moon") D.rounds = Math.max(1, Math.round(D.rounds / 2));
     if (sun.id === "sun-classic") D.rounds = Math.max(2, D.rounds + (D.rounds % 2)); // even: both sides lead equally
 
@@ -1660,11 +1681,11 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
       const meta = { peak: peak.id, peakPose: peak.pose, peakName: peak.name, warmup: warm.id, sun: sun.id, modules: used.filter(id => id !== peak.id && id !== warm.id),
         sunName: sun.name, sunRounds: K.rounds, sunLead: roundsStart - sunStart, sunRoundLen: firstLen, sunAlt: !!sun.alt };
       const plan = finalize(raw, opt, K.scale, me);
-      return Object.assign(plan, { meta, offers: offersFor(peak, used), why: whyText(peak, standing.concat(bal, core, back, finish), warm, sun) });
+      return Object.assign(plan, { meta, offers: offersFor(peak, used), why: whyText(peak, standing.concat(bal, core, back, finish), warm, sun), whyData: whyData(peak, standing.concat(bal, core, back, finish), warm, sun) });
     }
 
     function offersFor(peak, used) {
-      const nOffers = { low: 0, medium: 2, high: 3 }[opt.energy];
+      const nOffers = { low: 0, medium: 2, high: 3 }[opt.energy] + (opt.energy !== "low" ? (opt.extraOffers || 0) : 0);
       const c = [];
       if (peak.pose !== "bakasana" && me("bakasana") !== "new" && sun.id !== "sun-moon") c.push({ id: "bakasana", text: "Crow in the last sun salutation round" });
       if (peak.id !== "pk-wheel" && me("urdhva-dhanurasana") !== "new") c.push({ id: "urdhva-dhanurasana", text: "Wheel after Bridge" });
@@ -1674,6 +1695,10 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     }
   }
 
+  function whyData(peak, blocks, warm, sun) {
+    const prep = blocks.filter(b => b.prepares && !['cool', 'hips'].includes(b.kind) && b.prepares.some(t => peak.needs.includes(t))).map(b => b.id);
+    return { peak: peak.id, prep: [...new Set(prep)].slice(0, 3), needs: peak.needs.slice(), warm: warm.id, sun: sun.id };
+  }
   function whyText(peak, blocks, warm, sun) {
     const prep = blocks.filter(b => b.prepares && !['cool', 'hips'].includes(b.kind) && b.prepares.some(t => peak.needs.includes(t))).map(b => b.name);
     const uniq = [...new Set(prep)].slice(0, 3);
@@ -1718,6 +1743,7 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
       if (!h) return;
       const side = s.side || prev.side || "right";
       s.how = h.replace(/\{side\}/g, side).replace(/\{other\}/g, side === "right" ? "left" : "right");
+      s.howT = h; s.howSide = side; // template and side, so the app can say it in another language
     });
     const sections = [...new Set(steps.map(s => s.section))];
     const props = [...new Set(steps.map(s => BY[s.id].prop).filter(Boolean))];
@@ -1822,7 +1848,8 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 </script>
 <script>// Profile: who is practising, without accounts.
 // A person carries a code like "calm young heron" / "ruhiger junger Reiher":
-//   animal = their own symbol, chosen once, never changes (like a kindergarten coat-hook symbol)
+//   animal = their nature, read from three small tests (strong but stiff → bear, flexible → cat, …); one of three per nature
+//            is chosen, so it is both meaningful and their own
 //   age    = level (skill): baby → young → grown → wise → ancient
 //   tempo  = cardio/pace: calm → lively → swift
 // What they pick each day: a theme (like choosing a cuisine) and a length.
@@ -1830,20 +1857,45 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   const POSES = (root.YogaPoses || require("./poses.js")).POSES;
   const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
 
-  // Singular, picturable, no sound-alikes; g = German gender for adjective endings.
-  const ANIMALS = [
-    ["heron", "Heron", "Reiher", "m"], ["wolf", "Wolf", "Wolf", "m"], ["fox", "Fox", "Fuchs", "m"], ["bear", "Bear", "Bär", "m"],
-    ["owl", "Owl", "Eule", "f"], ["otter", "Otter", "Otter", "m"], ["hedgehog", "Hedgehog", "Igel", "m"], ["squirrel", "Squirrel", "Eichhörnchen", "n"],
-    ["rabbit", "Rabbit", "Kaninchen", "n"], ["turtle", "Turtle", "Schildkröte", "f"], ["dolphin", "Dolphin", "Delfin", "m"], ["whale", "Whale", "Wal", "m"],
-    ["penguin", "Penguin", "Pinguin", "m"], ["panda", "Panda", "Panda", "m"], ["koala", "Koala", "Koala", "m"], ["lion", "Lion", "Löwe", "m"],
-    ["tiger", "Tiger", "Tiger", "m"], ["zebra", "Zebra", "Zebra", "n"], ["giraffe", "Giraffe", "Giraffe", "f"], ["elephant", "Elephant", "Elefant", "m"],
-    ["camel", "Camel", "Kamel", "n"], ["flamingo", "Flamingo", "Flamingo", "m"], ["swan", "Swan", "Schwan", "m"], ["eagle", "Eagle", "Adler", "m"],
-    ["falcon", "Falcon", "Falke", "m"], ["parrot", "Parrot", "Papagei", "m"], ["frog", "Frog", "Frosch", "m"], ["butterfly", "Butterfly", "Schmetterling", "m"],
-    ["bee", "Bee", "Biene", "f"], ["ladybird", "Ladybird", "Marienkäfer", "m"], ["seal", "Seal", "Robbe", "f"], ["octopus", "Octopus", "Krake", "m"],
-    ["starfish", "Starfish", "Seestern", "m"], ["badger", "Badger", "Dachs", "m"], ["beaver", "Beaver", "Biber", "m"],
-    ["raccoon", "Raccoon", "Waschbär", "m"], ["llama", "Llama", "Lama", "n"], ["kangaroo", "Kangaroo", "Känguru", "n"], ["cat", "Cat", "Katze", "f"],
-    ["horse", "Horse", "Pferd", "n"], ["goat", "Goat", "Ziege", "f"], ["mouse", "Mouse", "Maus", "f"],
-  ].map(([id, en, de, g]) => ({ id, en, de, g }));
+  // Natures: what the body brings and what the practice works on. Three animals each (singular, picturable, no sound-alikes;
+  // g = German gender for adjective endings). work = themes Chef's choice leans to; hard = pose families that get longer holds
+  // and props; peaks = preferred peak themes; focus = tags the composer favours; challenge = extra challenge offers.
+  const NATURES = [
+    { id: "stiff", en: "Strong, but stiff", de: "Stark, aber steif", short: "strong but stiff", shortDe: "stark, aber steif",
+      textDe: "Kraft fällt dir leicht; Vorwärtsbeugen und Hüften brauchen Zeit. Deine Praxis setzt auf Beweglichkeit: Beinrückseite, Hüften und Schultern, mit längeren Haltezeiten und Hilfsmitteln.",
+      text: "Strength comes easily; folds and hips take time. Your practice leans towards mobility: hamstrings, hips and shoulders, with longer holds and props.",
+      animals: [["bear", "Bear", "Bär", "m"], ["bison", "Bison", "Bison", "m"], ["gorilla", "Gorilla", "Gorilla", "m"]],
+      work: ["hamstrings", "hips", "shoulders", "calm"], hard: ["forward fold", "hip opener"], focus: ["hamstrings", "hips"], peaks: ["pk-halfsplits", "pk-pigeon", "pk-triangle", "pk-handtoe"] },
+    { id: "flexible", en: "Flexible, less strong", de: "Beweglich, weniger kräftig", short: "flexible, less strong", shortDe: "beweglich, weniger kräftig",
+      textDe: "Vorwärtsbeugen fallen dir leicht; dich selbst zu halten ist Arbeit. Deine Praxis setzt auf Kraft und Stabilität: Rumpf, Arme und kräftige Standhaltungen.",
+      text: "Folds come easily; holding yourself up takes work. Your practice leans towards strength and stability: core, arms and strong standing poses.",
+      animals: [["cat", "Cat", "Katze", "f"], ["octopus", "Octopus", "Krake", "m"], ["seal", "Seal", "Robbe", "f"]],
+      work: ["core", "balance", "flow"], hard: ["core", "arm balance"], focus: ["core", "legs"], peaks: ["pk-sideplank", "pk-boat", "pk-w3", "pk-dolphin", "pk-revchair"], extraCore: 1 },
+    { id: "power", en: "Strong and flexible", de: "Stark und beweglich", short: "strong and flexible", shortDe: "stark und beweglich",
+      textDe: "Du bringst beides mit. Deine Praxis setzt auf Herausforderung: Armbalancen, tiefe Rückbeugen und längere Flows.",
+      text: "You bring both. Your practice leans towards challenge: arm balances, deep backbends and longer flows.",
+      animals: [["tiger", "Tiger", "Tiger", "m"], ["panther", "Panther", "Panther", "m"], ["dolphin", "Dolphin", "Delfin", "m"]],
+      work: ["backbends", "core", "balance", "flow"], hard: [], focus: ["core", "back"], peaks: ["pk-crow", "pk-wheel", "pk-camel", "pk-dancer", "pk-halfmoon"], challenge: 1, extraCore: 1 },
+    { id: "balance", en: "Steady balance", de: "Gutes Gleichgewicht", short: "steady balance", shortDe: "gutes Gleichgewicht",
+      textDe: "Du stehst sicher auf einem Bein. Deine Praxis nutzt das Gleichgewicht als Anker und baut Beweglichkeit und Kraft darum herum auf.",
+      text: "You stand steady on one leg. Your practice uses balance as the anchor and builds mobility and strength around it.",
+      animals: [["heron", "Heron", "Reiher", "m"], ["flamingo", "Flamingo", "Flamingo", "m"], ["crane", "Crane", "Kranich", "m"]],
+      work: ["balance", "hamstrings", "hips", "flow"], hard: ["forward fold"], focus: ["balance", "hamstrings"], peaks: ["pk-halfmoon", "pk-w3", "pk-dancer", "pk-eagle", "pk-handtoe"] },
+    { id: "allround", en: "All-rounder", de: "Allrounder", short: "all-rounder", shortDe: "Allrounder",
+      textDe: "Nichts sticht heraus, nichts hält dich zurück. Deine Praxis bringt Abwechslung: von allem etwas.",
+      text: "Nothing stands out, nothing holds you back. Your practice brings variety: a bit of everything.",
+      animals: [["fox", "Fox", "Fuchs", "m"], ["wolf", "Wolf", "Wolf", "m"], ["otter", "Otter", "Otter", "m"]],
+      work: ["flow", "backbends", "twists", "balance", "hips", "hamstrings", "core", "shoulders"], hard: [], focus: [], peaks: [] },
+    { id: "gentle", en: "Gentle start", de: "Sanfter Start", short: "gentle start", shortDe: "sanfter Start",
+      textDe: "Kraft, Beweglichkeit und Gleichgewicht wachsen alle noch. Deine Praxis baut alles Schritt für Schritt auf, in Ruhe.",
+      text: "Strength, flexibility and balance are all still growing. Your practice builds everything step by step, calmly.",
+      animals: [["panda", "Panda", "Panda", "m"], ["koala", "Koala", "Koala", "m"], ["turtle", "Turtle", "Schildkröte", "f"]],
+      work: ["calm", "flow", "hips", "hamstrings"], hard: ["arm balance", "core"], focus: ["hips", "hamstrings"], peaks: ["pk-triangle", "pk-halfsplits", "pk-pigeon"], pace: 1.5 },
+  ];
+  const NATURE = Object.fromEntries(NATURES.map(n => [n.id, n]));
+  const ANIMALS = NATURES.flatMap(n => n.animals.map(([id, en, de, g]) => ({ id, en, de, g, nature: n.id })));
+  // Animals from the first version (free choice) → ask for the three tests again.
+  const OLD_ANIMALS = ["wolf", "owl", "hedgehog", "squirrel", "rabbit", "whale", "penguin", "lion", "zebra", "giraffe", "elephant", "camel", "swan", "eagle", "falcon", "parrot", "frog", "butterfly", "bee", "ladybird", "starfish", "badger", "beaver", "raccoon", "llama", "kangaroo", "horse", "goat", "mouse"];
   const ANIMAL = Object.fromEntries(ANIMALS.map(a => [a.id, a]));
 
   // Age = level. stem = German adjective stem (endings added by gender), baby is a compound in German.
@@ -1863,34 +1915,39 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   // Level = skill: which poses, which adaptations, how much intensity.
   const LEVELS = [
     { n: 1, name: "First steps", de: "Erste Schritte", maxLvl: 1, energy: "low", swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" },
-      text: "New to yoga or back after a long break: basic poses, gentle versions, no Chaturanga." },
+      text: "New to yoga or back after a long break: basic poses, gentle versions, no Chaturanga.",
+      textDe: "Neu im Yoga oder zurück nach langer Pause: Grundhaltungen, sanfte Varianten, kein Chaturanga." },
     { n: 2, name: "Foundation", de: "Fundament", maxLvl: 1, energy: "low", swap: { chaturanga: null },
-      text: "Knows the basics: simple flows, Chaturanga still left out." },
+      text: "Knows the basics: simple flows, Chaturanga still left out.",
+      textDe: "Kennt die Grundlagen: einfache Flows, Chaturanga noch ausgelassen." },
     { n: 3, name: "Steady", de: "Sicher", maxLvl: 2, energy: "medium", swap: {},
-      text: "Practises regularly: full vinyasa, intermediate poses, a peak with preparation." },
+      text: "Practises regularly: full vinyasa, intermediate poses, a peak with preparation.",
+      textDe: "Übt regelmäßig: volle Vinyasa, mittlere Haltungen, ein Höhepunkt mit Vorbereitung." },
     { n: 4, name: "Strong practice", de: "Kräftige Praxis", maxLvl: 2, energy: "high", swap: {},
-      text: "Confident: more rounds, deeper backbends, challenge offers." },
+      text: "Confident: more rounds, deeper backbends, challenge offers.",
+      textDe: "Sicher: mehr Runden, tiefere Rückbeugen, Herausforderungen zur Wahl." },
     { n: 5, name: "Advanced", de: "Fortgeschritten", maxLvl: 3, energy: "high", swap: {},
-      text: "Experienced: advanced peaks, Wheel and wall inversions as challenges." },
+      text: "Experienced: advanced peaks, Wheel and wall inversions as challenges.",
+      textDe: "Erfahren: anspruchsvolle Höhepunkte, Rad und Umkehrhaltungen an der Wand als Herausforderung." },
   ];
   // Tempo = cardio: breath length, pace (cost per pose change), intensity shift.
   const TEMPO_CFG = [
-    { n: 1, cycle: 7, pace: 6, energy: -1, style: "slow", text: "Slow breath, fewer changes, longer rests." },
-    { n: 2, cycle: 6, pace: 3, energy: 0, style: "vinyasa", text: "Steady breath and flow." },
-    { n: 3, cycle: 5, pace: 1.2, energy: 1, style: "vinyasa", text: "Quicker breath, more rounds and more poses." },
+    { n: 1, cycle: 7, pace: 6, energy: -1, style: "slow", text: "Slow breath, fewer changes, longer rests.", textDe: "Langsamer Atem, weniger Wechsel, längere Pausen." },
+    { n: 2, cycle: 6, pace: 3, energy: 0, style: "vinyasa", text: "Steady breath and flow.", textDe: "Gleichmäßiger Atem und Fluss." },
+    { n: 3, cycle: 5, pace: 1.2, energy: 1, style: "vinyasa", text: "Quicker breath, more rounds and more poses.", textDe: "Schnellerer Atem, mehr Runden und mehr Haltungen." },
   ];
 
   // Themes = what you cook today. peaks = preferred peak themes from blocks.js; focus = tags the composer favours.
   const THEMES = [
-    { id: "flow", en: "Classic flow", de: "Klassischer Flow", text: "A bit of everything.", focus: [], peaks: [] },
-    { id: "hamstrings", en: "Hamstrings", de: "Beinrückseite", text: "Forward folds and long legs.", focus: ["hamstrings"], peaks: ["pk-halfsplits", "pk-handtoe", "pk-triangle", "pk-w3", "pk-halfmoon"] },
-    { id: "hips", en: "Hips", de: "Hüften", text: "Lunges, squats and hip openers.", focus: ["hips"], peaks: ["pk-pigeon", "pk-eagle", "pk-crow"] },
-    { id: "backbends", en: "Backbends", de: "Rückbeugen", text: "Open the front body, a strong back.", focus: ["back"], peaks: ["pk-camel", "pk-bow", "pk-wheel", "pk-dancer"] },
-    { id: "twists", en: "Twists", de: "Drehungen", text: "Wring out the spine.", focus: ["back"], tags: ["twist"], peaks: ["pk-revchair"] },
-    { id: "balance", en: "Balance", de: "Gleichgewicht", text: "Standing on one leg, steady mind.", focus: ["balance"], peaks: ["pk-w3", "pk-halfmoon", "pk-dancer", "pk-eagle", "pk-handtoe"] },
-    { id: "core", en: "Core and arms", de: "Rumpf und Arme", text: "Plank, boat, arm balances.", focus: ["core"], peaks: ["pk-crow", "pk-sideplank", "pk-boat", "pk-dolphin"] },
-    { id: "shoulders", en: "Shoulders and sides", de: "Schultern und Flanken", text: "Side bends, open shoulders.", focus: [], tags: ["shoulders", "sidebody"], peaks: ["pk-dolphin", "pk-triangle", "pk-halfmoon", "pk-sideplank"] },
-    { id: "calm", en: "Calm", de: "Ruhe", text: "Slow, long holds, mostly on the floor.", focus: ["hips", "hamstrings"], style: "slow", energy: -1, cycle: 1, pace: 2, peaks: ["pk-pigeon", "pk-halfsplits", "pk-triangle"] },
+    { id: "flow", en: "Classic flow", de: "Klassischer Flow", text: "A bit of everything.", textDe: "Von allem etwas.", focus: [], peaks: [] },
+    { id: "hamstrings", en: "Hamstrings", de: "Beinrückseite", text: "Forward folds and long legs.", textDe: "Vorwärtsbeugen und lange Beine.", focus: ["hamstrings"], peaks: ["pk-halfsplits", "pk-handtoe", "pk-triangle", "pk-w3", "pk-halfmoon"] },
+    { id: "hips", en: "Hips", de: "Hüften", text: "Lunges, squats and hip openers.", textDe: "Ausfallschritte, Hocken und Hüftöffner.", focus: ["hips"], peaks: ["pk-pigeon", "pk-eagle", "pk-crow"] },
+    { id: "backbends", en: "Backbends", de: "Rückbeugen", text: "Open the front body, a strong back.", textDe: "Die Vorderseite öffnen, ein starker Rücken.", focus: ["back"], peaks: ["pk-camel", "pk-bow", "pk-wheel", "pk-dancer"] },
+    { id: "twists", en: "Twists", de: "Drehungen", text: "Wring out the spine.", textDe: "Die Wirbelsäule auswringen.", focus: ["back"], tags: ["twist"], peaks: ["pk-revchair"] },
+    { id: "balance", en: "Balance", de: "Gleichgewicht", text: "Standing on one leg, steady mind.", textDe: "Auf einem Bein stehen, ruhiger Geist.", focus: ["balance"], peaks: ["pk-w3", "pk-halfmoon", "pk-dancer", "pk-eagle", "pk-handtoe"] },
+    { id: "core", en: "Core and arms", de: "Rumpf und Arme", text: "Plank, boat, arm balances.", textDe: "Brett, Boot, Armbalancen.", focus: ["core"], peaks: ["pk-crow", "pk-sideplank", "pk-boat", "pk-dolphin"] },
+    { id: "shoulders", en: "Shoulders and sides", de: "Schultern und Flanken", text: "Side bends, open shoulders.", textDe: "Seitbeugen, offene Schultern.", focus: [], tags: ["shoulders", "sidebody"], peaks: ["pk-dolphin", "pk-triangle", "pk-halfmoon", "pk-sideplank"] },
+    { id: "calm", en: "Calm", de: "Ruhe", text: "Slow, long holds, mostly on the floor.", textDe: "Langsam, lange Haltezeiten, meist am Boden.", focus: ["hips", "hamstrings"], style: "slow", energy: -1, cycle: 1, pace: 2, peaks: ["pk-pigeon", "pk-halfsplits", "pk-triangle"] },
   ];
   const THEME = Object.fromEntries(THEMES.map(t => [t.id, t]));
 
@@ -1969,14 +2026,16 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     const care = (today.care || st.care || []).map(id => CARE_BY[id]).filter(Boolean);
     const skip = new Set((st.skip || []).concat(today.skip || []));
     const me = {}, swap = Object.assign({}, L.swap);
-    POSES.forEach(p => { me[p.id] = p.lvl > L.maxLvl ? "new" : "ok"; });
+    const nat = NATURE[(ANIMAL[st.animal] || {}).nature] || NATURE.allround;
+    POSES.forEach(p => { me[p.id] = p.lvl > L.maxLvl ? "new" : nat.hard.includes(p.cat) ? "hard" : "ok"; });
     care.forEach(c => { c.avoid.forEach(id => { me[id] = "new"; }); Object.assign(swap, c.swap); });
     skip.forEach(id => { if (!BY[id] || KEEP.has(id)) return; if (CORE.has(id)) swap[id] = null; else me[id] = "new"; });
     Object.keys(swap).forEach(id => { if (me[id] === "new" && CORE.has(id)) me[id] = "ok"; });
     const lenF = minutes === 30 ? 1 : minutes === 45 ? 0.5 : 0.35;
     return {
-      minutes, energy, style: th.style || T.style, cycle: T.cycle + (th.cycle || 0), pace: T.pace * lenF + (th.pace || 0),
-      focus: th.focus.concat(th.tags || []), peaks: th.peaks, me, swap, challenges: today.challenges || {},
+      minutes, energy, style: th.style || T.style, cycle: T.cycle + (th.cycle || 0), pace: T.pace * lenF + (th.pace || 0) + (nat.pace || 0),
+      focus: [...new Set(th.focus.concat(th.tags || [], nat.focus))], peaks: th.peaks, naturePeaks: nat.peaks, extraOffers: nat.challenge || 0, extraCore: nat.extraCore || 0, nature: nat.id,
+      me, swap, challenges: today.challenges || {},
       history: today.history || [], seed: today.seed || 1,
     };
   }
@@ -1999,6 +2058,23 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     return { level, tempo };
   }
 
+  // Nature from the three small tests and the sports background. Returns the best nature first, then the rest in order of fit.
+  function natureOf(a) {
+    const mv = new Set(a.moves || []);
+    const F = (a.fold ?? 1) / 4 + (mv.has("dance") ? 0.2 : 0);
+    const S = (a.plank ?? 2) / 3 + (mv.has("strength") ? 0.15 : 0) + (mv.has("martial") ? 0.1 : 0);
+    const B = (a.balance ?? 1) / 2 + (mv.has("martial") || mv.has("dance") ? 0.15 : 0);
+    const fit = {
+      gentle: (1 - F) + (1 - S) + (1 - B) - 1.9,
+      stiff: S - F - 0.3 - (F >= 0.6 ? 0.5 : 0),
+      flexible: F - S - 0.3 - (S >= 0.6 ? 0.5 : 0),
+      power: Math.min(F, S) - 0.6,
+      balance: B - Math.max(F, S) - 0.05 + (B >= 0.9 ? 0.15 : 0),
+      allround: 0.35 - Math.abs(F - S) * 0.5 - Math.abs(B - (F + S) / 2) * 0.3,
+    };
+    return Object.entries(fit).sort((x, y) => y[1] - x[1]).map(([id]) => id);
+  }
+
   // ---------- feedback → next code ----------
   // poses: too easy | just right | too hard;  pace: too slow | just right | too fast
   function next(st, fb) {
@@ -2014,25 +2090,411 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     return { state: out, story };
   }
 
-  root.YogaProfile = { ANIMALS, ANIMAL, AGES, TEMPOS, LEVELS, TEMPO_CFG, THEMES, THEME, CARE, CARE_BY, CORE, KEEP, code, parse, suggestAnimals, options, assess, next, norm };
+  root.YogaProfile = { NATURES, NATURE, OLD_ANIMALS, natureOf, ANIMALS, ANIMAL, AGES, TEMPOS, LEVELS, TEMPO_CFG, THEMES, THEME, CARE, CARE_BY, CORE, KEEP, code, parse, suggestAnimals, options, assess, next, norm };
   if (typeof module !== "undefined") module.exports = root.YogaProfile;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>// German for everything the app says during a practice. English is the source; German is keyed by the English text.
+// Side words in German hints are written for the right side: {S:rechten} = this side, {O:rechten} = the other side.
+// For the left side "recht…" becomes "link…" (and the other way round for {O:…}), so endings stay correct.
+(function (root) {
+  const HINTS_DE = {
+    "Come onto hands and knees": "In den Vierfüßlerstand kommen",
+    "Come up into a deep squat": "In eine tiefe Hocke kommen",
+    "Hands down, knees to the floor": "Hände ab, Knie auf den Boden",
+    "Tuck the toes, lift the hips": "Zehen aufstellen, Hüfte heben",
+    "Hips back to the heels": "Hüfte zurück zu den Fersen",
+    "Walk the hands forward, hips stay over the knees": "Hände nach vorn wandern, Hüfte bleibt über den Knien",
+    "Walk the feet to the hands": "Füße zu den Händen gehen",
+    "Step or hop the feet to the hands": "Füße zu den Händen steigen oder springen",
+    "Lift the {side} leg up and back": "{S:Rechtes} Bein nach hinten oben heben",
+    "Step the {side} foot forward, rise up": "{S:Rechten} Fuß nach vorn setzen, aufrichten",
+    "Step the {side} foot forward, back heel down, rise up": "{S:Rechten} Fuß nach vorn, hintere Ferse ab, aufrichten",
+    "Step the {side} foot forward, back knee down": "{S:Rechten} Fuß nach vorn, hinteres Knie ab",
+    "Step the {side} foot forward, back heel down, open to the side": "{S:Rechten} Fuß nach vorn, hintere Ferse ab, zur Seite öffnen",
+    "Bring the {side} knee forward behind the wrist, lower down": "{S:Rechtes} Knie nach vorn hinter das Handgelenk, absinken",
+    "Hands down, step back to Plank": "Hände ab, zurück ins Brett",
+    "Straighten the legs, fold": "Beine strecken, vorbeugen",
+    "Bend the knees, sweep the arms up": "Knie beugen, Arme nach oben",
+    "Stand up tall": "Aufrecht stehen",
+    "Squat, hands down, knees onto the upper arms": "Hocke, Hände ab, Knie auf die Oberarme",
+    "Bend the front knee, both hands inside the front foot": "Vorderes Knie beugen, beide Hände innen neben den vorderen Fuß",
+    "Roll to Plank, then onto the {other} hand": "Ins Brett, dann auf die {O:rechte} Hand drehen",
+    "Lower down onto the belly, forearms down": "Auf den Bauch ablegen, Unterarme ab",
+    "Down Dog, then lower to the forearms": "Herabschauender Hund, dann auf die Unterarme",
+    "Slide forward onto the belly, forearms down": "Nach vorn auf den Bauch gleiten, Unterarme ab",
+    "Walk to the wall, kick up one leg at a time": "Zur Wand gehen, ein Bein nach dem anderen hochschwingen",
+    "Come down slowly, rest in Child's Pose": "Langsam herunterkommen, in der Stellung des Kindes ruhen",
+    "Lower down, rest a breath, press up again": "Ablegen, einen Atemzug ruhen, wieder hochdrücken",
+    "Lower slowly, forearms under, lift the chest": "Langsam ablegen, Unterarme unter den Körper, Brust heben",
+    "Step or float back to Plank": "Zurück ins Brett steigen oder schweben",
+    "Open hips and arms to the side": "Hüfte und Arme zur Seite öffnen",
+    "Back heel down, open hips and arms to the side": "Hintere Ferse ab, Hüfte und Arme zur Seite öffnen",
+    "Shift forward, lift the back leg": "Gewicht nach vorn, hinteres Bein heben",
+    "Step the back foot down into the lunge": "Hinteren Fuß absetzen, in den Ausfallschritt",
+    "Hand down, open the hips to the side": "Hand ab, Hüfte zur Seite öffnen",
+    "Lower the lifted foot, hips face forward": "Gehobenen Fuß absetzen, Hüfte nach vorn",
+    "Front palm up, reach up and back": "Vordere Handfläche nach oben, nach oben und hinten strecken",
+    "Forearm to the front thigh, top arm over the ear": "Unterarm auf den vorderen Oberschenkel, oberer Arm über das Ohr",
+    "Straighten the front leg, reach forward, then down": "Vorderes Bein strecken, nach vorn und dann nach unten reichen",
+    "Straighten the front leg, top arm up": "Vorderes Bein strecken, oberer Arm nach oben",
+    "Turn the hips to face the front leg, hinge forward": "Hüfte zum vorderen Bein drehen, nach vorn beugen",
+    "Bend the front knee, hand forward, lift the back leg": "Vorderes Knie beugen, Hand nach vorn, hinteres Bein heben",
+    "Hips back over the knee, straighten the front leg": "Hüfte zurück über das Knie, vorderes Bein strecken",
+    "Bend the front knee, hips forward": "Vorderes Knie beugen, Hüfte nach vorn",
+    "Both hands inside the front foot": "Beide Hände innen neben den vorderen Fuß",
+    "Hips back, straighten the front leg": "Hüfte zurück, vorderes Bein strecken",
+    "Hands down, step back to Down Dog": "Hände ab, zurück in den Hund",
+    "Tuck the back toes, step back to Down Dog": "Hintere Zehen aufstellen, zurück in den Hund",
+    "Lower the leg, step back to Down Dog": "Bein absetzen, zurück in den Hund",
+    "Walk the feet to the hands, roll up slowly": "Füße zu den Händen, langsam aufrollen",
+    "Roll up slowly": "Langsam aufrollen",
+    "Weight into the {other} foot, lift the {side} foot": "Gewicht auf den {O:rechten} Fuß, {S:rechten} Fuß heben",
+    "Weight into the {other} foot, catch the {side} foot behind": "Gewicht auf den {O:rechten} Fuß, {S:rechten} Fuß hinten greifen",
+    "Sit low, cross the {side} leg over": "Tief setzen, {S:rechtes} Bein überschlagen",
+    "Hinge forward, lift the {side} leg back": "Nach vorn kippen, {S:rechtes} Bein nach hinten heben",
+    "Belt around the {side} foot, lift the leg forward": "Gurt um den {S:rechten} Fuß, Bein nach vorn heben",
+    "Switch sides": "Seite wechseln",
+    "Unwind, switch sides": "Lösen, Seite wechseln",
+    "Stand up, switch sides": "Aufrichten, Seite wechseln",
+    "Switch legs": "Bein wechseln",
+    "Chair, hands to heart, twist to the {side}": "Stuhl, Hände vor die Brust, nach {S:rechts} drehen",
+    "Back to centre, twist the other way": "Zurück zur Mitte, zur anderen Seite drehen",
+    "Come to sit, lift the feet": "Hinsetzen, Füße heben",
+    "Rest a breath, lift again": "Einen Atemzug ruhen, wieder heben",
+    "Plank, roll onto the {other} hand": "Brett, auf die {O:rechte} Hand drehen",
+    "Back through Plank, other side": "Durchs Brett zurück, andere Seite",
+    "Lower to the forearms": "Auf die Unterarme gehen",
+    "Walk in, kick up one leg at a time": "Heranlaufen, ein Bein nach dem anderen hochschwingen",
+    "Knees down, hips back": "Knie ab, Hüfte zurück",
+    "Lower down onto the belly": "Auf den Bauch ablegen",
+    "Roll over onto the belly": "Auf den Bauch rollen",
+    "Arms back, lift chest and legs": "Arme nach hinten, Brust und Beine heben",
+    "Push back to Child's Pose": "Zurück in die Stellung des Kindes",
+    "Slide forward onto the belly": "Nach vorn auf den Bauch gleiten",
+    "Bend the knees, catch the ankles": "Knie beugen, Fußgelenke greifen",
+    "Release slowly, push back to Child's Pose": "Langsam lösen, zurück in die Stellung des Kindes",
+    "Kneel up, hands to the lower back": "Aufknien, Hände an den unteren Rücken",
+    "Come up with the chest first, rest": "Mit der Brust zuerst hochkommen, ruhen",
+    "Roll onto the back, feet hip-width": "Auf den Rücken rollen, Füße hüftbreit",
+    "Lower down, one breath, lift again": "Ablegen, ein Atemzug, wieder heben",
+    "Hands by the ears, press up": "Hände neben die Ohren, hochdrücken",
+    "Chin in, lower slowly": "Kinn zur Brust, langsam ablegen",
+    "Lower slowly, hug the knees": "Langsam ablegen, Knie umarmen",
+    "Lower down, forearms under, lift the chest": "Ablegen, Unterarme unter den Körper, Brust heben",
+    "Release, hug the knees": "Lösen, Knie umarmen",
+    "Lower down, hug the knees": "Ablegen, Knie umarmen",
+    "Back through Down Dog, other side": "Über den Hund zurück, andere Seite",
+    "Belt around the {side} foot, extend the leg up": "Gurt um den {S:rechten} Fuß, Bein nach oben strecken",
+    "Roll down, belt around the {side} foot": "Abrollen, Gurt um den {S:rechten} Fuß",
+    "Roll up to sit, legs long": "Zum Sitzen aufrollen, Beine lang",
+    "Inhale tall, exhale fold": "Einatmend aufrichten, ausatmend vorbeugen",
+    "Bend the {other} knee, sole to the inner thigh": "{O:Rechtes} Knie beugen, Fußsohle an den inneren Oberschenkel",
+    "Soles together, knees open": "Fußsohlen zusammen, Knie öffnen",
+    "Cross the {side} foot over, twist": "{S:Rechten} Fuß überkreuzen, drehen",
+    "Roll down onto the back": "Auf den Rücken abrollen",
+    "Hug the {side} knee in, let it cross": "{S:Rechtes} Knie heranziehen, über den Körper sinken lassen",
+    "Through the centre to the other side": "Durch die Mitte zur anderen Seite",
+    "Both knees up, hold the feet": "Beide Knie hoch, Füße greifen",
+    "Scoot the hips to the wall, legs up": "Hüfte an die Wand rutschen, Beine hoch",
+    "Lengthen the legs, let everything go": "Beine lang, alles loslassen",
+    "Slide away from the wall, let everything go": "Von der Wand weggleiten, alles loslassen",
+    "Shorten the stance a little, hinge over the front leg": "Stand etwas verkürzen, über das vordere Bein beugen",
+    "Weight into the front foot, lift the back leg": "Gewicht auf den vorderen Fuß, hinteres Bein heben",
+    "Bend the front knee, rise up": "Vorderes Knie beugen, aufrichten",
+    "Back knee down, hands to heart, twist": "Hinteres Knie ab, Hände vor die Brust, drehen",
+    "Unwind, arms up": "Lösen, Arme hoch",
+    "Turn the toes out, bend the knees, sit low": "Zehen nach außen, Knie beugen, tief setzen",
+    "Straighten the legs, arms out": "Beine strecken, Arme zur Seite",
+    "Shift into the {side} leg, other leg long": "Gewicht ins {S:rechte} Bein, anderes Bein lang",
+    "Move through the middle to the other side": "Durch die Mitte zur anderen Seite",
+    "Come back to the middle, sit low": "Zurück zur Mitte, tief setzen",
+    "Come to the middle into a deep squat": "In der Mitte in die tiefe Hocke",
+    "Step the feet together": "Füße zusammen",
+    "Turn the {side} foot out, reach and tip over": "{S:Rechten} Fuß ausdrehen, strecken und kippen",
+    "Come up, feet parallel, arms out": "Aufrichten, Füße parallel, Arme zur Seite",
+    "Bend the front knee, back knee down": "Vorderes Knie beugen, hinteres Knie ab",
+    "Turn to the side, sit into the {side} leg": "Zur Seite drehen, ins {S:rechte} Bein setzen",
+    "Turn to face the {side} leg, back knee down": "Zum {S:rechten} Bein drehen, hinteres Knie ab",
+    "Lift the back knee, straighten the front leg, hinge forward": "Hinteres Knie heben, vorderes Bein strecken, nach vorn beugen",
+    "Palms together overhead, lean to the {other}": "Handflächen über dem Kopf zusammen, nach {O:rechts} neigen",
+    "Through the middle, lean the other way": "Durch die Mitte, zur anderen Seite neigen",
+    "Step the feet wide, sit low": "Füße weit auseinander, tief setzen",
+    "Step the feet wide, arms out": "Füße weit auseinander, Arme zur Seite",
+    "Step the {side} foot back, knee down": "{S:Rechten} Fuß nach hinten, Knie ab",
+    "Step back to Plank": "Zurück ins Brett",
+    "Lower to the floor, lift the chest": "Auf den Boden ablegen, Brust heben",
+    "Step the back foot forward, fold": "Hinteren Fuß nach vorn, vorbeugen",
+    "Shift forward to Plank": "Nach vorn ins Brett",
+    "Hips up and back": "Hüfte nach oben und hinten",
+    "Roll onto the {other} hand, stack the feet": "Auf die {O:rechte} Hand drehen, Füße übereinander",
+    "Back to Plank": "Zurück ins Brett",
+    "Hands down, knees onto the upper arms, lean forward": "Hände ab, Knie auf die Oberarme, nach vorn lehnen",
+    "Feet down into the squat": "Füße ab in die Hocke",
+    "Cross the {side} leg over, wrap the arms": "{S:Rechtes} Bein überschlagen, Arme umwickeln",
+    "Unwind into Chair": "Lösen in den Stuhl",
+    "Belt around the {side} foot, extend the leg forward": "Gurt um den {S:rechten} Fuß, Bein nach vorn strecken",
+    "Release the foot, stand tall": "Fuß lösen, aufrecht stehen",
+    "Feet wide, sink into a squat": "Füße weit, in die Hocke sinken",
+    "Lift the hips, fold": "Hüfte heben, vorbeugen",
+    "Forearms down, tuck the toes, lift the hips": "Unterarme ab, Zehen aufstellen, Hüfte heben",
+    "Lean back, lift the feet": "Zurücklehnen, Füße heben",
+    "Feet down, sit tall": "Füße ab, aufrecht sitzen",
+    "Rest a breath, catch the ankles again": "Einen Atemzug ruhen, Fußgelenke wieder greifen",
+    "Come up, then go back again": "Hochkommen, dann wieder nach hinten",
+    "Stack the knees, {side} on top": "Knie übereinander, {S:rechtes} oben",
+    "Switch the knees": "Knie wechseln",
+    "Feet down, let the knees fall to the {side}": "Füße ab, Knie nach {S:rechts} sinken lassen",
+    "Stand tall at the front of the mat": "Aufrecht vorn auf der Matte stehen",
+    "Arms up": "Arme hoch",
+    "Fold forward, knees soft": "Vorbeugen, Knie weich",
+    "Halfway lift, long back": "Halb aufrichten, langer Rücken",
+    "Bend the knees, sit back, arms up": "Knie beugen, nach hinten setzen, Arme hoch",
+    "Step the {side} foot forward, back heel lifted, rise up": "{S:Rechten} Fuß nach vorn, hintere Ferse gehoben, aufrichten",
+    "{side} foot forward, open hips and arms to the side": "{S:Rechter} Fuß vorn, Hüfte und Arme zur Seite öffnen",
+    "Hips face the {side} leg, hinge forward": "Hüfte zum {S:rechten} Bein, nach vorn beugen",
+    "Plank": "Brett",
+    "Lower halfway, elbows in": "Halb absenken, Ellbogen nah am Körper",
+    "Roll over the toes, chest forward": "Über die Zehen rollen, Brust nach vorn",
+    "Hips up and back to Down Dog": "Hüfte nach oben und hinten in den Hund",
+    "Lower down, lift the chest": "Ablegen, Brust heben",
+    "Lie on the belly, lift chest and legs": "Auf den Bauch legen, Brust und Beine heben",
+    "Round the back": "Rücken runden",
+    "Belly down, chest forward": "Bauch sinken lassen, Brust nach vorn",
+    "Hips back to the heels, rest": "Hüfte zu den Fersen, ruhen",
+    "Sit cross-legged": "Im Schneidersitz sitzen",
+    "Legs long, fold forward": "Beine lang, vorbeugen",
+    "One leg long, {other} sole to the inner thigh, fold over the {side} leg": "Ein Bein lang, {O:rechte} Fußsohle an den inneren Oberschenkel, über das {S:rechte} Bein beugen",
+    "Lie on the back, feet hip-width, lift the hips": "Auf den Rücken legen, Füße hüftbreit, Hüfte heben",
+    "Lie on the back, belt around the {side} foot": "Auf den Rücken legen, Gurt um den {S:rechten} Fuß",
+    "Lie on the back, let the {side} knee cross": "Auf den Rücken legen, {S:rechtes} Knie über den Körper sinken lassen",
+    "Lie on the back, knees up, hold the feet": "Auf den Rücken legen, Knie hoch, Füße greifen",
+    "Lie down, let everything go": "Hinlegen, alles loslassen",
+    "Hinge forward, lift the {other} leg back": "Nach vorn kippen, {O:rechtes} Bein nach hinten heben",
+    "Catch the {other} foot behind, lean forward": "{O:Rechten} Fuß hinten greifen, nach vorn lehnen",
+    "Hand down, lift the back leg, open to the side": "Hand ab, hinteres Bein heben, zur Seite öffnen",
+    "Sit low, cross the {side} leg over, wrap the arms": "Tief setzen, {S:rechtes} Bein überschlagen, Arme umwickeln",
+    "Both hands inside the {side} foot": "Beide Hände innen neben den {S:rechten} Fuß",
+    "Walk the hands forward, hips over the knees": "Hände nach vorn wandern, Hüfte über den Knien",
+    "Kneel up, hands to the lower back, lift the chest": "Aufknien, Hände an den unteren Rücken, Brust heben",
+    "Slide into the splits, books under the hands": "In den Spagat gleiten, Bücher unter den Händen",
+    "Lie on the belly, forearms down": "Auf den Bauch legen, Unterarme ab",
+    "Sit, lean back, lift the feet": "Sitzen, zurücklehnen, Füße heben",
+    "Forearms down, lift the hips": "Unterarme ab, Hüfte heben",
+    "Sit tall, legs long": "Aufrecht sitzen, Beine lang",
+    "Sit, soles together": "Sitzen, Fußsohlen zusammen",
+    "Sit tall, cross the {side} foot over, twist": "Aufrecht sitzen, {S:rechten} Fuß überkreuzen, drehen",
+    "Sit, stack the knees, {side} on top": "Sitzen, Knie übereinander, {S:rechtes} oben",
+    "Sit, feet onto the thighs only if easy": "Sitzen, Füße nur auf die Oberschenkel, wenn es leicht geht",
+    "Lie on the back, forearms under, lift the chest": "Auf den Rücken legen, Unterarme unter den Körper, Brust heben",
+    "Lie on the back, hug the knees": "Auf den Rücken legen, Knie umarmen",
+    "Hips to the wall, legs up": "Hüfte an die Wand, Beine hoch",
+    "From the shoulders, feet over the head": "Von den Schultern aus, Füße über den Kopf",
+    "Lift the legs, hands support the back": "Beine heben, Hände stützen den Rücken",
+    "Forearms down, crown down, walk in": "Unterarme ab, Scheitel ab, heranlaufen",
+    "Forearms down, kick up at the wall": "Unterarme ab, an der Wand hochschwingen",
+    "Hands down, kick up at the wall": "Hände ab, an der Wand hochschwingen",
+    "Toes out, bend the knees, sit low": "Zehen nach außen, Knie beugen, tief setzen",
+    "Sit into the {side} leg, other leg long": "Ins {S:rechte} Bein setzen, anderes Bein lang",
+    "Hands to heart, elbow outside the {side} knee": "Hände vor die Brust, Ellbogen außen ans {S:rechte} Knie",
+  };
+
+  const CUES_DE = {
+    "tadasana": "Füße verwurzelt, Scheitel hebt sich, Schultern weich",
+    "urdhva-hastasana": "Nach oben strecken, Rippen bleiben weich",
+    "uttanasana": "Knie so weit beugen, wie du brauchst, Kopf hängen lassen",
+    "ardha-uttanasana": "Langer, gerader Rücken, Hände an die Schienbeine",
+    "utkatasana": "Nach hinten setzen, Gewicht in die Fersen",
+    "ashta-chandrasana": "Hintere Ferse gehoben, hinteres Bein kräftig",
+    "virabhadrasana-1": "Hintere Ferse ab, Hüfte zeigt nach vorn",
+    "virabhadrasana-2": "Vorderes Knie über dem Knöchel, Blick über die vordere Hand",
+    "trikonasana": "Hand an Schienbein oder Bücher, beide Taillenseiten lang",
+    "parsvottanasana": "Aus der Hüfte beugen, vorderes Knie darf leicht gebeugt sein",
+    "vrksasana": "Fuß an Wade oder Oberschenkel, nie ans Knie",
+    "phalakasana": "Eine Linie von den Fersen bis zum Kopf",
+    "chaturanga": "Ellbogen nah an den Rippen, Knie ab, wenn nötig",
+    "urdhva-mukha-svanasana": "Brust nach vorn, Schultern weg von den Ohren",
+    "adho-mukha-svanasana": "Knie weich, Hüfte hoch, Fersen abwechselnd senken",
+    "bhujangasana": "Flach und lang, wenig Gewicht in den Händen",
+    "salabhasana": "Brust und Beine heben, Nacken lang",
+    "bharmanasana": "Handgelenke unter den Schultern, Knie unter der Hüfte",
+    "marjaryasana": "Ausatmen, Rücken runden, Kinn zur Brust",
+    "bitilasana": "Einatmen, Bauch sinkt, Brust nach vorn",
+    "anjaneyasana": "Hinteres Knie ab, Hüfte sinkt nach vorn",
+    "ardha-hanumanasana": "Hüfte über dem hinteren Knie, vordere Zehen zeigen nach oben",
+    "balasana": "Knie weit oder zusammen, in den Rücken atmen",
+    "bakasana": "Knie hoch auf die Arme, Blick nach vorn",
+    "sukhasana": "Aufrecht sitzen, den Atem verlangsamen",
+    "paschimottanasana": "Knie dürfen gebeugt sein, aus der Hüfte beugen",
+    "janu-sirsasana": "Brust zum gestreckten Bein drehen",
+    "setu-bandha-sarvangasana": "Durch die Füße drücken, Knie zeigen nach vorn",
+    "urdhva-dhanurasana": "Hände neben die Ohren, gleichmäßig hochdrücken",
+    "supta-padangusthasana": "Gehobenes Knie weich, anderes Bein schwer am Boden",
+    "supta-matsyendrasana": "Knie über den Körper, beide Schultern schwer",
+    "ananda-balasana": "Füße oder Schienbeine halten, sanft hin und her schaukeln",
+    "savasana": "Ganz loslassen",
+    "virabhadrasana-3": "Hüfte waagerecht, lang durch Ferse und Fingerspitzen",
+    "natarajasana": "Fuß in die Hand drücken, Brust nach vorn",
+    "ardha-chandrasana": "Hüfte übereinander, gehobener Fuß angezogen",
+    "utthita-hasta-padangusthasana": "Standbein kräftig, gehobenes Knie darf sich beugen",
+    "garudasana": "Tief setzen, umwickeln, was sich umwickeln lässt, sonst Hände an die Schultern",
+    "utthita-parsvakonasana": "Lange Linie von der hinteren Ferse bis zu den oberen Fingerspitzen",
+    "viparita-virabhadrasana": "Vorderes Knie bleibt gebeugt, nach oben und hinten strecken",
+    "parivrtta-utkatasana": "Knie auf einer Höhe, Ellbogen außen am Knie, aus der Brust drehen",
+    "malasana": "Ellbogen drücken die Knie auseinander, Brust hebt sich",
+    "eka-pada-adho-mukha-svanasana": "Hüfte gerade, aus dem inneren Oberschenkel heben",
+    "utthan-pristhasana": "Hände innen neben dem vorderen Fuß, Hüfte schwer",
+    "uttana-shishosana": "Hüfte über den Knien, Brust sinkt zum Boden",
+    "ustrasana": "Hüfte nach vorn, erst die Brust heben, dann nach hinten",
+    "eka-pada-rajakapotasana": "Hüfte gerade ausrichten, Kissen unter die vordere Hüfte, wenn sie schwebt",
+    "hanumanasana": "Hüfte gerade, dort aufhören, wo das Atmen noch leicht ist",
+    "salamba-bhujangasana": "Ellbogen unter den Schultern, Brust nach vorn",
+    "dhanurasana": "Füße in die Hände drücken",
+    "paripurna-navasana": "Brust hebt sich, Knie beugen, wenn der Rücken rund wird",
+    "vasisthasana": "Hüfte heben, oberer Arm nach oben",
+    "ardha-pincha-mayurasana": "Unterarme parallel, Füße heranlaufen",
+    "dandasana": "Aufrecht sitzen, Beine in den Boden drücken",
+    "baddha-konasana": "Fußsohlen zusammen, auf einer Decke sitzen, Knie schwer",
+    "ardha-matsyendrasana": "Einatmend wachsen, ausatmend drehen",
+    "gomukhasana": "Gurt benutzen, die Hände müssen sich nicht berühren",
+    "padmasana": "Nur wenn die Knie es mögen, nie erzwingen",
+    "matsyasana": "Unterarme in den Boden drücken, Brust heben",
+    "apanasana": "Knie umarmen, sanft schaukeln",
+    "viparita-karani": "Beine ruhen an der Wand, Knie dürfen sich beugen",
+    "halasana": "Füße zum Boden oder auf einen Stuhl, Kopf nie drehen",
+    "salamba-sarvangasana": "Hände stützen den Rücken, Kopf nie drehen",
+    "sirsasana": "Gewicht in den Unterarmen, nicht im Kopf",
+    "pincha-mayurasana": "Unterarme in den Boden drücken, Rippen zurück",
+    "adho-mukha-vrksasana": "Den Boden wegdrücken, Beine zusammen",
+    "utthita-tadasana": "Füße weit, durch alle fünf Spitzen ausstrecken",
+    "utkata-konasana": "Knie über den Zehen, tief setzen, Kaktus-Arme",
+    "indudalasana": "Handflächen zusammen, zur Seite neigen, beide Füße fest",
+    "skandasana": "In ein Bein setzen, das andere lang, Zehen nach oben",
+    "parivrtta-anjaneyasana": "Hände vor die Brust, Ellbogen außen am vorderen Knie",
+  };
+
+  const PROPS_DE = {
+    "Books under the lower hand": "Bücher unter die untere Hand",
+    "Books under the hands": "Bücher unter die Hände",
+    "Folded towel under the back knee": "Gefaltetes Handtuch unter das hintere Knie",
+    "Cushion under the forehead": "Kissen unter die Stirn",
+    "Cushion in front of the face": "Kissen vor das Gesicht",
+    "Sit on a folded blanket": "Auf eine gefaltete Decke setzen",
+    "Blanket under the hips, belt around the feet": "Decke unter das Gesäß, Gurt um die Füße",
+    "Belt around the front foot": "Gurt um den vorderen Fuß",
+    "Belt or towel around the raised foot": "Gurt oder Handtuch um den gehobenen Fuß",
+    "Cushion under the bent knee": "Kissen unter das gebeugte Knie",
+    "Cushion under the knees": "Kissen unter die Knie",
+    "Belt around the lifted foot": "Gurt um den gehobenen Fuß",
+    "Forearm on the thigh or hand on books": "Unterarm auf den Oberschenkel oder Hand auf Bücher",
+    "Rolled towel under the heels": "Gerolltes Handtuch unter die Fersen",
+    "Books under the hands, towel under the knee": "Bücher unter die Hände, Handtuch unter das Knie",
+    "Toes tucked to raise the heels": "Zehen aufgestellt, damit die Fersen höher sind",
+    "Cushion under the front hip": "Kissen unter die vordere Hüfte",
+    "Books under the hands, cushion under the hips": "Bücher unter die Hände, Kissen unter das Gesäß",
+    "Belt around the ankles": "Gurt um die Fußgelenke",
+    "Folded blanket under the hips": "Gefaltete Decke unter das Gesäß",
+    "Cushions under the knees": "Kissen unter die Knie",
+    "Belt between the hands, cushion under the hips": "Gurt zwischen den Händen, Kissen unter das Gesäß",
+    "Half Lotus or Easy Seat instead": "Stattdessen halber Lotus oder bequemer Sitz",
+    "Cushion under the upper back": "Kissen unter den oberen Rücken",
+    "A wall, cushion under the hips": "Eine Wand, Kissen unter das Gesäß",
+    "Chair seat under the feet": "Stuhlsitz unter die Füße",
+    "Folded blanket under the shoulders": "Gefaltete Decke unter die Schultern",
+    "A wall behind you while learning": "Beim Üben eine Wand hinter dir",
+    "Hands on books, heel of the bent leg may lift": "Hände auf Bücher, Ferse des gebeugten Beins darf sich heben",
+    "Back knee down on a towel": "Hinteres Knie auf ein Handtuch",
+  };
+
+  const BLOCKS_DE = {
+    "wu-catcow": "Katze und Kuh", "wu-supine": "Aufwärmen im Liegen", "wu-standing": "Aufwärmen im Stehen", "wu-lunge": "Aufwärmen im Ausfallschritt",
+    "sun-a": "Sonnengruß A", "sun-b": "Sonnengruß B", "sun-classic": "Klassischer Sonnengruß", "sun-moon": "Mondgruß",
+    "s-warriors": "Kriegerfolge", "s-sideangle": "Seitwinkel-Folge", "s-lunge-ham": "Ausfallschritt und halber Spagat", "s-lizard": "Eidechsen-Folge",
+    "s-balance": "Gleichgewichtsfolge", "s-twist": "Drehung im Ausfallschritt", "s-highlunge": "Hoher Ausfallschritt", "s-pyramid": "Pyramiden-Folge",
+    "s-goddess": "Göttinnen-Folge", "s-chairtwist": "Stuhl und Drehung",
+    "b-tree": "Baum", "b-dancer": "Tänzer", "b-w3": "Krieger III", "b-eagle": "Adler", "b-handtoe": "Hand zum großen Zeh",
+    "c-boat": "Boot", "c-sideplank": "Seitstütz", "c-plankdog": "Brett und Hund im Wechsel", "c-dolphin": "Delfin",
+    "p-locust": "Heuschrecke", "p-sphinx": "Sphinx und Heuschrecke", "p-bow": "Bogen", "k-camel": "Kamel", "k-puppy": "Welpe",
+    "u-bridge": "Brücke", "u-fish": "Fisch", "h-pigeon": "Taube", "h-garland": "Girlande", "t-bound": "Schmetterling", "t-cowface": "Kuhgesicht",
+    "u-happy": "Glückliches Baby", "t-fold": "Sitzende Vorwärtsbeuge", "t-headknee": "Kopf zum Knie", "t-twist": "Drehsitz",
+    "u-ham": "Dehnung der Beinrückseite im Liegen", "u-twist": "Drehung im Liegen", "u-legsup": "Beine an der Wand",
+    "pk-halfmoon": "Halbmond", "pk-w3": "Krieger III", "pk-dancer": "Tänzer", "pk-eagle": "Adler", "pk-handtoe": "Hand zum großen Zeh",
+    "pk-crow": "Krähe", "pk-sideplank": "Seitstütz", "pk-camel": "Kamel", "pk-bow": "Bogen", "pk-wheel": "Rad", "pk-halfsplits": "Halber Spagat",
+    "pk-pigeon": "Taube", "pk-triangle": "Dreieck", "pk-dolphin": "Delfin", "pk-boat": "Boot", "pk-revchair": "Gedrehter Stuhl",
+  };
+
+  const SECTIONS_DE = {
+    "Arrival": "Ankommen", "Warm-up": "Aufwärmen", "Sun Salutations": "Sonnengrüße", "Moon Salutation": "Mondgruß", "Standing": "Im Stehen",
+    "Balance": "Gleichgewicht", "Core": "Rumpf", "Backbends": "Rückbeugen", "Hips": "Hüften", "Cool-down": "Ausklang", "Savasana": "Savasana",
+  };
+  const TAGS_DE = { hamstrings: "Beinrückseite", hips: "Hüften", hipflex: "Hüftbeuger", back: "Rücken", shoulders: "Schultern", core: "Rumpf",
+    balance: "Gleichgewicht", wrists: "Handgelenke", twist: "Drehung", sidebody: "Flanken", legs: "Beine", rest: "Ruhe" };
+  const TAGS_EN = { hamstrings: "hamstrings", hips: "hips", hipflex: "hip flexors", back: "back", shoulders: "shoulders", core: "core",
+    balance: "balance", wrists: "wrists", twist: "twists", sidebody: "side body", legs: "legs", rest: "rest" };
+  const OFFERS_DE = {
+    "bakasana": "Krähe in der letzten Runde des Sonnengrußes",
+    "urdhva-dhanurasana": "Rad nach der Brücke",
+    "pincha-mayurasana": "Unterarmstand aus dem Delfin, an der Wand",
+    "adho-mukha-vrksasana": "Handstand-Aufschwünge an der Wand nach den Gleichgewichtsübungen",
+  };
+
+  // Fill a hint template for one side, in either language.
+  function flip(w) { return w.replace(/^([Rr])echt/, (m, r) => (r === "R" ? "Link" : "link")); }
+  function hint(template, side, lang) {
+    side = side === "left" ? "left" : "right";
+    const other = side === "right" ? "left" : "right";
+    if (lang === "de" && HINTS_DE[template]) {
+      return HINTS_DE[template]
+        .replace(/\{S:([A-Za-zäöü]+)\}/g, (m, w) => (side === "right" ? w : flip(w)))
+        .replace(/\{O:([A-Za-zäöü]+)\}/g, (m, w) => (side === "right" ? flip(w) : w));
+    }
+    const out = template.replace(/\{side\}/g, side).replace(/\{other\}/g, other);
+    return out[0].toUpperCase() + out.slice(1);
+  }
+  function section(name, lang, peakDe) {
+    if (lang !== "de") return name;
+    if (/^Peak · /.test(name)) return "Höhepunkt · " + (peakDe || name.slice(7));
+    return SECTIONS_DE[name] || name;
+  }
+
+  root.YogaI18n = { HINTS_DE, CUES_DE, PROPS_DE, BLOCKS_DE, SECTIONS_DE, TAGS_DE, TAGS_EN, OFFERS_DE, hint, section };
+  if (typeof module !== "undefined") module.exports = root.YogaI18n;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
 <script>
 (() => {
-  const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES;
+  const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES, I = window.YogaI18n;
   const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
   const $ = id => document.getElementById(id);
   const CAT = { style: "cat" };
   const fig = (pose, mirror) => mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, CAT)}</g>` : E.svgInner(pose, CAT);
   const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
-  const sideTxt = s => s === "right" ? "Right" : s === "left" ? "Left" : "";
-  const LEVEL = { 1: "Basic", 2: "Intermediate", 3: "Advanced" };
-  const holdTxt = st => st.breath ? (st.breath === "in" ? "inhale" : "exhale") : st.secs >= 90 ? mmss(st.secs) + " min" : `${st.breaths} breaths`;
+  // ---------- language ----------
+  let LANG = "en";
+  const DE = () => LANG === "de";
+  const tr = (en, de) => DE() ? de : en;
+  const pn = p => DE() ? p.de : p.en;            // pose name in the chosen language
+  const pn2 = p => DE() ? p.en : p.de;           // the other one, shown smaller
+  const an = a => DE() ? a.de : a.en;            // animal name
+  const ntName = n => DE() ? n.de : n.en, ntShort = n => DE() ? n.shortDe : n.short, ntText = n => DE() ? n.textDe : n.text;
+  const thName = t => DE() ? t.de : t.en, thText = t => DE() ? t.textDe : t.text;
+  const lvName = L => DE() ? L.de : L.name, careName = c => DE() ? c.de : c.en;
+  const blockName = (id, fallback) => (DE() && I.BLOCKS_DE[id]) || fallback;
+  const sideTxt = s => s === "right" ? tr("Right", "Rechts") : s === "left" ? tr("Left", "Links") : "";
+  const LEVEL_EN = { 1: "Basic", 2: "Intermediate", 3: "Advanced" }, LEVEL_DE = { 1: "Einfach", 2: "Mittel", 3: "Fortgeschritten" };
+  const LEVEL = new Proxy({}, { get: (o, k) => (DE() ? LEVEL_DE : LEVEL_EN)[k] });
+  const breathWord = b => b === "in" ? tr("inhale", "einatmen") : tr("exhale", "ausatmen");
+  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs >= 90 ? mmss(st.secs) + " min" : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`);
+  const cueOf = p => (DE() && I.CUES_DE[p.id]) || p.cue || "";
+  const propTxt = t => (DE() && I.PROPS_DE[t]) || t;
+  const howTxt = st => st.howT ? I.hint(st.howT, st.howSide, LANG) : st.how;
+  const secName = name => I.section(name, LANG, plan && plan.meta ? I.BLOCKS_DE[plan.meta.peak] : null);
   const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
   // ---------- settings (this device) ----------
   let S = Object.assign({ minutes: 30, theme: "chef", sound: "bowls", volume: 60 }, store.get("matcat-settings", {}));
+  if (S.lang !== "en" && S.lang !== "de") { let nl = ""; try { nl = (navigator.languages && navigator.languages[0]) || navigator.language || ""; } catch (e) {} S.lang = /^de\b/i.test(nl) ? "de" : "en"; }
+  LANG = S.lang;
   if (S.sound === "drone") S.sound = "bowls";
   const saveS = () => store.set("matcat-settings", S);
   function paintSeg() {
@@ -2058,89 +2520,133 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   // ---------- profile: animal, level (age), tempo; remembered on this device ----------
   let ST = store.get("matcat-profile", null); // { animal, level, tempo, streak, care: [], skip: [] }
   const saveST = () => store.set("matcat-profile", ST);
-  const phrase = (st, lang) => P.code(st, lang);
+  const phrase = (st, lang) => P.code(st, lang || LANG);
   const cap = t => t ? t[0].toUpperCase() + t.slice(1) : t;
+  function paintPhrase(big, small, st) { $(big).textContent = cap(phrase(st, LANG)); $(small).textContent = phrase(st, DE() ? "en" : "de"); }
 
   // ---------- welcome ----------
   let entry = { animal: null, level: null, tempo: null };
   function showWelcome(known) {
     $("wKnown").hidden = !known; $("wUnknown").hidden = !!known;
-    if (known) { $("wPhrase").textContent = cap(phrase(ST, "en")); $("wPhraseDe").textContent = phrase(ST, "de"); }
+    if (known) { paintPhrase("wPhrase", "wPhraseDe", ST); $("wNature").textContent = natureLine(ST); }
     else { entry = { animal: null, level: null, tempo: null }; $("codeIn").value = ""; paintEntry(); }
     show("welcome");
   }
   $("wContinue").addEventListener("click", () => showToday());
   $("wNotMe").addEventListener("click", () => showWelcome(false));
-  $("newBtn").addEventListener("click", () => { pickAnimal = entry.animal; renderPick(); show("pick"); });
+  $("newBtn").addEventListener("click", () => { pickAnimal = entry.animal; startAssess("full"); });
+  const natureOfAnimal = id => P.NATURE[(P.ANIMAL[id] || {}).nature];
+  function natureLine(st) { const n = natureOfAnimal(st.animal); return n ? `${an(P.ANIMAL[st.animal])}: ${ntShort(n)}. ${ntText(n).split(". ").slice(1).join(". ")}` : ""; }
+  const both = x => DE() ? `${x.de} · ${x.en}` : `${x.en} · ${x.de}`;
   function paintEntry() {
     const a = entry.animal && P.ANIMAL[entry.animal];
     const tag = (ok, txt) => `<span class="${ok ? "ok" : ""}">${ok ? "✓ " : ""}${txt}</span>`;
-    $("codeFound").innerHTML = $("codeIn").value.trim() ? tag(!!a, a ? `${a.en} · ${a.de}` : "animal")
-      + tag(!!entry.level, entry.level ? `${P.AGES[entry.level - 1].en} · ${P.AGES[entry.level - 1].de}` : "age")
-      + tag(!!entry.tempo, entry.tempo ? `${P.TEMPOS[entry.tempo - 1].en} · ${P.TEMPOS[entry.tempo - 1].de}` : "pace") : "";
+    $("codeFound").innerHTML = $("codeIn").value.trim() ? tag(!!a, a ? both(a) : tr("animal", "Tier"))
+      + tag(!!entry.level, entry.level ? both(P.AGES[entry.level - 1]) : tr("age", "Alter"))
+      + tag(!!entry.tempo, entry.tempo ? both(P.TEMPOS[entry.tempo - 1]) : tr("pace", "Tempo")) : "";
     const missing = a && (!entry.level || !entry.tempo);
     $("codeAsk").hidden = !missing;
     if (missing) {
-      $("codeAskTxt").textContent = `Hello, ${a.en}! Which one were you? Tap it if you recognise it.`;
+      $("codeAskTxt").textContent = tr(`Hello, ${a.en}! Which one were you? Tap it if you recognise it.`, `Hallo, ${a.de}! Welches warst du? Tippe es an, wenn du es wiedererkennst.`);
       $("askAge").hidden = !!entry.level; $("askTempo").hidden = !!entry.tempo;
-      $("askAge").innerHTML = P.AGES.map(x => `<button type="button" data-v="${x.n}">${x.en} · ${x.de}</button>`).join("") + `<button type="button" data-v="?">I don't remember</button>`;
-      $("askTempo").innerHTML = P.TEMPOS.map(x => `<button type="button" data-v="${x.n}">${x.en} · ${x.de}</button>`).join("") + `<button type="button" data-v="?">I don't remember</button>`;
+      const dunno = `<button type="button" data-v="?">${tr("I don't remember", "Weiß ich nicht mehr")}</button>`;
+      $("askAge").innerHTML = P.AGES.map(x => `<button type="button" data-v="${x.n}">${both(x)}</button>`).join("") + dunno;
+      $("askTempo").innerHTML = P.TEMPOS.map(x => `<button type="button" data-v="${x.n}">${both(x)}</button>`).join("") + dunno;
     }
     $("codeGo").disabled = !(a && entry.level && entry.tempo);
   }
   $("codeIn").addEventListener("input", () => {
     const r = P.parse($("codeIn").value);
     entry = { animal: r.animal, level: r.level, tempo: r.tempo };
+    const old = !r.animal && r.unknown.some(t => P.OLD_ANIMALS.includes(t));
+    $("oldNote").hidden = !old;
     const last = $("codeIn").value.split(/\s+/).pop();
     const sug = r.animal ? [] : P.suggestAnimals(last);
     $("codeSugg").hidden = !sug.length;
-    $("codeSugg").innerHTML = sug.map(a => `<button type="button" data-id="${a.id}">${a.en} · ${a.de}</button>`).join("");
+    $("codeSugg").innerHTML = sug.map(a => `<button type="button" data-id="${a.id}">${both(a)}</button>`).join("");
     paintEntry();
   });
   $("codeSugg").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    const words = $("codeIn").value.split(/\s+/); words[words.length - 1] = P.ANIMAL[b.dataset.id].en.toLowerCase();
+    const words = $("codeIn").value.split(/\s+/); words[words.length - 1] = DE() ? P.ANIMAL[b.dataset.id].de : P.ANIMAL[b.dataset.id].en.toLowerCase();
     $("codeIn").value = words.join(" ") + " "; $("codeSugg").hidden = true; $("codeIn").dispatchEvent(new Event("input")); $("codeIn").focus();
   });
   $("codeIn").addEventListener("keydown", e => { if (e.key === "Enter" && !$("codeGo").disabled) $("codeGo").click(); });
-  $("askAge").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess(); return; } entry.level = Number(b.dataset.v); paintEntry(); });
-  $("askTempo").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess(); return; } entry.tempo = Number(b.dataset.v); paintEntry(); });
+  $("askAge").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess("full"); return; } entry.level = Number(b.dataset.v); paintEntry(); });
+  $("askTempo").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess("full"); return; } entry.tempo = Number(b.dataset.v); paintEntry(); });
+  $("oldGo").addEventListener("click", () => {
+    const r = P.parse($("codeIn").value);
+    if (r.level && r.tempo) KEEP_LT = { level: r.level, tempo: r.tempo };
+    if (KEEP_LT) startAssess("nature"); else startAssess("full");
+  });
   $("codeGo").addEventListener("click", () => {
     const prev = ST && ST.animal === entry.animal ? ST : {};
-    ST = { animal: entry.animal, level: entry.level, tempo: entry.tempo, streak: 0, care: prev.care || [], skip: prev.skip || [] };
+    ST = { animal: entry.animal, level: entry.level, tempo: entry.tempo, streak: 0, care: prev.care || [], skip: prev.skip || [], count: prev.count || 0, checked: prev.checked || 0 };
     saveST(); showToday();
   });
 
-  // ---------- choose an animal ----------
-  let pickAnimal = null;
+  // ---------- nature and animal ----------
+  let pickAnimal = null, NAT_ORDER = P.NATURES.map(n => n.id), PENDING = null, KEEP_LT = null, ASSESS_MODE = "full";
+  const animalBtns = n => n.animals.map(([id, en, de]) => `<button type="button" data-id="${id}" aria-pressed="${pickAnimal === id}"><b>${DE() ? de : en}</b><small>${DE() ? en : de}</small></button>`).join("");
   function renderPick() {
-    $("animalGrid").innerHTML = P.ANIMALS.slice().sort((a, b) => a.en.localeCompare(b.en)).map(a => `<button type="button" data-id="${a.id}" aria-pressed="${pickAnimal === a.id}"><b>${a.en}</b><small>${a.de}</small></button>`).join("");
+    const n = P.NATURE[NAT_ORDER[0]];
+    $("pickLabel").textContent = tr("Your nature", "Deine Natur");
+    $("natTitle").textContent = both(n);
+    $("natText").textContent = ntText(n);
+    $("animalGrid").innerHTML = animalBtns(n);
+    $("natList").innerHTML = NAT_ORDER.slice(1).map(id => { const m = P.NATURE[id]; return `<div style="display:flex;flex-direction:column;gap:6px"><b>${ntName(m)} · <span class="muted">${DE() ? m.en : m.de}</span></b><span class="muted" style="font-size:.88rem">${ntText(m)}</span><div class="animals">${animalBtns(m)}</div></div>`; }).join("");
     $("pickGo").disabled = !pickAnimal;
   }
-  $("animalGrid").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; pickAnimal = b.dataset.id; renderPick(); });
-  $("pickGo").addEventListener("click", () => startAssess());
-  $("pickBack").addEventListener("click", () => showWelcome(false));
+  $("pick").addEventListener("click", e => { const b = e.target.closest(".animals button[data-id]"); if (!b) return; pickAnimal = b.dataset.id; $("pick").querySelectorAll(".animals button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.id === pickAnimal))); $("pickGo").disabled = false; });
+  $("pickGo").addEventListener("click", () => {
+    const prev = ST || {};
+    const lt = PENDING || { level: prev.level || 1, tempo: prev.tempo || 2 };
+    const changed = prev.animal && prev.animal !== pickAnimal;
+    ST = { animal: pickAnimal, level: lt.level, tempo: lt.tempo, streak: prev.animal ? prev.streak || 0 : 0, care: PENDING && PENDING.care ? PENDING.care : prev.care || [], skip: prev.skip || [], count: prev.count || 0, checked: prev.count || 0 };
+    saveST(); REVEAL_CHANGED = changed;
+    paintReveal(); show("reveal");
+  });
+  let REVEAL_CHANGED = false;
+  function paintReveal() {
+    const n = natureOfAnimal(ST.animal), A = P.ANIMAL[ST.animal], L = P.LEVELS[ST.level - 1];
+    paintPhrase("rPhrase", "rPhraseDe", ST);
+    $("rStory").textContent = REVEAL_CHANGED ? tr(`New animal: your nature is now ${n.short}.`, `Neues Tier: deine Natur ist jetzt ${n.shortDe}.`) : "";
+    $("rExplain").textContent = tr(`${A.en}: ${n.short}. "${P.AGES[ST.level - 1].en}" is your level (${ST.level} of 5: ${L.name.toLowerCase()}), "${P.TEMPOS[ST.tempo - 1].en}" is your pace. Your ${A.en.toLowerCase()} grows up as you practise.`,
+      `${A.de}: ${n.shortDe}. „${P.AGES[ST.level - 1].de}“ ist deine Stufe (${ST.level} von 5: ${L.de}), „${P.TEMPOS[ST.tempo - 1].de}“ ist dein Tempo. ${A.g === "f" ? "Deine" : "Dein"} ${A.de} wird älter, während du übst.`);
+  }
+  $("pickBack").addEventListener("click", () => show("assess"));
 
   // ---------- assessment ----------
   const QS = [
-    { k: "yoga", ask: "How much yoga have you done?", opts: ["Never", "A few classes", "Regularly, under a year", "Regularly, a year or more", "Many years"] },
-    { k: "moves", multi: true, ask: "What else do you do? Tick all that fit.", opts: [["endurance", "Running, cycling, swimming"], ["strength", "Strength training"], ["martial", "Martial arts"], ["dance", "Dance or gymnastics"], ["team", "Team or racket sports"]] },
-    { k: "age", ask: "Your age", opts: ["Under 30", "30–49", "50–64", "65–74", "75 or older"] },
-    { k: "active", ask: "How active are you at the moment?", opts: ["Rarely", "1–2 times a week", "3 times a week or more"] },
-    { k: "fold", pose: "uttanasana", ask: "Try it: stand and fold forward with straight legs. Your hands reach…", opts: ["My knees", "My shins", "My ankles", "The floor", "Palms flat on the floor"] },
-    { k: "plank", pose: "phalakasana", ask: "Try it: hold a plank. How long feels OK?", opts: ["Not yet", "Under 20 seconds", "20 to 60 seconds", "Over a minute"] },
-    { k: "balance", pose: "vrksasana", ask: "Try it: stand on one leg, arms relaxed.", opts: ["Wobbly, under 10 seconds", "10 to 30 seconds", "Steady for 30 seconds or more"] },
-    { k: "stairs", ask: "Three floors of stairs at a brisk pace leave you…", opts: ["Out of breath", "A bit puffed", "Easy"] },
-    { k: "care", multi: true, ask: "Anything to take care of? (You can change this every day.)", opts: P.CARE.map(c => [c.id, c.en]) },
+    { k: "yoga", ask: "How much yoga have you done?", askDe: "Wie viel Yoga hast du schon gemacht?",
+      opts: ["Never", "A few classes", "Regularly, under a year", "Regularly, a year or more", "Many years"],
+      optsDe: ["Noch nie", "Ein paar Stunden", "Regelmäßig, unter einem Jahr", "Regelmäßig, ein Jahr oder länger", "Viele Jahre"] },
+    { k: "moves", multi: true, ask: "What else do you do? Tick all that fit.", askDe: "Was machst du sonst noch? Wähle alles, was passt.",
+      opts: [["endurance", "Running, cycling, swimming"], ["strength", "Strength training"], ["martial", "Martial arts"], ["dance", "Dance or gymnastics"], ["team", "Team or racket sports"]],
+      optsDe: [["endurance", "Laufen, Radfahren, Schwimmen"], ["strength", "Krafttraining"], ["martial", "Kampfsport"], ["dance", "Tanz oder Turnen"], ["team", "Mannschafts- oder Rückschlagsport"]] },
+    { k: "age", ask: "Your age", askDe: "Dein Alter", opts: ["Under 30", "30–49", "50–64", "65–74", "75 or older"], optsDe: ["Unter 30", "30–49", "50–64", "65–74", "75 oder älter"] },
+    { k: "active", ask: "How active are you at the moment?", askDe: "Wie aktiv bist du zurzeit?",
+      opts: ["Rarely", "1–2 times a week", "3 times a week or more"], optsDe: ["Selten", "1–2 Mal pro Woche", "3 Mal pro Woche oder öfter"] },
+    { k: "fold", pose: "uttanasana", ask: "Try it: stand and fold forward with straight legs. Your hands reach…", askDe: "Probier es aus: im Stehen mit gestreckten Beinen vorbeugen. Deine Hände kommen bis…",
+      opts: ["My knees", "My shins", "My ankles", "The floor", "Palms flat on the floor"], optsDe: ["Zu den Knien", "Zu den Schienbeinen", "Zu den Fußgelenken", "Zum Boden", "Handflächen flach auf dem Boden"] },
+    { k: "plank", pose: "phalakasana", ask: "Try it: hold a plank. How long feels OK?", askDe: "Probier es aus: halte ein Brett. Wie lange geht es gut?",
+      opts: ["Not yet", "Under 20 seconds", "20 to 60 seconds", "Over a minute"], optsDe: ["Noch nicht", "Unter 20 Sekunden", "20 bis 60 Sekunden", "Über eine Minute"] },
+    { k: "balance", pose: "vrksasana", ask: "Try it: stand on one leg, arms relaxed.", askDe: "Probier es aus: auf einem Bein stehen, Arme locker.",
+      opts: ["Wobbly, under 10 seconds", "10 to 30 seconds", "Steady for 30 seconds or more"], optsDe: ["Wackelig, unter 10 Sekunden", "10 bis 30 Sekunden", "Sicher, 30 Sekunden oder länger"] },
+    { k: "stairs", ask: "Three floors of stairs at a brisk pace leave you…", askDe: "Drei Stockwerke Treppe in zügigem Tempo, danach bist du…",
+      opts: ["Out of breath", "A bit puffed", "Easy"], optsDe: ["Außer Atem", "Etwas aus der Puste", "Ganz entspannt"] },
+    { k: "care", multi: true, ask: "Anything to take care of? (You can change this every day.)", askDe: "Gibt es etwas zu schonen? (Das kannst du jeden Tag ändern.)",
+      opts: P.CARE.map(c => [c.id, c.en]), optsDe: P.CARE.map(c => [c.id, c.de]) },
   ];
   let ANS = {};
-  function startAssess() { ANS = { moves: [], care: [] }; renderQs(); show("assess"); }
+  const NATURE_QS = ["moves", "fold", "plank", "balance"];
+  function startAssess(mode) { ASSESS_MODE = mode || "full"; ANS = { moves: [], care: [] }; renderQs(); show("assess"); }
   function renderQs() {
-    $("qList").innerHTML = QS.map(q => {
-      const opts = q.opts.map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
+    $("qList").innerHTML = QS.filter(q => ASSESS_MODE === "full" || NATURE_QS.includes(q.k)).map(q => {
+      const opts = (DE() ? q.optsDe : q.opts).map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
         const on = q.multi ? (ANS[q.k] || []).includes(v) : String(ANS[q.k]) === v;
         return `<button type="button" data-v="${v}" aria-pressed="${on}">${t}</button>`; }).join("");
-      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p)}</svg><span class="ask">${q.ask}</span></div>` : `<span class="ask">${q.ask}</span>`;
+      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p)}</svg><span class="ask">${tr(q.ask, q.askDe)}</span></div>` : `<span class="ask">${tr(q.ask, q.askDe)}</span>`;
       return `<div class="q">${head}<div class="seg" data-q="${q.k}" data-multi="${q.multi ? 1 : ""}">${opts}</div></div>`;
     }).join("");
   }
@@ -2151,14 +2657,16 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     else ANS[k] = Number(b.dataset.v);
     seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", seg.dataset.multi ? String((ANS[k] || []).includes(x.dataset.v)) : String(String(ANS[k]) === x.dataset.v)));
   });
-  $("assessBack").addEventListener("click", () => { renderPick(); show("pick"); });
+  $("assessBack").addEventListener("click", () => ST && ASSESS_MODE === "nature" && P.ANIMAL[ST.animal] ? showToday() : showWelcome(false));
   $("assessGo").addEventListener("click", () => {
-    const r = P.assess(ANS);
-    ST = { animal: pickAnimal || "heron", level: r.level, tempo: r.tempo, streak: 0, care: ANS.care || [], skip: (ST && ST.skip) || [] };
-    saveST();
-    $("rPhrase").textContent = cap(phrase(ST, "en")); $("rPhraseDe").textContent = phrase(ST, "de"); $("rStory").textContent = "";
-    $("rExplain").textContent = `"${P.AGES[ST.level - 1].en}" is your level (${ST.level} of 5: ${P.LEVELS[ST.level - 1].name.toLowerCase()}), "${P.TEMPOS[ST.tempo - 1].en}" is your pace. Your ${P.ANIMAL[ST.animal].en.toLowerCase()} grows up as you practise.`;
-    show("reveal");
+    NAT_ORDER = P.natureOf(ANS);
+    if (ASSESS_MODE === "full") { const r = P.assess(ANS); PENDING = { level: r.level, tempo: r.tempo, care: ANS.care || [] }; }
+    else PENDING = KEEP_LT ? Object.assign({}, KEEP_LT) : (ST ? { level: ST.level, tempo: ST.tempo } : { level: 1, tempo: 2 });
+    KEEP_LT = null;
+    const inNature = id => P.NATURE[NAT_ORDER[0]].animals.some(a => a[0] === id);
+    if (!(pickAnimal && inNature(pickAnimal))) pickAnimal = ST && inNature(ST.animal) ? ST.animal : null;
+    $("otherNatures").open = false;
+    renderPick(); show("pick");
   });
   $("rGo").addEventListener("click", () => showToday());
 
@@ -2166,17 +2674,24 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   let CARE_TODAY = [];
   function showToday() {
     if (!ST) { showWelcome(false); return; }
-    $("tPhrase").textContent = cap(phrase(ST, "en")); $("tPhraseDe").textContent = phrase(ST, "de");
     CARE_TODAY = (ST.care || []).slice();
-    renderThemes(); renderCare(); show("build");
+    paintToday(); show("build");
+  }
+  function paintToday() {
+    paintPhrase("tPhrase", "tPhraseDe", ST); $("tNature").textContent = natureLine(ST);
+    $("recheck").hidden = !((ST.count || 0) - (ST.checked || 0) >= 10);
+    renderThemes(); renderCare();
   }
   $("tChange").addEventListener("click", () => showWelcome(false));
+  $("recheckGo").addEventListener("click", () => { pickAnimal = ST.animal; startAssess("nature"); });
   function renderThemes() {
-    $("themeSeg").innerHTML = `<button type="button" data-v="chef" aria-pressed="${S.theme === "chef"}">Chef's choice</button>` + P.THEMES.map(t => `<button type="button" data-v="${t.id}" aria-pressed="${S.theme === t.id}">${t.en}</button>`).join("");
-    $("themeText").textContent = S.theme === "chef" ? "A theme you haven't had for a while." : P.THEME[S.theme].text;
+    $("themeSeg").innerHTML = `<button type="button" data-v="chef" aria-pressed="${S.theme === "chef"}">${tr("Chef's choice", "Empfehlung des Hauses")}</button>` + P.THEMES.map(t => `<button type="button" data-v="${t.id}" aria-pressed="${S.theme === t.id}">${thName(t)}</button>`).join("");
+    const n = natureOfAnimal(ST.animal);
+    $("themeText").textContent = S.theme === "chef" ? tr(`Mostly ${n.work.slice(0, 3).map(t => P.THEME[t].en.toLowerCase()).join(", ")} for a ${P.ANIMAL[ST.animal].en.toLowerCase()}, and one you haven't had for a while.`,
+      `Meist ${n.work.slice(0, 3).map(t => P.THEME[t].de).join(", ")}, passend zu deinem Tier, und ab und zu etwas, das du länger nicht hattest.`) : thText(P.THEME[S.theme]);
   }
   $("themeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.theme = b.dataset.v; saveS(); renderThemes(); });
-  function renderCare() { $("careSeg").innerHTML = P.CARE.map(c => `<button type="button" data-v="${c.id}" aria-pressed="${CARE_TODAY.includes(c.id)}">${c.en}</button>`).join(""); }
+  function renderCare() { $("careSeg").innerHTML = P.CARE.map(c => `<button type="button" data-v="${c.id}" aria-pressed="${CARE_TODAY.includes(c.id)}">${careName(c)}</button>`).join(""); }
   $("careSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const v = b.dataset.v; CARE_TODAY = CARE_TODAY.includes(v) ? CARE_TODAY.filter(x => x !== v) : CARE_TODAY.concat(v); ST.care = CARE_TODAY.slice(); saveST(); renderCare(); });
 
   // ---------- stored log (inside Claude, the owner's practice log; elsewhere this device) ----------
@@ -2248,8 +2763,10 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   const history = () => (HIST.length ? HIST : localHistory());
   function chefTheme() {
     const recent = history().slice(-6).map(h => h.theme).filter(Boolean);
+    const work = (natureOfAnimal(ST.animal) || P.NATURE.allround).work;
+    const pool = Math.random() < 0.75 ? P.THEMES.filter(t => work.includes(t.id)) : P.THEMES; // mostly your nature's themes
     const score = t => { const i = recent.lastIndexOf(t.id); return (i < 0 ? 100 : i) + Math.random(); }; // never had or long ago scores highest
-    return P.THEMES.map(t => [score(t), t.id]).sort((a, b) => b[0] - a[0])[0][1];
+    return pool.map(t => [score(t), t.id]).sort((a, b) => b[0] - a[0])[0][1];
   }
   function todayOpts() {
     THEME_NOW = S.theme === "chef" ? chefTheme() : S.theme;
@@ -2280,9 +2797,10 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     const hist = history().slice(-4).map(h => h.peakName || h.peak).join("; ");
     const care = CARE_TODAY.map(id => P.CARE_BY[id].en).join(", ");
     return `You are an experienced yoga teacher writing one class, to be guided live by an app.
-The practitioner: level ${ST.level} of 5 (${L.name}: ${L.text}) Pace ${ST.tempo} of 3 (${T.text}) Breath length ${o.cycle} s.
+The practitioner: level ${ST.level} of 5 (${L.name}: ${L.text}) Pace ${ST.tempo} of 3 (${T.text}) Breath length ${o.cycle} s. Nature: ${natureOfAnimal(ST.animal).en}: ${natureOfAnimal(ST.animal).text}
 Today's theme: ${th.en} (${th.text}). Length: ${S.minutes} minutes.${care ? " Take care of: " + care + "." : ""}
-Recent peaks (pick something different): ${hist || "none yet"}.
+Recent peaks (pick something different): ${hist || "none yet"}.${DE() ? `
+Language: the practitioner reads German. Write "title", "why" and every section "name" in German (e.g. "Ankommen", "Aufwärmen", "Sonnengrüße", "Im Stehen", "Höhepunkt", "Ausklang", "Savasana"). Pose ids stay as given.` : ""}
 
 Write a creative, well-sequenced class: arrival, warm-up, a salutation variation, standing work, balance, a peak pose that fits the theme with real preparation, backbends or core as fits, cool-down, Savasana. Every pose marked "both sides" is done right then left with the same holds. Put a neutral pose (Child's Pose, Knees to Chest or a twist) between a deep backbend and any forward fold. Flowing movements use "breath": "in" or "out" (one movement per half breath); holds use "breaths": 1–12. Aim for about ${Math.round(S.minutes * 60 / o.cycle * 0.8)} breaths in total before Savasana; the app fine-tunes the timing.
 
@@ -2296,18 +2814,20 @@ Answer with JSON only, no prose, in exactly this shape:
   async function surprise() {
     if (!sampleFn) return;
     show("preview");
-    $("thinking").hidden = false; $("thinkingTxt").textContent = "Claude is composing your class…";
-    $("sections").innerHTML = ""; $("topCards").innerHTML = ""; $("sumTitle").textContent = "Surprise me"; $("sumMeta").textContent = ""; $("sumWhy").textContent = "";
+    $("thinking").hidden = false; $("thinkingTxt").textContent = tr("Claude is composing your class…", "Claude stellt deine Stunde zusammen…");
+    $("sections").innerHTML = ""; $("topCards").innerHTML = ""; $("sumTitle").textContent = tr("Surprise me", "Überrasch mich"); $("sumMeta").textContent = ""; $("sumWhy").textContent = "";
     $("startBtn").disabled = true; $("shuffleBtn").disabled = true;
     sampleCtl = new AbortController();
     try {
-      const spec = await sampleFn.json(surprisePrompt(), { signal: sampleCtl.signal, cache: false, onText: () => { $("thinkingTxt").textContent = "Claude is writing the sequence…"; } });
+      const spec = await sampleFn.json(surprisePrompt(), { signal: sampleCtl.signal, cache: false, onText: () => { $("thinkingTxt").textContent = tr("Claude is writing the sequence…", "Claude schreibt die Abfolge…"); } });
       const o = todayOpts(); plan = G.fromSpec(spec, o); plan.opts = o;
       if (!plan.steps.length || plan.steps.length < 8) throw { code: "empty" };
       source = "claude"; challenges = {};
       renderPreview();
     } catch (e) {
-      const msg = { not_granted: "Claude wasn't allowed to answer, so here is a class from the app instead.", rate_limited: "Claude is busy right now, so here is a class from the app instead.", cancelled: "Stopped. Here is a class from the app instead." }[e && e.code] || "Claude's answer couldn't be used, so here is a class from the app instead.";
+      const msg = DE()
+        ? ({ not_granted: "Claude durfte nicht antworten, darum hier eine Stunde aus der App.", rate_limited: "Claude ist gerade beschäftigt, darum hier eine Stunde aus der App.", cancelled: "Gestoppt. Hier ist eine Stunde aus der App." }[e && e.code] || "Claudes Antwort ließ sich nicht verwenden, darum hier eine Stunde aus der App.")
+        : ({ not_granted: "Claude wasn't allowed to answer, so here is a class from the app instead.", rate_limited: "Claude is busy right now, so here is a class from the app instead.", cancelled: "Stopped. Here is a class from the app instead." }[e && e.code] || "Claude's answer couldn't be used, so here is a class from the app instead.");
       buildPlan(); $("sumWhy").textContent = msg + " " + $("sumWhy").textContent;
     } finally {
       $("thinking").hidden = true; $("startBtn").disabled = false; $("shuffleBtn").disabled = false; sampleCtl = null;
@@ -2318,14 +2838,14 @@ Answer with JSON only, no prose, in exactly this shape:
 
   function chip(st) {
     const p = BY[st.id];
-    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${p.en}: change or leave out"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${p.en}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></button>`;
+    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></button>`;
   }
   function groupFlow(list) {
     const out = [];
     for (let i = 0; i < list.length; i++) {
       const s = list[i], n1 = list[i + 1], n2 = list[i + 2];
       if (s.id === "phalakasana" && n1 && n1.id === "chaturanga" && n2 && n2.id === "urdhva-mukha-svanasana") {
-        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>Plank · Chaturanga · Up Dog</small></div>`); i += 2; continue;
+        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>${["phalakasana", "chaturanga", "urdhva-mukha-svanasana"].map(id => DE() ? BY[id].de : ({ "urdhva-mukha-svanasana": "Up Dog" })[id] || BY[id].en).join(" · ")}</small></div>`); i += 2; continue;
       }
       if (n1 && list[i + 2] && list[i + 2].id === s.id && list[i + 3] && list[i + 3].id === n1.id && s.breath && n1.breath) {
         let c = 0; while (list[i + 2 * c] && list[i + 2 * c].id === s.id && list[i + 2 * c + 1] && list[i + 2 * c + 1].id === n1.id) c++;
@@ -2339,21 +2859,31 @@ Answer with JSON only, no prose, in exactly this shape:
     const m = plan.meta || {};
     if (!m.sunRoundLen) return groupFlow(list);
     const lead = list.slice(0, m.sunLead), round = list.slice(m.sunLead, m.sunLead + m.sunRoundLen);
-    let html = groupFlow(lead) + `<span class="note">${m.sunName}${m.sunAlt ? " · the leading leg alternates each round" : ""}</span>` + groupFlow(round) + `<span class="rounds">× ${m.sunRounds}</span>`;
-    if (list.some(s => s.challenge)) html += `<span class="note">Last round: Crow before stepping back to Plank.</span>`;
+    let html = groupFlow(lead) + `<span class="note">${blockName(m.sun, m.sunName)}${m.sunAlt ? tr(" · the leading leg alternates each round", " · das führende Bein wechselt jede Runde") : ""}</span>` + groupFlow(round) + `<span class="rounds">× ${m.sunRounds}</span>`;
+    if (list.some(s => s.challenge)) html += `<span class="note">${tr("Last round: Crow before stepping back to Plank.", "Letzte Runde: Krähe, bevor du zurück ins Brett gehst.")}</span>`;
     return html;
   }
+  // the idea of the class, phrased in the chosen language from the composer's plain data
+  function whyTxt() {
+    const w = plan.whyData;
+    if (!w || !DE()) return plan.why || "";
+    const tags = w.needs.map(t => I.TAGS_DE[t] || t).join(", ");
+    const prep = w.prep.map(id => I.BLOCKS_DE[id] || id);
+    return `Aufgebaut um ${I.BLOCKS_DE[w.peak] || w.peak}. ` + (prep.length ? `${prep.join(", ")} ${prep.length === 1 ? "bereitet" : "bereiten"} ${tags} vor. ` : `Vorbereitung für ${tags}. `)
+      + `Aufwärmen: ${I.BLOCKS_DE[w.warm] || w.warm}, dann ${I.BLOCKS_DE[w.sun] || w.sun}.`;
+  }
   function renderPreview() {
-    $("sumTitle").textContent = (source === "claude" ? "By Claude · " : "") + `${P.THEME[THEME_NOW].en} · ${S.minutes} min` + (plan.meta && plan.meta.peakName ? ` · ${plan.meta.peakName}` : "");
-    $("sumWhy").textContent = (plan.why || "") + (plan.dropped && plan.dropped.length ? ` Skipped unknown poses: ${plan.dropped.join(", ")}.` : "");
-    $("shuffleBtn").textContent = source === "claude" ? "Ask Claude again" : "Shuffle";
-    $("sumMeta").textContent = `For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath` + (CARE_TODAY.length ? ` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}` : "");
+    $("sumTitle").textContent = (source === "claude" ? tr("By Claude · ", "Von Claude · ") : "") + `${thName(P.THEME[THEME_NOW])} · ${S.minutes} min` + (plan.meta && plan.meta.peakName ? ` · ${blockName(plan.meta.peak, plan.meta.peakName)}` : "");
+    $("sumWhy").textContent = whyTxt() + (plan.dropped && plan.dropped.length ? tr(` Skipped unknown poses: ${plan.dropped.join(", ")}.`, ` Unbekannte Haltungen übersprungen: ${plan.dropped.join(", ")}.`) : "");
+    $("shuffleBtn").textContent = source === "claude" ? tr("Ask Claude again", "Claude noch mal fragen") : tr("Shuffle", "Neu mischen");
+    $("sumMeta").textContent = tr(`For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath`, `Für: ${phrase(ST, "de")} · ${P.LEVELS[ST.level - 1].de} · ${CYCLE} s Atem`)
+      + (CARE_TODAY.length ? tr(` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${CARE_TODAY.map(id => P.CARE_BY[id].de).join(", ")}`) : "");
     let top = "";
     plan.offers.forEach(o => {
       const on = challenges[o.id] === true;
-      top += `<div class="card"><span class="label">Challenge offer</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${BY[o.id].en} · <i>${BY[o.id].sa}</i></b><span class="muted">${o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">Add it</button><button type="button" data-v="no" aria-pressed="${!on}">Not today</button></div></div></div></div>`;
+      top += `<div class="card"><span class="label">${tr("Challenge offer", "Herausforderung")}</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${pn(BY[o.id])} · <i>${BY[o.id].sa}</i></b><span class="muted">${(DE() && I.OFFERS_DE[o.id]) || o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">${tr("Add it", "Dazunehmen")}</button><button type="button" data-v="no" aria-pressed="${!on}">${tr("Not today", "Heute nicht")}</button></div></div></div></div>`;
     });
-    if (plan.props.length) top += `<div class="card"><span class="label">Have ready</span><ul class="props">${plan.props.map(p => `<li>${p}</li>`).join("")}</ul></div>`;
+    if (plan.props.length) top += `<div class="card"><span class="label">${tr("Have ready", "Bereitlegen")}</span><ul class="props">${plan.props.map(p => `<li>${propTxt(p)}</li>`).join("")}</ul></div>`;
     $("topCards").innerHTML = top;
     $("topCards").querySelectorAll("[data-offer]").forEach(seg => seg.addEventListener("click", e => {
       const b = e.target.closest("button"); if (!b) return;
@@ -2362,7 +2892,7 @@ Answer with JSON only, no prose, in exactly this shape:
     $("sections").innerHTML = plan.sections.map(name => {
       const list = plan.steps.filter(s => s.section === name);
       const secs = list.reduce((a, s) => a + s.secs, 0);
-      return `<div class="sec"><div class="sec-head"><h3>${name}</h3><span class="muted">${mmss(secs)}</span></div><div class="strip">${(name === "Sun Salutations" || name === "Moon Salutation") && source !== "claude" ? groupSun(list) : groupFlow(list)}</div></div>`;
+      return `<div class="sec"><div class="sec-head"><h3>${secName(name)}</h3><span class="muted">${mmss(secs)}</span></div><div class="strip">${(name === "Sun Salutations" || name === "Moon Salutation") && source !== "claude" ? groupSun(list) : groupFlow(list)}</div></div>`;
     }).join("");
   }
 
@@ -2377,16 +2907,17 @@ Answer with JSON only, no prose, in exactly this shape:
   }
   function openSheet(id) {
     sheetId = id; const p = BY[id], alt = swapFor(id), keep = P.KEEP.has(id);
-    $("shFig").innerHTML = fig(p.p); $("shName").textContent = p.en; $("shSub").textContent = `${p.sa} · ${p.de}`;
-    $("shSwap").hidden = !alt; $("shSwap").textContent = alt ? `Swap for ${alt.en}` : "";
+    $("shFig").innerHTML = fig(p.p); $("shName").textContent = pn(p); $("shSub").textContent = `${p.sa} · ${pn2(p)}`;
+    $("shSwap").hidden = !alt; $("shSwap").textContent = alt ? tr(`Swap for ${alt.en}`, `Tauschen gegen ${alt.de}`) : "";
     $("shOut").hidden = keep; $("shNever").hidden = keep;
-    $("shMsg").textContent = keep ? `${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".` : "";
+    $("shMsg").textContent = keep ? tr(`${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".`, `${p.de} hält die Stunde zusammen und bleibt deshalb. Wenn etwas wehtut, wähle es unter „Heute schonen“.`) : "";
     $("sheet").hidden = false; $("shCancel").focus();
   }
   function closeSheet() { $("sheet").hidden = true; sheetId = null; }
   function applyEdit(steps, note) {
     const meta = plan.meta, offers = plan.offers, why = plan.why, opts = plan.opts;
-    plan = G.retime(steps, opts); Object.assign(plan, { meta, offers, why, opts, edited: (note ? [note] : []) });
+    const whyData = plan.whyData;
+    plan = G.retime(steps, opts); Object.assign(plan, { meta, offers, why, whyData, opts, edited: (note ? [note] : []) });
     renderPreview(); closeSheet();
   }
   $("sections").addEventListener("click", e => { const b = e.target.closest("button.chip[data-id]"); if (b) openSheet(b.dataset.id); });
@@ -2411,7 +2942,8 @@ Answer with JSON only, no prose, in exactly this shape:
     try { await screen.orientation.lock("landscape"); } catch (e) {}
   }
   function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
-  document.addEventListener("fullscreenchange", () => { $("fsBtn").textContent = document.fullscreenElement ? "Exit full screen" : "Full screen"; });
+  const paintFsBtn = () => { $("fsBtn").textContent = document.fullscreenElement ? tr("Exit full screen", "Vollbild beenden") : tr("Full screen", "Vollbild"); };
+  document.addEventListener("fullscreenchange", paintFsBtn);
   $("fsBtn").addEventListener("click", () => document.fullscreenElement ? exitFS() : enterFS());
 
   // ---------- screen on ----------
@@ -2422,12 +2954,12 @@ Answer with JSON only, no prose, in exactly this shape:
     if ("wakeLock" in navigator) {
       try {
         lock = await navigator.wakeLock.request("screen");
-        setWake(true, "screen on");
-        lock.addEventListener("release", () => { lock = null; if (running) setWake(false, "tap to keep the screen on"); });
+        setWake(true, tr("screen on", "Bildschirm an"));
+        lock.addEventListener("release", () => { lock = null; if (running) setWake(false, tr("tap to keep the screen on", "tippen, damit der Bildschirm anbleibt")); });
         return;
       } catch (e) {}
     }
-    try { await video.play(); setWake(true, "screen on"); } catch (e) { setWake(false, "screen may sleep"); }
+    try { await video.play(); setWake(true, tr("screen on", "Bildschirm an")); } catch (e) { setWake(false, tr("screen may sleep", "Bildschirm kann ausgehen")); }
   }
   function releaseLock() { if (lock) { lock.release().catch(() => {}); lock = null; } video.pause(); }
   document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible" && !lock) requestLock(); });
@@ -2453,16 +2985,16 @@ Answer with JSON only, no prose, in exactly this shape:
     if (!prev || prev.section !== st.section) Sound.bowl(174.6, 1, 8);
     else if (!st.breath && st.breaths >= 3 && st.id !== prev.id) Sound.bowl(523.3, .3, 3);
     else if (!st.breath && st.id === prev.id) Sound.bowl(523.3, .2, 2.5);
-    $("lSect").textContent = st.section;
-    $("lSa").textContent = p.sa; $("lEn").textContent = p.en; $("lDe").textContent = p.de;
-    $("lCue").textContent = (st.challenge ? "Challenge · " : "") + (p.cue || "");
-    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? sideTxt(st.side) + " side" : "";
+    $("lSect").textContent = source === "claude" ? st.section : secName(st.section);
+    $("lSa").textContent = p.sa; $("lEn").textContent = pn(p); $("lDe").textContent = pn2(p);
+    $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p);
+    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? tr(sideTxt(st.side) + " side", st.side === "right" ? "Rechte Seite" : "Linke Seite") : "";
     const bw = $("lBreath");
-    if (st.breath) { bw.dataset.b = st.breath; bw.textContent = st.breath === "in" ? "inhale" : "exhale"; } else { bw.dataset.b = ""; bw.textContent = ""; }
+    if (st.breath) { bw.dataset.b = st.breath; bw.textContent = breathWord(st.breath); } else { bw.dataset.b = ""; bw.textContent = ""; }
     $("lDots").innerHTML = st.breath || st.breaths > 12 || !st.breaths ? "" : Array.from({ length: st.breaths }, () => "<i></i>").join("");
     const nx = plan.steps[idx + 1];
-    if (nx) { $("nFig").innerHTML = fig(BY[nx.id].p, nx.side === "left"); $("nName").textContent = BY[nx.id].en + (nx.side ? " · " + sideTxt(nx.side) : ""); $("nHow").textContent = nx.how || BY[nx.id].sa; }
-    else { $("nFig").innerHTML = ""; $("nName").textContent = "End of practice"; $("nHow").textContent = ""; }
+    if (nx) { $("nFig").innerHTML = fig(BY[nx.id].p, nx.side === "left"); $("nName").textContent = pn(BY[nx.id]) + (nx.side ? " · " + sideTxt(nx.side) : ""); $("nHow").textContent = howTxt(nx) || BY[nx.id].sa; }
+    else { $("nFig").innerHTML = ""; $("nName").textContent = tr("End of practice", "Ende der Praxis"); $("nHow").textContent = ""; }
     animateTo(p.p, st.side === "left");
     paint();
   }
@@ -2479,7 +3011,7 @@ Answer with JSON only, no prose, in exactly this shape:
     const st = plan.steps[idx];
     const done = elapsedBefore(idx) + (st.secs - left);
     $("lBar").style.width = (100 * done / total).toFixed(2) + "%";
-    $("lTime").textContent = `${mmss(total - done)} left`;
+    $("lTime").textContent = tr(`${mmss(total - done)} left`, `noch ${mmss(total - done)}`);
     $("lCount").textContent = !st.breath && (st.breaths > 12 || !st.breaths || st.secs >= 60) ? mmss(left) : "";
     const dots = $("lDots").children;
     if (dots.length) { const lit = Math.min(dots.length, Math.floor((st.secs - left) / (st.secs / dots.length)) + 1); for (let k = 0; k < dots.length; k++) dots[k].classList.toggle("on", k < lit); }
@@ -2493,7 +3025,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (!paused) { left -= dt; phaseT += dt; if (left <= 0) enter(idx + 1); else paint(); }
     if (running) requestAnimationFrame(loop);
   }
-  function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? "Resume" : "Pause"; }
+  function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? tr("Resume", "Weiter") : tr("Pause", "Pause"); }
 
   // controls fade after a few quiet seconds; the first tap only brings them back
   function wake() { $("live").classList.remove("quiet"); clearTimeout(quietTimer); quietTimer = setTimeout(() => { if (running && !paused) $("live").classList.add("quiet"); }, 4000); }
@@ -2518,7 +3050,8 @@ Answer with JSON only, no prose, in exactly this shape:
   document.addEventListener("keydown", e => { if (!running) return; if (e.code === "Space") { e.preventDefault(); setPaused(!paused); } if (e.code === "ArrowRight") enter(idx + 1); if (e.code === "ArrowLeft") enter(Math.max(0, idx - 1)); });
 
   // ---------- done + feedback ----------
-  let session = null, fb = { poses: null, pace: null, marks: {} };
+  let session = null, fb = { poses: null, pace: null, marks: {} }, DONE_SECS = 0, DONE_COMPLETE = true, NEXT_STORY = null;
+  function paintDoneMeta() { $("doneMeta").textContent = tr(`${mmss(DONE_SECS)} on the mat${DONE_COMPLETE ? "" : " · ended early"}`, `${mmss(DONE_SECS)} auf der Matte${DONE_COMPLETE ? "" : " · früher beendet"}`); }
   function finish(complete) {
     if (!running) return;
     running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
@@ -2531,15 +3064,25 @@ Answer with JSON only, no prose, in exactly this shape:
       poses: [...new Set(plan.steps.map(s => s.id))], source, meta: plan.meta || null };
     fb = { poses: null, pace: null, marks: {} };
     $("doneCat").innerHTML = fig(BY["savasana"].p);
-    $("doneMeta").textContent = `${mmss(secs)} on the mat${complete ? "" : " · ended early"}`;
-    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false; $("nextCard").hidden = true;
+    DONE_SECS = secs; DONE_COMPLETE = !!complete; paintDoneMeta();
+    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false; $("nextCard").hidden = true; NEXT_STORY = null;
     paintFb();
     show("done");
+  }
+  const STORY_DE = { "grew up": "ist älter geworden", "takes a step back": "geht einen Schritt zurück", "grew up after three good practices": "ist nach drei guten Einheiten älter geworden", "gets quicker": "wird flinker", "slows down": "wird ruhiger" };
+  function paintNext() {
+    if (!NEXT_STORY) return;
+    const A = P.ANIMAL[ST.animal], a = A.en.toLowerCase(), story = NEXT_STORY.story, k = 3 - ST.streak, grow = NEXT_STORY.right && ST.level < 5;
+    paintPhrase("nPhrase", "nPhraseDe", ST);
+    if (!DE()) { $("nStory").textContent = story.length ? `Your ${a} ${story.join(" and ")}.` : (grow ? `Same ${a} again. After ${k} more good ${k === 1 ? "practice" : "practices"} it grows up.` : `Same ${a} again.`); return; }
+    const g = A.g, dein = g === "f" ? "Deine" : "Dein", same = { m: "derselbe", f: "dieselbe", n: "dasselbe" }[g], pron = { m: "er", f: "sie", n: "es" }[g];
+    $("nStory").textContent = story.length ? `${dein} ${A.de} ${story.map(x => STORY_DE[x] || x).join(" und ")}.`
+      : (grow ? `Wieder ${same} ${A.de}. Noch ${k} gute ${k === 1 ? "Einheit" : "Einheiten"}, dann wird ${pron} älter.` : `Wieder ${same} ${A.de}.`);
   }
   function paintFb() {
     $("fbPoses").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.poses === b.dataset.v ? "true" : "false"));
     $("fbPace").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.pace === b.dataset.v ? "true" : "false"));
-    $("fbMarks").innerHTML = session.poses.filter(id => id !== "savasana").map(id => `<button type="button" data-id="${id}" data-m="${fb.marks[id] || ""}">${fb.marks[id] === "love" ? "♡ " : fb.marks[id] === "hard" ? "! " : ""}${BY[id].en}</button>`).join("");
+    $("fbMarks").innerHTML = session.poses.filter(id => id !== "savasana").map(id => `<button type="button" data-id="${id}" data-m="${fb.marks[id] || ""}">${fb.marks[id] === "love" ? "♡ " : fb.marks[id] === "hard" ? "! " : ""}${pn(BY[id])}</button>`).join("");
   }
   $("fbPoses").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.poses = b.dataset.v; paintFb(); });
   $("fbPace").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.pace = b.dataset.v; paintFb(); });
@@ -2547,10 +3090,9 @@ Answer with JSON only, no prose, in exactly this shape:
   $("fbSave").addEventListener("click", async () => {
     const before = Object.assign({}, ST);
     const nx = P.next(ST, { poses: fb.poses, pace: fb.pace });
-    ST = nx.state; saveST();
-    const an = P.ANIMAL[ST.animal].en.toLowerCase();
-    $("nPhrase").textContent = cap(phrase(ST, "en")); $("nPhraseDe").textContent = phrase(ST, "de");
-    $("nStory").textContent = nx.story.length ? `Your ${an} ${nx.story.join(" and ")}.` : (fb.poses === "just right" && ST.level < 5 ? `Same ${an} again. After ${3 - ST.streak} more good ${3 - ST.streak === 1 ? "practice" : "practices"} it grows up.` : `Same ${an} again.`);
+    ST = Object.assign(nx.state, { count: (ST.count || 0) + 1 }); saveST();
+    NEXT_STORY = { story: nx.story, right: fb.poses === "just right" };
+    paintNext();
     $("nextCard").hidden = false; try { $("nextCard").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
     const rec = Object.assign({}, session, { before: { level: before.level, tempo: before.tempo }, after: { level: ST.level, tempo: ST.tempo },
       feedback: { poses: fb.poses, pace: fb.pace, note: $("fbNote").value.trim(),
@@ -2558,9 +3100,9 @@ Answer with JSON only, no prose, in exactly this shape:
     const log = store.get("matcat-log", []); log.push(rec); store.set("matcat-log", log.slice(-60));
     $("fbSave").disabled = true;
     if (rec.meta && rec.meta.peak) HIST = HIST.concat([Object.assign({}, rec.meta, { theme: rec.theme, loved: rec.feedback.loved, hard: rec.feedback.hard })]).slice(-8);
-    if (!db) { $("fbStatus").textContent = "Saved on this phone."; return; }
-    try { await db.collection("practices").add(rec); $("fbStatus").textContent = "Saved."; }
-    catch (e) { $("fbStatus").textContent = "Saved on this phone."; }
+    if (!db) { $("fbStatus").textContent = tr("Saved on this phone.", "Auf diesem Handy gespeichert."); return; }
+    try { await db.collection("practices").add(rec); $("fbStatus").textContent = tr("Saved.", "Gespeichert."); }
+    catch (e) { $("fbStatus").textContent = tr("Saved on this phone.", "Auf diesem Handy gespeichert."); }
   });
 
   // ---------- library ----------
@@ -2572,12 +3114,13 @@ Answer with JSON only, no prose, in exactly this shape:
   function renderLibrary() {
     const L = ST ? P.LEVELS[ST.level - 1] : P.LEVELS[2], skip = new Set((ST && ST.skip) || []);
     const inMine = p => p.lvl <= L.maxLvl && !skip.has(p.id);
-    $("libIntro").textContent = ST ? `${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.` : `${POSES.length} poses.`;
+    $("libIntro").textContent = ST ? tr(`${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.`,
+      `${POSES.length} Haltungen. Auf deiner Stufe (${L.de}) nutzen die Stunden Haltungen bis „${LEVEL[L.maxLvl]}“. Tippe auf „Weglassen“ bei allem, was nie in einer Stunde vorkommen soll.`) : tr(`${POSES.length} poses.`, `${POSES.length} Haltungen.`);
     const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : skip.has(p.id))));
     $("libGrid").innerHTML = list.map(p => `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
-        <span class="s">${p.sa}</span><span class="e">${p.en}</span><span class="d">${p.de}</span>
+        <span class="s">${p.sa}</span><span class="e">${pn(p)}</span><span class="d">${pn2(p)}</span>
         <span class="lvl">${[1, 2, 3].map(k => `<i class="${k <= p.lvl ? "on" : ""}"></i>`).join("")} ${LEVEL[p.lvl]}</span>
-        ${ST && !P.KEEP.has(p.id) ? `<div class="mine" data-id="${p.id}"><button type="button" data-v="toggle" aria-pressed="${skip.has(p.id)}">${skip.has(p.id) ? "Left out · undo" : "Leave out"}</button></div>` : ""}</div>`).join("") || `<p class="muted">No poses match these filters.</p>`;
+        ${ST && !P.KEEP.has(p.id) ? `<div class="mine" data-id="${p.id}"><button type="button" data-v="toggle" aria-pressed="${skip.has(p.id)}">${skip.has(p.id) ? tr("Left out · undo", "Ausgelassen · rückgängig") : tr("Leave out", "Weglassen")}</button></div>` : ""}</div>`).join("") || `<p class="muted">${tr("No poses match these filters.", "Keine Haltungen passen zu diesen Filtern.")}</p>`;
   }
   $("libGrid").addEventListener("click", e => {
     const b = e.target.closest(".mine button"); if (!b || !ST) return;
@@ -2585,10 +3128,83 @@ Answer with JSON only, no prose, in exactly this shape:
     sk.has(id) ? sk.delete(id) : sk.add(id); ST.skip = [...sk]; saveST(); renderLibrary();
   });
 
+  // ---------- language switch: static texts are swapped in place, the current screen is drawn again ----------
+  const UI_DE = {
+    "A yoga practice that fits you, guided on your phone.": "Eine Yogapraxis, die zu dir passt, angeleitet auf deinem Handy.",
+    "Welcome back": "Willkommen zurück", "Continue": "Weiter", "Not you? Enter another animal": "Nicht du? Anderes Tier eingeben",
+    "Do you know your animal?": "Kennst du dein Tier?",
+    "Animals now say something about you. Your age and pace stay; three small tests find your new animal.": "Die Tiere sagen jetzt etwas über dich. Alter und Tempo bleiben; drei kleine Tests finden dein neues Tier.",
+    "Do the three tests": "Die drei Tests machen", "I'm new here": "Ich bin neu hier",
+    "On this phone the app remembers you. The animal is for a new phone or browser.": "Auf diesem Handy erinnert sich die App an dich. Dein Tier brauchst du nur für ein neues Handy oder einen anderen Browser.",
+    "Your nature": "Deine Natur", "Choose your animal": "Wähle dein Tier", "Doesn't fit? Choose another nature": "Passt nicht? Andere Natur wählen",
+    "That's me": "Das bin ich", "Back": "Zurück", "A few questions": "Ein paar Fragen",
+    "Two minutes. Three of them are small tests you can try right now.": "Zwei Minuten. Drei davon sind kleine Tests, die du gleich ausprobieren kannst.",
+    "This app is not medical advice. With an injury, pregnancy or a health condition, check with your doctor before you start.": "Diese App ersetzt keinen ärztlichen Rat. Bei einer Verletzung, in der Schwangerschaft oder mit einer Erkrankung sprich vor dem Start mit deiner Ärztin oder deinem Arzt.",
+    "Find my animal": "Mein Tier finden", "You are": "Du bist",
+    "Picture it for a moment: that's what you bring back next time. On this phone you don't even need to.": "Stell es dir kurz bildlich vor: Das bringst du beim nächsten Mal mit. Auf diesem Handy brauchst du nicht einmal das.",
+    "Let's practise": "Los geht's", "Today, for the": "Heute für dich als", "Not you?": "Nicht du?",
+    "Ten practices done. Bodies change:": "Zehn Einheiten geschafft. Körper verändern sich:", "redo the three small tests": "die drei kleinen Tests wiederholen",
+    "What do you feel like?": "Worauf hast du Lust?", "Time": "Zeit", "Take care today": "Heute schonen", "Sound": "Klang",
+    "Bowls": "Klangschalen", "Silent": "Stumm", "Volume": "Lautstärke", "Listen": "Anhören",
+    "Build practice": "Praxis erstellen", "Surprise me": "Überrasch mich", "Pose library": "Haltungen",
+    "Surprise me asks Claude to write a class just for you. It takes about half a minute and uses your Claude account.": "„Überrasch mich“ bittet Claude, eine Stunde nur für dich zu schreiben. Das dauert etwa eine halbe Minute und nutzt dein Claude-Konto.",
+    "Claude is composing your class…": "Claude stellt deine Stunde zusammen…", "Stop": "Stopp",
+    "Tap a pose to swap it or leave it out.": "Tippe auf eine Haltung, um sie zu tauschen oder wegzulassen.",
+    "Swap for a similar pose": "Gegen eine ähnliche Haltung tauschen", "Leave out today": "Heute weglassen", "Never include": "Nie einbauen", "Cancel": "Abbrechen",
+    "Begin": "Beginnen", "Full screen": "Vollbild", "Shuffle": "Neu mischen", "Settings": "Einstellungen",
+    "Next": "Als Nächstes", "Pause": "Pause", "Skip": "Überspringen", "End": "Ende",
+    "The poses were": "Die Haltungen waren", "Too easy": "Zu leicht", "Just right": "Genau richtig", "Too hard": "Zu schwer",
+    "The pace was": "Das Tempo war", "Too slow": "Zu langsam", "Too fast": "Zu schnell",
+    "Poses · tap once for loved, twice for hard": "Haltungen · einmal tippen für geliebt, zweimal für schwer", "Notes": "Notizen",
+    "Save and see my animal": "Speichern und mein Tier sehen", "Back to start": "Zurück zum Start", "Next time you are": "Nächstes Mal bist du",
+    "Done": "Fertig", "All levels": "Alle Stufen", "Basic": "Einfach", "Intermediate": "Mittel", "Advanced": "Fortgeschritten",
+    "All": "Alle", "In my practices": "In meinen Stunden", "Left out": "Ausgelassen",
+  };
+  const ATTR_DE = {
+    "e.g. calm young heron · ruhiger junger Reiher": "z. B. ruhiger junger Reiher · calm young heron",
+    "What felt good, what was missing, what to change": "Was tat gut, was hat gefehlt, was soll anders werden",
+    "Change this pose": "Diese Haltung ändern", "Current pose": "Aktuelle Haltung",
+  };
+  const TEXTS = [], ATTRS = [];
+  (function collect() {
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let n; while ((n = walk.nextNode())) { const t = n.nodeValue.trim(); if (t && UI_DE[t] && !n.parentElement.closest("script,style")) TEXTS.push([n, n.nodeValue, n.nodeValue.replace(t, UI_DE[t])]); }
+    document.querySelectorAll("[placeholder],[aria-label]").forEach(el => ["placeholder", "aria-label"].forEach(a => { const v = el.getAttribute(a); if (v && ATTR_DE[v]) ATTRS.push([el, a, v, ATTR_DE[v]]); }));
+  })();
+  function applyStatic() {
+    TEXTS.forEach(([n, en, de]) => { n.nodeValue = DE() ? de : en; });
+    ATTRS.forEach(([el, a, en, de]) => el.setAttribute(a, DE() ? de : en));
+    document.documentElement.lang = LANG;
+    $("langSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === LANG)));
+  }
+  function redraw() {
+    const cur = SCREENS.find(id => !$(id).hidden);
+    if (cur === "welcome") { if (!$("wKnown").hidden && ST) { paintPhrase("wPhrase", "wPhraseDe", ST); $("wNature").textContent = natureLine(ST); } else { paintEntry(); if (!$("codeSugg").hidden) $("codeIn").dispatchEvent(new Event("input")); } }
+    if (cur === "pick") renderPick();
+    if (cur === "assess") renderQs();
+    if (cur === "reveal" && ST) paintReveal();
+    if (cur === "build" && ST) paintToday();
+    if (cur === "preview" && plan && $("thinking").hidden) renderPreview();
+    if (cur === "done" && session) { paintDoneMeta(); paintFb(); paintNext(); }
+    if (cur === "library") renderLibrary();
+    if (!$("sheet").hidden && sheetId) openSheet(sheetId);
+    setPaused(paused); paintFsBtn();
+  }
+  function setLang(l) { LANG = S.lang = l; saveS(); applyStatic(); redraw(); }
+  $("langSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (b && b.dataset.v !== LANG) setLang(b.dataset.v); });
+  applyStatic(); paintFsBtn();
+
   // ---------- start ----------
-  if (ST && ST.animal && P.ANIMAL[ST.animal]) showWelcome(true); else showWelcome(false);
+  if (ST && ST.animal && P.ANIMAL[ST.animal]) showWelcome(true);
+  else if (ST && ST.animal) { showWelcome(false); $("oldNote").hidden = false; KEEP_LT = { level: ST.level, tempo: ST.tempo }; } // animal from the first version
+  else showWelcome(false);
 })();
 </script>
 
+<script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
 </body>
 </html>
