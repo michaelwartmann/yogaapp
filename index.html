@@ -55,6 +55,7 @@ body {
 h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
 p { margin: 0; }
 button, input, textarea { font: inherit; color: inherit; }
+input, textarea { box-sizing: border-box; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .screen { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
@@ -63,6 +64,7 @@ button { cursor: pointer; }
 .btn { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 9px 18px; font-weight: 600; }
 .btn:hover { border-color: var(--muted); }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
 .btn.big { padding: 13px 28px; font-size: 1.05rem; }
 .btn.quiet { border-color: transparent; color: var(--muted); }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -101,7 +103,7 @@ input[type="range"] { accent-color: var(--accent); width: min(260px, 100%); }
 .chip.peak { box-shadow: inset 0 0 0 1.5px var(--ink); }
 .why { max-width: 70ch; }
 .thinking { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 24px 0; }
-.mine button[aria-pressed="true"][data-v="new"] { background: var(--inhale); border-color: var(--inhale); color: var(--bg); }
+.mine button[aria-pressed="true"][data-v="toggle"] { background: var(--hard); border-color: var(--hard); color: var(--bg); }
 .rounds { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); padding: 0 8px; }
 .note { font-size: 0.85rem; color: var(--muted); flex-basis: 100%; }
 .startbar { position: sticky; bottom: 0; background: var(--bg); padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; border-top: 1px solid var(--line); }
@@ -185,23 +187,113 @@ body.is-live { overflow: hidden; }
 .mine button[aria-pressed="true"][data-v="ok"] { background: var(--muted); border-color: var(--muted); color: var(--bg); }
 .mine button[aria-pressed="true"][data-v="hard"] { background: var(--hard); border-color: var(--hard); color: var(--bg); }
 .proposed { font-size: 0.7rem; color: var(--muted); font-style: italic; }
+/* profile: code, pickers, assessment, edit sheet */
+.codecard { background: var(--surface); border-radius: 22px; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+.codecard .phrase { font-family: var(--font-display); font-weight: 600; font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.1; }
+.codecard .phrase-de { font-family: var(--font-display); font-size: 1.15rem; color: var(--muted); }
+.codecard .story { font-weight: 700; color: var(--accent); }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; cursor: pointer; }
+.codein { position: relative; width: min(460px, 100%); }
+.codein input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 12px 18px; font-size: 1.05rem; }
+.sugg { position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; z-index: 4; }
+.sugg button { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 9px 16px; }
+.sugg button:hover, .sugg button:focus-visible { background: var(--ring); }
+.found { display: flex; gap: 8px; flex-wrap: wrap; font-size: 0.9rem; }
+.found span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--muted); }
+.found span.ok { border-color: var(--good); color: var(--good); }
+.animals { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.animals button { border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 10px 8px; text-align: center; }
+.animals button b { display: block; font-family: var(--font-display); font-size: 1.02rem; }
+.animals button small { color: var(--muted); }
+.animals button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.q { display: flex; flex-direction: column; gap: 8px; }
+.q .ask { font-weight: 700; }
+.q .tryit { display: flex; gap: 12px; align-items: center; }
+.q .tryit svg { width: 90px; flex: none; height: auto; aspect-ratio: 260 / 230; }
+.note-safe { font-size: 0.86rem; color: var(--muted); max-width: 70ch; }
+button.chip { border: 0; cursor: pointer; font: inherit; color: inherit; }
+button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line); border-radius: 22px 22px 0 0; box-shadow: 0 -8px 30px rgba(0,0,0,.12);
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 12px; }
+.sheet .head { display: flex; gap: 12px; align-items: center; }
+.sheet .head svg { width: 84px; flex: none; height: auto; aspect-ratio: 260 / 230; }
+.sheet .acts { display: flex; gap: 8px; flex-wrap: wrap; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stage .ring { transform: scale(.93) !important; } }
 </style>
 
-<section class="screen" id="build">
+<section class="screen" id="welcome">
   <div class="hero">
-    <div class="halo"><svg id="heroCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
+    <div class="halo"><svg class="heroCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
     <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
-      <h1>Today's practice</h1>
-      <p class="muted">Choose the time and how you feel.</p>
+      <h1 id="wTitle">Mat Cat Yoga</h1>
+      <p class="muted" id="wSub">A yoga practice that fits you, guided on your phone.</p>
+    </div>
+  </div>
+  <div id="wKnown" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div class="codecard"><span class="label">Welcome back</span><span class="phrase" id="wPhrase"></span><span class="phrase-de" id="wPhraseDe"></span></div>
+    <div class="row"><button class="btn primary big" id="wContinue" type="button">Continue</button><button class="linkbtn" id="wNotMe" type="button">Not you? Enter another animal</button></div>
+  </div>
+  <div id="wUnknown" style="display:flex;flex-direction:column;gap:14px">
+    <label class="label" for="codeIn">Do you know your animal?</label>
+    <div class="codein">
+      <input id="codeIn" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="e.g. calm young heron · ruhiger junger Reiher">
+      <div class="sugg" id="codeSugg" hidden></div>
+    </div>
+    <div class="found" id="codeFound"></div>
+    <div id="codeAsk" hidden style="display:flex;flex-direction:column;gap:10px">
+      <span class="muted" id="codeAskTxt"></span>
+      <div class="seg" id="askAge"></div>
+      <div class="seg" id="askTempo"></div>
+    </div>
+    <div class="row"><button class="btn primary big" id="codeGo" type="button" disabled>Continue</button><button class="btn" id="newBtn" type="button">I'm new here</button></div>
+    <p class="muted" style="font-size:.88rem">On this phone the app remembers you. The animal is for a new phone or browser.</p>
+  </div>
+</section>
+
+<section class="screen" id="pick" hidden>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <h2 style="font-size:1.8rem">Choose your animal</h2>
+    <p class="muted">It stays yours. As you practise it grows up, from baby to ancient. Pick one you like, that makes it easy to remember.</p>
+  </div>
+  <div class="animals" id="animalGrid"></div>
+  <div class="startbar"><button class="btn primary big" id="pickGo" type="button" disabled>Next</button><button class="btn quiet" id="pickBack" type="button">Back</button></div>
+</section>
+
+<section class="screen" id="assess" hidden>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <h2 style="font-size:1.8rem">A few questions</h2>
+    <p class="muted">Two minutes. Three of them are small tests you can try right now.</p>
+  </div>
+  <div id="qList" style="display:flex;flex-direction:column;gap:22px"></div>
+  <p class="note-safe">This app is not medical advice. With an injury, pregnancy or a health condition, check with your doctor before you start.</p>
+  <div class="startbar"><button class="btn primary big" id="assessGo" type="button">Find my animal</button><button class="btn quiet" id="assessBack" type="button">Back</button></div>
+</section>
+
+<section class="screen" id="reveal" hidden>
+  <div class="codecard">
+    <span class="label">You are</span>
+    <span class="phrase" id="rPhrase"></span><span class="phrase-de" id="rPhraseDe"></span>
+    <span class="story" id="rStory"></span>
+    <p class="muted" id="rExplain"></p>
+  </div>
+  <p class="muted">Picture it for a moment: that's what you bring back next time. On this phone you don't even need to.</p>
+  <div class="row"><button class="btn primary big" id="rGo" type="button">Let's practise</button></div>
+</section>
+
+<section class="screen" id="build" hidden>
+  <div class="hero">
+    <div class="halo"><svg class="heroCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+      <span class="label">Today, for the</span>
+      <h1 id="tPhrase" style="font-size:clamp(1.5rem,5.5vw,2.1rem)"></h1>
+      <span class="muted" id="tPhraseDe"></span>
+      <button class="linkbtn" id="tChange" type="button" style="align-self:flex-start">Not you?</button>
     </div>
   </div>
   <div class="form">
+    <div class="field"><span class="label">What do you feel like?</span><div class="seg" id="themeSeg"></div><span class="muted" id="themeText" style="font-size:.88rem"></span></div>
     <div class="field"><span class="label">Time</span><div class="seg" data-key="minutes"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
-    <div class="field"><span class="label">Style</span><div class="seg" data-key="style"><button type="button" data-v="vinyasa">Vinyasa</button><button type="button" data-v="slow">Slow flow</button></div></div>
-    <div class="field"><span class="label">Energy</span><div class="seg" data-key="energy"><button type="button" data-v="low">Low</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="high">High</button></div></div>
-    <div class="field"><span class="label">Focus</span><div class="seg" data-key="focus" data-multi="1"><button type="button" data-v="hamstrings">Hamstrings</button><button type="button" data-v="back">Back</button><button type="button" data-v="hips">Hips</button><button type="button" data-v="balance">Balance</button><button type="button" data-v="core">Core</button></div></div>
-    <div class="field"><span class="label">Breath length</span><div class="seg" data-key="cycle"><button type="button" data-v="5">5 s</button><button type="button" data-v="6">6 s</button><button type="button" data-v="7">7 s</button></div></div>
+    <div class="field"><span class="label">Take care today</span><div class="seg" id="careSeg"></div></div>
     <div class="field"><span class="label">Sound</span><div class="seg" data-key="sound"><button type="button" data-v="bowls">Bowls</button><button type="button" data-v="off">Silent</button></div>
       <label class="row muted" for="vol" style="font-size:.88rem">Volume <input type="range" id="vol" min="0" max="100" step="5"> <button class="btn quiet" id="testSound" type="button">Listen</button></label>
     </div>
@@ -218,7 +310,13 @@ body.is-live { overflow: hidden; }
   </div>
   <div class="thinking" id="thinking" hidden><p class="muted" id="thinkingTxt">Claude is composing your class…</p><button class="btn" id="stopBtn" type="button">Stop</button></div>
   <div class="cards" id="topCards"></div>
+  <p class="muted" style="font-size:.88rem">Tap a pose to swap it or leave it out.</p>
   <div id="sections" style="display:flex;flex-direction:column;gap:26px"></div>
+  <div class="sheet" id="sheet" hidden role="dialog" aria-label="Change this pose">
+    <div class="head"><svg id="shFig" viewBox="0 0 260 230" aria-hidden="true"></svg><div><b id="shName"></b><div class="muted" id="shSub"></div></div></div>
+    <p class="muted" id="shMsg" style="font-size:.9rem"></p>
+    <div class="acts"><button class="btn" id="shSwap" type="button">Swap for a similar pose</button><button class="btn" id="shOut" type="button">Leave out today</button><button class="btn" id="shNever" type="button">Never include</button><button class="btn quiet" id="shCancel" type="button">Cancel</button></div>
+  </div>
   <div class="startbar">
     <button class="btn primary big" id="startBtn" type="button">Begin</button>
     <label class="row muted" for="fsStart" id="fsStartWrap" style="font-size:.9rem"><input type="checkbox" id="fsStart" checked> Full screen</label>
@@ -276,11 +374,12 @@ body.is-live { overflow: hidden; }
   <h2 style="font-size:2.1rem">Namaste</h2>
   <p class="muted" id="doneMeta"></p>
   <div class="fb">
-    <div class="field"><span class="label">How was it</span><div class="seg" id="fbOverall"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="5">5</button></div></div>
-    <div class="field"><span class="label">Intensity</span><div class="seg" id="fbIntensity"><button type="button" data-v="too easy">Too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too much">Too much</button></div></div>
+    <div class="field"><span class="label">The poses were</span><div class="seg" id="fbPoses"><button type="button" data-v="too easy">Too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too hard">Too hard</button></div></div>
+    <div class="field"><span class="label">The pace was</span><div class="seg" id="fbPace"><button type="button" data-v="too slow">Too slow</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too fast">Too fast</button></div></div>
     <div class="field"><span class="label">Poses · tap once for loved, twice for hard</span><div class="marks" id="fbMarks"></div></div>
     <div class="field"><label class="label" for="fbNote">Notes</label><textarea id="fbNote" placeholder="What felt good, what was missing, what to change"></textarea></div>
-    <div class="row"><button class="btn primary big" id="fbSave" type="button">Save</button><button class="btn quiet" id="againBtn" type="button">Build another</button></div>
+    <div class="row"><button class="btn primary big" id="fbSave" type="button">Save and see my animal</button><button class="btn quiet" id="againBtn" type="button">Back to start</button></div>
+    <div class="codecard" id="nextCard" hidden><span class="label">Next time you are</span><span class="phrase" id="nPhrase"></span><span class="phrase-de" id="nPhraseDe"></span><span class="story" id="nStory"></span></div>
     <p class="status" id="fbStatus" aria-live="polite"></p>
   </div>
 </section>
@@ -293,7 +392,7 @@ body.is-live { overflow: hidden; }
   <p class="muted" id="libIntro"></p>
   <div class="lib-tools">
     <div class="seg" id="fLevel"><button type="button" data-v="all" aria-pressed="true">All levels</button><button type="button" data-v="1">Basic</button><button type="button" data-v="2">Intermediate</button><button type="button" data-v="3">Advanced</button></div>
-    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="easy">Easy for me</button><button type="button" data-v="ok">OK for me</button><button type="button" data-v="hard">Hard for me</button><button type="button" data-v="new">Untested</button><button type="button" data-v="unrated">Not yet rated</button></div>
+    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="mine">In my practices</button><button type="button" data-v="out">Left out</button></div>
   </div>
   <div class="grid" id="libGrid"></div>
 </section>
@@ -369,7 +468,7 @@ body.is-live { overflow: hidden; }
       near: "var(--fig, #1d2b25)", far: "var(--fig-far, #8aa198)" },
     bean: { head: 15, arm: 11, leg: 13, torso: 24, torsoFront: 30, neck: 10, face: true,
       near: "var(--m-body, #5c9a82)", far: "var(--m-far, #a8ccbd)" },
-    cat: { head: 18, arm: 13, leg: 15, torso: 30, torsoFront: 38, neck: 12, cat: true,
+    cat: { head: 18, arm: 13, leg: 15, torso: 30, torsoFront: 38, neck: 12, cat: true, line: "var(--cat-line, #24170f)", lw: 2.2,
       near: "var(--cat-body, #f2a157)", far: "var(--cat-shade, #de8a45)" },
   };
   function svgInner(pose, o) {
@@ -382,9 +481,12 @@ body.is-live { overflow: hidden; }
     const line = pts => pts.map((p, i) => (i ? "L" : "M") + X(p) + " " + Y(p)).join(" ");
     const front = J.w > 0.5;
     const nearC = S.near, farC = front ? nearC : S.far;
-    const limb = (pts, c, sw) => `<path d="${line(pts)}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
-    const torso = `<path d="M${X(J.hip)} ${Y(J.hip)} Q${X(J.spineC)} ${Y(J.spineC)} ${X(J.sh)} ${Y(J.sh)}" fill="none" stroke="${nearC}" stroke-width="${front ? S.torsoFront : S.torso}" stroke-linecap="round"/>`;
-    const neck = limb([J.sh, J.neck], nearC, S.neck);
+    const plain = (pts, c, sw) => `<path d="${line(pts)}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    // contour: the same shape drawn a little wider in the line colour underneath, so every arm and leg reads clearly
+    const limb = (pts, c, sw) => (S.line ? plain(pts, S.line, sw + 2 * S.lw) : "") + plain(pts, c, sw);
+    const tw = front ? S.torsoFront : S.torso, tpath = `M${X(J.hip)} ${Y(J.hip)} Q${X(J.spineC)} ${Y(J.spineC)} ${X(J.sh)} ${Y(J.sh)}`;
+    const torso = (S.line ? `<path d="${tpath}" fill="none" stroke="${S.line}" stroke-width="${tw + 2 * S.lw}" stroke-linecap="round"/>` : "") + `<path d="${tpath}" fill="none" stroke="${nearC}" stroke-width="${tw}" stroke-linecap="round"/>`;
+    const neck = plain([J.sh, J.neck], nearC, S.neck);
     const r = S.head, c = J.head, hA = J.hAng;
     const at = (base, ang, d) => step(base, ang, d);
     let ears = "", face = "", tail = "";
@@ -425,14 +527,16 @@ body.is-live { overflow: hidden; }
         const cen = { x: (a.x + b2.x + tip.x) / 3, y: (a.y + b2.y + tip.y) / 3 };
         const sh2 = q => ({ x: cen.x + (q.x - cen.x) * 0.5, y: cen.y + (q.y - cen.y) * 0.5 + 0 });
         const tri = (A, B, C, f, sw) => `<path d="M${X(A)} ${Y(A)} L${X(B)} ${Y(B)} L${X(C)} ${Y(C)} Z" fill="${f}" stroke="${f}" stroke-width="${sw}" stroke-linejoin="round"/>`;
-        return tri(a, tip, b2, nearC, 5) + tri(sh2(a), sh2(tip), sh2(b2), pink, 2);
+        return (S.line ? tri(a, tip, b2, S.line, 5 + 2 * S.lw) : "") + tri(a, tip, b2, nearC, 5) + tri(sh2(a), sh2(tip), sh2(b2), pink, 2);
       };
       ears = ear(1) + ear(-1);
       // tail continues the spine past the hips and curls up
       const tp = front ? [at(J.hip, -40, 24), at(J.hip, -5, 40), at(J.hip, 25, 44)]
                        : [at(J.hip, J.t + 150, 22), at(J.hip, J.t + 118, 38), at(J.hip, J.t + 82, 40)];
-      if (Math.min(...tp.map(q => q.y)) > 3)
-        tail = `<path d="M${X(J.hip)} ${Y(J.hip)} C${X(tp[0])} ${Y(tp[0])} ${X(tp[1])} ${Y(tp[1])} ${X(tp[2])} ${Y(tp[2])}" fill="none" stroke="${tailC}" stroke-width="9" stroke-linecap="round"/>`;
+      if (Math.min(...tp.map(q => q.y)) > 3) {
+        const tpd = `M${X(J.hip)} ${Y(J.hip)} C${X(tp[0])} ${Y(tp[0])} ${X(tp[1])} ${Y(tp[1])} ${X(tp[2])} ${Y(tp[2])}`;
+        tail = `<path d="${tpd}" fill="none" stroke="${S.line}" stroke-width="${9 + 2 * S.lw}" stroke-linecap="round"/><path d="${tpd}" fill="none" stroke="${tailC}" stroke-width="9" stroke-linecap="round"/>`;
+      }
       // cream belly patch on the front of the torso
       const mid = { x: (J.hip.x + J.sh.x) / 2, y: (J.hip.y + J.sh.y) / 2 };
       const tl = Math.hypot(J.sh.x - J.hip.x, J.sh.y - J.hip.y);
@@ -463,7 +567,7 @@ body.is-live { overflow: hidden; }
       const sw = (b.maxX - b.minX) / 2 * 0.85 + 12;
       shadow = `<ellipse cx="${(VB.w / 2).toFixed(1)}" cy="${VB.floor + 5}" rx="${sw.toFixed(1)}" ry="6" fill="var(--cat-shadow, #e3cfb3)"/>`;
     }
-    const head = ears + `<circle cx="${X(c)}" cy="${Y(c)}" r="${r}" fill="${nearC}"/>` + face;
+    const head = ears + `<circle cx="${X(c)}" cy="${Y(c)}" r="${r}" fill="${nearC}"${S.line ? ` stroke="${S.line}" stroke-width="${S.lw}"` : ""}/>` + face;
     const strap = pose.strap ? `<path d="${line(pose.strap === "F" ? [J.armF[2], J.legF[2]] : [J.armN[2], J.legN[3]])}" stroke="var(--strap, #6a5acd)" stroke-width="3" stroke-linecap="round"/>` : "";
     const floor = o.floor === false ? "" : shadow ? shadow : `<line x1="8" x2="${VB.w - 8}" y1="${VB.floor + 5}" y2="${VB.floor + 5}" stroke="var(--floor, #c9d4ce)" stroke-width="3" stroke-linecap="round"/>`;
     // tall poses (inversions) are scaled down around the floor so they stay inside the frame
@@ -1364,9 +1468,9 @@ body.is-live { overflow: hidden; }
   // expand block steps into raw steps for one side
   function expand(steps, ctx, R) {
     const out = [];
-    steps.forEach(([id, h, o]) => {
+    steps.forEach(([id, h, o], i) => {
       o = o || {};
-      if (o.opt != null && R() > o.opt) return;
+      if (o.opt != null && (ctx.keep ? !ctx.keep[i] : R() > o.opt)) return;
       const sided = BY[id].sides === 2;
       const side = o.side || (o.lead ? ctx.lead : null) || (sided ? (ctx.side || "right") : null);
       out.push({ id, side: sided ? side : null, hold: typeof h === "number" ? h : null, breath: typeof h === "string" ? h : null, challenge: !!o.challenge });
@@ -1376,9 +1480,10 @@ body.is-live { overflow: hidden; }
   function runBlock(block, R, first) {
     if (!block.sided) return expand(block.steps, {}, R);
     const order = first === "left" ? ["left", "right"] : ["right", "left"];
+    const keep = block.steps.map(([, , o]) => !(o && o.opt != null) || R() <= o.opt); // optional add-ons: same choice on both sides
     let out = [];
     order.forEach(side => {
-      out = out.concat(expand(block.steps, { side }, R));
+      out = out.concat(expand(block.steps, { side, keep }, R));
       if (block.between === "vinyasa") out = out.concat(expand(B.VINYASA, {}, R));
     });
     return out;
@@ -1386,7 +1491,7 @@ body.is-live { overflow: hidden; }
 
   // ---------------- composition ----------------
   function generate(opt) {
-    opt = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, seed: 1, challenges: {}, me: {}, history: [] }, opt);
+    opt = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, seed: 1, challenges: {}, me: {}, history: [], swap: {} }, opt);
     const me = id => opt.me[id] || BY[id].me || "ok";
     const slow = opt.style === "slow";
     const cap = Math.min({ low: 1, medium: 2, high: 3 }[opt.energy], slow ? 2 : 3);
@@ -1402,14 +1507,15 @@ body.is-live { overflow: hidden; }
 
     // 1. peak
     const peaks = B.PEAKS.filter(p => p.int <= cap && me(p.pose) !== "new" && (me(p.pose) !== "hard" || p.thread) && usable(p) && !(p.place === "core" && opt.minutes === 30 && !opt.focus.includes("core")));
-    const peakScore = p => overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
+    const peakScore = p => (opt.peaks && opt.peaks.includes(p.id) ? 7 : 0) + overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
       + (cap === 1 && p.int === 1 ? 2 : 0) - recency(p.id) * 8 + R() * 4;
     const peak = (peaks.length ? peaks : B.PEAKS.filter(p => p.id === "pk-triangle")).map(p => [peakScore(p), p]).sort((a, b) => b[0] - a[0])[0][1];
 
     // 2. warm-up and sun salutation
     const pickBest = (list, score) => list.map(x => [score(x), x]).sort((a, b) => b[0] - a[0])[0][1];
     const warm = pickBest(B.WARMUPS.filter(w => w.int <= Math.max(cap, 1) && usable(w)), w => overlap(w.works, ftags) + overlap(w.works, peak.needs) - recency(w.id) * 5 + R() * 3);
-    const suns = B.SUNS.filter(s => (s.int <= cap || (s.id === "sun-b" && cap >= 2 && opt.minutes >= 45)) && usable(s));
+    let suns = B.SUNS.filter(s => (s.int <= cap || (s.id === "sun-b" && cap >= 2 && opt.minutes >= 45)) && usable(s));
+    if (!suns.length) suns.push(B.SUNS.find(s => s.id === "sun-classic"));
     const sun = pickBest(suns, s => (s.id === "sun-a" ? 1 : 0) + ((slow || cap === 1) && s.slow ? 2.5 : 0) + overlap(s.works, peak.needs) * 0.5 - recency(s.id) * 5 + R() * 3);
 
     // 3. rank modules: prepare the peak, match the focus, avoid recent ones, keep variety
@@ -1429,7 +1535,7 @@ body.is-live { overflow: hidden; }
     const RANK = { standing: ranked(["standing"]), balance: ranked(["balance"]), core: ranked(["core"]), back: ranked(["back"]), finish: ranked(["hips", "cool"]).filter(m => m.from !== "stand") };
 
     const defs = {
-      30: { rounds: 3, stand: 1, bal: 1, core: 0, back: 1, finish: 2 },
+      30: { rounds: 2, stand: 1, bal: 1, core: 0, back: 1, finish: 2 },
       45: { rounds: 3, stand: 2, bal: 1, core: 1, back: 1, finish: 3 },
       60: { rounds: 4, stand: 3, bal: 2, core: 1, back: 2, finish: 4 },
     }[opt.minutes];
@@ -1442,19 +1548,28 @@ body.is-live { overflow: hidden; }
     if (sun.id === "sun-classic") D.rounds = Math.max(2, D.rounds + (D.rounds % 2)); // even: both sides lead equally
 
     let best = null;
-    for (let dr = -1; dr <= 1; dr++) for (let ds = -1; ds <= 1; ds++) for (let df = -1; df <= 2; df++) for (let sc = 7; sc <= 18; sc++) {
-      const K = { rounds: Math.max(1, D.rounds + dr * (sun.id === "sun-classic" ? 2 : 1)), stand: Math.min(RANK.standing.length, Math.max(0, D.stand + ds)), bal: D.bal, core: D.core, back: D.back, finish: Math.max(1, D.finish + df), scale: sc / 10 };
+    const tryK = (dr, ds, df, sc) => {
+      const K = { rounds: sun.id === "sun-classic" ? Math.max(2, D.rounds + dr * 2) : Math.max(1, D.rounds + dr), stand: Math.min(RANK.standing.length * 2, Math.max(0, D.stand + ds)), bal: D.bal, core: D.core, back: D.back, finish: Math.max(1, D.finish + df), scale: sc / 10 };
       const plan = build(K);
-      const cost = Math.abs(plan.totalSecs - opt.minutes * 60) + 50 * Math.abs(K.rounds - D.rounds) + 110 * Math.abs(K.stand - D.stand) + 60 * Math.abs(K.finish - D.finish) + 15 * Math.abs(sc - 10);
+      const pace = opt.pace != null ? opt.pace : ({ 30: 3.5, 45: 1.2, 60: 0.8 }[opt.minutes] || 1); // each pose change costs a little: calmer classes, fewer changes
+      const cost = pace * plan.steps.length + Math.abs(plan.totalSecs - opt.minutes * 60) + 50 * Math.abs(K.rounds - D.rounds) + 110 * Math.abs(K.stand - D.stand) + (opt.minutes === 30 ? 35 : 60) * Math.abs(K.finish - D.finish) + 15 * Math.abs(sc - 10);
       if (!best || cost < best.cost) best = Object.assign(plan, { cost });
-    }
+    };
+    for (let dr = -1; dr <= 2; dr++) for (let ds = -1; ds <= 2; ds++) for (let df = -1; df <= 3; df++) for (let sc = 7; sc <= 18; sc++) tryK(dr, ds, df, sc);
+    // still well short (fast breath, few poses allowed): flow sequences twice and add rounds, as teachers do
+    if (best.totalSecs < opt.minutes * 60 - 60) for (let dr = 0; dr <= 5; dr++) for (let ds = 0; ds <= 6; ds++) for (let df = 0; df <= 3; df++) for (let sc = 10; sc <= 18; sc += 2) tryK(dr, ds, df, sc);
     return best;
 
     function build(K) {
       const R2 = rng(opt.seed * 131 + 3);
       const raw = [];
       let state = "seat", section = "";
-      const push = (steps, extra) => steps.forEach(s => raw.push(Object.assign({ section }, s, extra || {})));
+      // adaptations: opt.swap replaces a pose with a gentler one everywhere (or drops it with null), e.g. Up Dog → Cobra
+      const push = (steps, extra) => steps.forEach(s => {
+        const sw = opt.swap || {};
+        if (Object.prototype.hasOwnProperty.call(sw, s.id)) { if (!sw[s.id]) return; s = Object.assign({}, s, { id: sw[s.id], side: BY[sw[s.id]].sides === 2 ? s.side : null }); }
+        raw.push(Object.assign({ section }, s, extra || {}));
+      });
       const go = to => push(expand(connector(state, to), {}, R2));
       const startSide = () => R2() < 0.3 ? "left" : "right";
       const used = [];
@@ -1483,7 +1598,8 @@ body.is-live { overflow: hidden; }
       state = "stand";
 
       // standing modules (gentle first), peak if it belongs here
-      const standing = takeDiverse(RANK.standing, K.stand, [peak]).sort((a, b) => a.int - b.int);
+      let standing = takeDiverse(RANK.standing, Math.min(K.stand, RANK.standing.length), [peak]).sort((a, b) => a.int - b.int);
+      if (K.stand > standing.length) standing = standing.concat(standing.slice(0, K.stand - standing.length)); // second time through
       section = "Standing";
       standing.forEach(m => place(m));
       if (peak.place === "standing") { section = "Peak · " + peak.name; place(peak, { peak: true }); if (peak.counter) push(expand(peak.counter, {}, R2)); }
@@ -1536,7 +1652,7 @@ body.is-live { overflow: hidden; }
         const before = raw.length; place(m);
         if (yinish) raw.slice(before).forEach(s => { const y = BY[s.id].yin; if (y && s.hold) s.secs = Math.min(y, opt.minutes === 30 ? 2 : 4) * 60; });
       });
-      if (!finish.some(m => m.id === "u-twist") && !used.includes("u-twist")) place(B.MODULES.find(m => m.id === "u-twist"));
+      if (opt.minutes > 30 && !finish.some(m => m.id === "u-twist") && !used.includes("u-twist")) place(B.MODULES.find(m => m.id === "u-twist"));
       go("supine");
 
       section = "Savasana";
@@ -1569,6 +1685,17 @@ body.is-live { overflow: hidden; }
     me = me || (id => (opt.me && opt.me[id]) || BY[id].me || "ok");
     const C = opt.cycle || 6, MOVE = C / 2 + 0.5, slow = opt.style === "slow";
     const R3 = rng((opt.seed || 1) * 977 + 11);
+    // two identical holds in a row (e.g. Tabletop from a connector, then Tabletop to start the warm-up) become one longer hold;
+    // deliberate repeats (Bridge, Wheel) and the salutations stay as they are
+    const REPEAT = new Set(["setu-bandha-sarvangasana", "urdhva-dhanurasana"]);
+    raw = raw.reduce((acc, s) => {
+      const p = acc[acc.length - 1];
+      if (p && p.id === s.id && (p.side || null) === (s.side || null) && !p.breath && !s.breath && !REPEAT.has(s.id) && s.id !== "savasana" && !/Salutation/.test(s.section || "")) {
+        acc[acc.length - 1] = Object.assign({}, p, { hold: (p.hold || BY[p.id].hold || 2) + (s.hold || BY[s.id].hold || 2), secs: p.secs && s.secs ? p.secs + s.secs : p.secs || s.secs });
+        return acc;
+      }
+      acc.push(s); return acc;
+    }, []);
     const steps = raw.map(s => {
       const out = { id: s.id, side: s.side || null, section: s.section || "", breath: s.breath || null, challenge: !!s.challenge, peak: !!s.peak, breaths: 0, secs: 0 };
       if (s.breath) { out.secs = MOVE; return out; }
@@ -1577,7 +1704,7 @@ body.is-live { overflow: hidden; }
       if (s.secs) { out.secs = Math.round(s.secs * scaled / 15) * 15; out.breaths = Math.round(out.secs / C); return out; }
       let b = (s.hold || BY[s.id].hold || 3) * scaled * (slow ? 1.35 : 1) * (me(s.id) === "hard" ? 1.3 : 1);
       if (b >= 3 && R3() < 0.3) b += R3() < 0.5 ? -1 : 1;
-      out.breaths = Math.max(1, Math.min(12, Math.round(b))); out.secs = Math.round(out.breaths * C);
+      out.breaths = Math.max(1, Math.min(Math.max(12, Math.round(72 / C)), Math.round(b))); out.secs = Math.round(out.breaths * C);
       return out;
     });
     const used = steps.reduce((a, s) => a + s.secs, 0);
@@ -1675,13 +1802,225 @@ body.is-live { overflow: hidden; }
       dropped, checks: check });
   }
 
-  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, TO, HOW };
+  // Re-fit an edited plan (pose removed or swapped) to its length; keeps order, sides and the peak.
+  function retime(steps, opt) {
+    const raw = steps.filter(s => s.id !== "savasana").map(s => ({ id: s.id, side: s.side, section: s.section, peak: s.peak, challenge: s.challenge,
+      breath: s.breath, hold: s.breath ? null : s.baseBreaths || s.breaths || null })).concat([{ id: "savasana", hold: 0, section: "Savasana" }]);
+    const fixed = repair(raw, opt);
+    let best = null;
+    for (let sc = 6; sc <= 16; sc++) {
+      const plan = finalize(fixed.map(s => Object.assign({}, s, { hold: s.hold ? s.hold * sc / 10 : s.hold })), opt, 1);
+      const cost = Math.abs(plan.totalSecs - opt.minutes * 60) + 12 * Math.abs(sc - 10);
+      if (!best || cost < best.cost) best = Object.assign(plan, { cost });
+    }
+    return best;
+  }
+
+  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, retime, TO, HOW };
   if (typeof module !== "undefined") module.exports = root.YogaComposer;
+})(typeof window !== "undefined" ? window : globalThis);
+</script>
+<script>// Profile: who is practising, without accounts.
+// A person carries a code like "calm young heron" / "ruhiger junger Reiher":
+//   animal = their own symbol, chosen once, never changes (like a kindergarten coat-hook symbol)
+//   age    = level (skill): baby → young → grown → wise → ancient
+//   tempo  = cardio/pace: calm → lively → swift
+// What they pick each day: a theme (like choosing a cuisine) and a length.
+(function (root) {
+  const POSES = (root.YogaPoses || require("./poses.js")).POSES;
+  const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
+
+  // Singular, picturable, no sound-alikes; g = German gender for adjective endings.
+  const ANIMALS = [
+    ["heron", "Heron", "Reiher", "m"], ["wolf", "Wolf", "Wolf", "m"], ["fox", "Fox", "Fuchs", "m"], ["bear", "Bear", "Bär", "m"],
+    ["owl", "Owl", "Eule", "f"], ["otter", "Otter", "Otter", "m"], ["hedgehog", "Hedgehog", "Igel", "m"], ["squirrel", "Squirrel", "Eichhörnchen", "n"],
+    ["rabbit", "Rabbit", "Kaninchen", "n"], ["turtle", "Turtle", "Schildkröte", "f"], ["dolphin", "Dolphin", "Delfin", "m"], ["whale", "Whale", "Wal", "m"],
+    ["penguin", "Penguin", "Pinguin", "m"], ["panda", "Panda", "Panda", "m"], ["koala", "Koala", "Koala", "m"], ["lion", "Lion", "Löwe", "m"],
+    ["tiger", "Tiger", "Tiger", "m"], ["zebra", "Zebra", "Zebra", "n"], ["giraffe", "Giraffe", "Giraffe", "f"], ["elephant", "Elephant", "Elefant", "m"],
+    ["camel", "Camel", "Kamel", "n"], ["flamingo", "Flamingo", "Flamingo", "m"], ["swan", "Swan", "Schwan", "m"], ["eagle", "Eagle", "Adler", "m"],
+    ["falcon", "Falcon", "Falke", "m"], ["parrot", "Parrot", "Papagei", "m"], ["frog", "Frog", "Frosch", "m"], ["butterfly", "Butterfly", "Schmetterling", "m"],
+    ["bee", "Bee", "Biene", "f"], ["ladybird", "Ladybird", "Marienkäfer", "m"], ["seal", "Seal", "Robbe", "f"], ["octopus", "Octopus", "Krake", "m"],
+    ["starfish", "Starfish", "Seestern", "m"], ["badger", "Badger", "Dachs", "m"], ["beaver", "Beaver", "Biber", "m"],
+    ["raccoon", "Raccoon", "Waschbär", "m"], ["llama", "Llama", "Lama", "n"], ["kangaroo", "Kangaroo", "Känguru", "n"], ["cat", "Cat", "Katze", "f"],
+    ["horse", "Horse", "Pferd", "n"], ["goat", "Goat", "Ziege", "f"], ["mouse", "Mouse", "Maus", "f"],
+  ].map(([id, en, de, g]) => ({ id, en, de, g }));
+  const ANIMAL = Object.fromEntries(ANIMALS.map(a => [a.id, a]));
+
+  // Age = level. stem = German adjective stem (endings added by gender), baby is a compound in German.
+  const AGES = [
+    { n: 1, en: "baby", de: "Baby", stem: null },
+    { n: 2, en: "young", de: "jung", stem: "jung" },
+    { n: 3, en: "grown", de: "erwachsen", stem: "erwachsen" },
+    { n: 4, en: "wise", de: "weise", stem: "weis" },
+    { n: 5, en: "ancient", de: "uralt", stem: "uralt" },
+  ];
+  const TEMPOS = [
+    { n: 1, en: "calm", de: "ruhig", stem: "ruhig" },
+    { n: 2, en: "lively", de: "munter", stem: "munter" },
+    { n: 3, en: "swift", de: "flink", stem: "flink" },
+  ];
+
+  // Level = skill: which poses, which adaptations, how much intensity.
+  const LEVELS = [
+    { n: 1, name: "First steps", de: "Erste Schritte", maxLvl: 1, energy: "low", swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" },
+      text: "New to yoga or back after a long break: basic poses, gentle versions, no Chaturanga." },
+    { n: 2, name: "Foundation", de: "Fundament", maxLvl: 1, energy: "low", swap: { chaturanga: null },
+      text: "Knows the basics: simple flows, Chaturanga still left out." },
+    { n: 3, name: "Steady", de: "Sicher", maxLvl: 2, energy: "medium", swap: {},
+      text: "Practises regularly: full vinyasa, intermediate poses, a peak with preparation." },
+    { n: 4, name: "Strong practice", de: "Kräftige Praxis", maxLvl: 2, energy: "high", swap: {},
+      text: "Confident: more rounds, deeper backbends, challenge offers." },
+    { n: 5, name: "Advanced", de: "Fortgeschritten", maxLvl: 3, energy: "high", swap: {},
+      text: "Experienced: advanced peaks, Wheel and wall inversions as challenges." },
+  ];
+  // Tempo = cardio: breath length, pace (cost per pose change), intensity shift.
+  const TEMPO_CFG = [
+    { n: 1, cycle: 7, pace: 6, energy: -1, style: "slow", text: "Slow breath, fewer changes, longer rests." },
+    { n: 2, cycle: 6, pace: 3, energy: 0, style: "vinyasa", text: "Steady breath and flow." },
+    { n: 3, cycle: 5, pace: 1.2, energy: 1, style: "vinyasa", text: "Quicker breath, more rounds and more poses." },
+  ];
+
+  // Themes = what you cook today. peaks = preferred peak themes from blocks.js; focus = tags the composer favours.
+  const THEMES = [
+    { id: "flow", en: "Classic flow", de: "Klassischer Flow", text: "A bit of everything.", focus: [], peaks: [] },
+    { id: "hamstrings", en: "Hamstrings", de: "Beinrückseite", text: "Forward folds and long legs.", focus: ["hamstrings"], peaks: ["pk-halfsplits", "pk-handtoe", "pk-triangle", "pk-w3", "pk-halfmoon"] },
+    { id: "hips", en: "Hips", de: "Hüften", text: "Lunges, squats and hip openers.", focus: ["hips"], peaks: ["pk-pigeon", "pk-eagle", "pk-crow"] },
+    { id: "backbends", en: "Backbends", de: "Rückbeugen", text: "Open the front body, a strong back.", focus: ["back"], peaks: ["pk-camel", "pk-bow", "pk-wheel", "pk-dancer"] },
+    { id: "twists", en: "Twists", de: "Drehungen", text: "Wring out the spine.", focus: ["back"], tags: ["twist"], peaks: ["pk-revchair"] },
+    { id: "balance", en: "Balance", de: "Gleichgewicht", text: "Standing on one leg, steady mind.", focus: ["balance"], peaks: ["pk-w3", "pk-halfmoon", "pk-dancer", "pk-eagle", "pk-handtoe"] },
+    { id: "core", en: "Core and arms", de: "Rumpf und Arme", text: "Plank, boat, arm balances.", focus: ["core"], peaks: ["pk-crow", "pk-sideplank", "pk-boat", "pk-dolphin"] },
+    { id: "shoulders", en: "Shoulders and sides", de: "Schultern und Flanken", text: "Side bends, open shoulders.", focus: [], tags: ["shoulders", "sidebody"], peaks: ["pk-dolphin", "pk-triangle", "pk-halfmoon", "pk-sideplank"] },
+    { id: "calm", en: "Calm", de: "Ruhe", text: "Slow, long holds, mostly on the floor.", focus: ["hips", "hamstrings"], style: "slow", energy: -1, cycle: 1, pace: 2, peaks: ["pk-pigeon", "pk-halfsplits", "pk-triangle"] },
+  ];
+  const THEME = Object.fromEntries(THEMES.map(t => [t.id, t]));
+
+  // Things to take care of today. avoid = left out entirely; swap = replaced (null = dropped) inside flows.
+  const CARE = [
+    { id: "wrists", en: "Wrists", de: "Handgelenke", avoid: ["bakasana", "vasisthasana", "adho-mukha-vrksasana", "urdhva-dhanurasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" } },
+    { id: "knees", en: "Knees", de: "Knie", avoid: ["malasana", "padmasana", "gomukhasana", "skandasana", "eka-pada-rajakapotasana", "hanumanasana"], swap: {} },
+    { id: "back", en: "Lower back", de: "Unterer Rücken", avoid: ["urdhva-dhanurasana", "dhanurasana", "ustrasana", "paripurna-navasana", "halasana", "hanumanasana"], swap: {} },
+    { id: "neck", en: "Neck", de: "Nacken", avoid: ["sirsasana", "salamba-sarvangasana", "halasana", "matsyasana", "ustrasana"], swap: {} },
+    { id: "shoulders", en: "Shoulders", de: "Schultern", avoid: ["pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "gomukhasana", "vasisthasana", "bakasana"], swap: { chaturanga: null } },
+    { id: "pregnant", en: "Pregnant", de: "Schwanger", avoid: ["salabhasana", "salamba-bhujangasana", "dhanurasana", "parivrtta-utkatasana", "ardha-matsyendrasana", "parivrtta-anjaneyasana", "paripurna-navasana", "sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "ustrasana", "bakasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": null, bhujangasana: null } },
+    { id: "pressure", en: "High blood pressure or glaucoma", de: "Bluthochdruck oder Glaukom", avoid: ["sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana"], swap: {} },
+  ];
+  const CARE_BY = Object.fromEntries(CARE.map(c => [c.id, c]));
+  // Poses that hold classes together: leaving them out drops them inside flows instead of removing whole blocks.
+  const CORE = new Set(["tadasana", "urdhva-hastasana", "uttanasana", "ardha-uttanasana", "phalakasana", "chaturanga", "urdhva-mukha-svanasana", "adho-mukha-svanasana", "balasana", "bharmanasana", "sukhasana", "savasana", "apanasana", "bhujangasana"]);
+  const KEEP = new Set(["adho-mukha-svanasana", "savasana"]); // cannot be left out for good
+
+  // ---------- code words ----------
+  const DE_END = { m: "er", f: "e", n: "es" };
+  function deAdj(stem, g) { return stem + DE_END[g]; }
+  function code(st, lang) {
+    const a = ANIMAL[st.animal], age = AGES[st.level - 1], t = TEMPOS[st.tempo - 1];
+    if (!a) return "";
+    if (lang === "de") {
+      const tempo = deAdj(t.stem, a.g);
+      return age.n === 1 ? `${tempo} Baby-${a.de}` : `${tempo} ${deAdj(age.stem, a.g)} ${a.de}`;
+    }
+    return `${t.en} ${age.en} ${a.en.toLowerCase()}`;
+  }
+  const norm = s => String(s || "").toLowerCase().replace(/ß/g, "ss").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, "")
+    .replace(/ae/g, "a").replace(/oe/g, "o").replace(/ue/g, "u"); // Bär = Baer
+  function lev(a, b) {
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1); // swapped letters
+    }
+    return d[a.length][b.length];
+  }
+  const close = (tok, word) => tok === word || (word.length >= 5 && tok.length >= 4 && lev(tok, word) <= 1);
+  const deForms = stem => [stem, stem + "e", stem + "er", stem + "es", stem + "en", stem + "em"].map(norm);
+  // Read a code typed in any order, English or German, with German endings and small typos.
+  function parse(text) {
+    let toks = String(text || "").split(/[\s,.;\/-]+/).map(norm).filter(Boolean);
+    // "babyreiher" written as one word
+    toks = toks.flatMap(t => t.startsWith("baby") && t.length > 4 ? ["baby", t.slice(4)] : [t]);
+    const res = { animal: null, level: null, tempo: null, unknown: [] };
+    toks.forEach(t => {
+      const an = ANIMALS.find(a => t === norm(a.en) || t === norm(a.de)) || ANIMALS.find(a => close(t, norm(a.en)) || close(t, norm(a.de)));
+      if (an && !res.animal) { res.animal = an.id; return; }
+      const ag = AGES.find(a => t === a.en || t === norm(a.de) || (a.stem && deForms(a.stem).includes(t)))
+        || AGES.find(a => (a.en.length >= 5 && close(t, a.en)) || (a.stem && a.stem.length >= 4 && deForms(a.stem).some(f => close(t, f))));
+      if (ag && !res.level) { res.level = ag.n; return; }
+      const tp = TEMPOS.find(x => t === x.en || deForms(x.stem).includes(t))
+        || TEMPOS.find(x => (x.en.length >= 5 && close(t, x.en)) || deForms(x.stem).some(f => f.length >= 5 && close(t, f)));
+      if (tp && !res.tempo) { res.tempo = tp.n; return; }
+      res.unknown.push(t);
+    });
+    return res;
+  }
+  function suggestAnimals(prefix) {
+    const q = norm(prefix).replace(/^.*\s/, "");
+    if (!q) return [];
+    return ANIMALS.filter(a => norm(a.en).startsWith(q) || norm(a.de).startsWith(q)).slice(0, 8);
+  }
+
+  // ---------- profile → composer options ----------
+  function options(st, today) {
+    today = today || {};
+    const L = LEVELS[st.level - 1], T = TEMPO_CFG[st.tempo - 1], th = THEME[today.theme] || THEME.flow;
+    const E = ["low", "medium", "high"];
+    const energy = E[Math.max(0, Math.min(2, E.indexOf(L.energy) + T.energy + (th.energy || 0)))];
+    const minutes = today.minutes || 30;
+    const care = (today.care || st.care || []).map(id => CARE_BY[id]).filter(Boolean);
+    const skip = new Set((st.skip || []).concat(today.skip || []));
+    const me = {}, swap = Object.assign({}, L.swap);
+    POSES.forEach(p => { me[p.id] = p.lvl > L.maxLvl ? "new" : "ok"; });
+    care.forEach(c => { c.avoid.forEach(id => { me[id] = "new"; }); Object.assign(swap, c.swap); });
+    skip.forEach(id => { if (!BY[id] || KEEP.has(id)) return; if (CORE.has(id)) swap[id] = null; else me[id] = "new"; });
+    Object.keys(swap).forEach(id => { if (me[id] === "new" && CORE.has(id)) me[id] = "ok"; });
+    const lenF = minutes === 30 ? 1 : minutes === 45 ? 0.5 : 0.35;
+    return {
+      minutes, energy, style: th.style || T.style, cycle: T.cycle + (th.cycle || 0), pace: T.pace * lenF + (th.pace || 0),
+      focus: th.focus.concat(th.tags || []), peaks: th.peaks, me, swap, challenges: today.challenges || {},
+      history: today.history || [], seed: today.seed || 1,
+    };
+  }
+
+  // ---------- assessment ----------
+  // answers: { yoga 0–4, moves: [..], age 0–4, active 0–2, fold 0–4, plank 0–3, balance 0–2, stairs 0–2 }
+  function assess(a) {
+    let lv = [1, 1.5, 2.5, 3.4, 4.3][a.yoga ?? 0];
+    const mv = new Set(a.moves || []);
+    if (mv.has("dance")) lv += 0.5; if (mv.has("martial")) lv += 0.4; if (mv.has("strength")) lv += 0.2;
+    lv += [-0.4, 0, 0.2, 0.4, 0.6][a.fold ?? 1];
+    lv += [-0.5, -0.3, 0, 0.3][a.plank ?? 2];
+    lv += [-0.3, 0, 0.3][a.balance ?? 1];
+    lv += [0, 0, -0.1, -0.3, -0.5][a.age ?? 1] + [-0.3, 0, 0.2][a.active ?? 1];
+    if ((a.yoga ?? 0) === 0) lv = Math.min(lv, 2.4); // never done yoga: start at most at Foundation
+    const level = Math.max(1, Math.min(5, Math.round(lv)));
+    let tp = [1, 2, 3][a.stairs ?? 1];
+    if (mv.has("endurance")) tp += 1; if ((a.active ?? 1) === 0) tp -= 1; if ((a.age ?? 1) >= 4) tp -= 0.5;
+    const tempo = Math.max(1, Math.min(3, Math.round(tp)));
+    return { level, tempo };
+  }
+
+  // ---------- feedback → next code ----------
+  // poses: too easy | just right | too hard;  pace: too slow | just right | too fast
+  function next(st, fb) {
+    const out = Object.assign({}, st);
+    out.streak = st.streak || 0;
+    const story = [];
+    if (fb.poses === "too easy" && st.level < 5) { out.level = st.level + 1; out.streak = 0; story.push("grew up"); }
+    else if (fb.poses === "too hard" && st.level > 1) { out.level = st.level - 1; out.streak = 0; story.push("takes a step back"); }
+    else if (fb.poses === "just right") { out.streak += 1; if (out.streak >= 3 && st.level < 5) { out.level = st.level + 1; out.streak = 0; story.push("grew up after three good practices"); } }
+    else out.streak = 0;
+    if (fb.pace === "too slow" && st.tempo < 3) { out.tempo = st.tempo + 1; story.push("gets quicker"); }
+    if (fb.pace === "too fast" && st.tempo > 1) { out.tempo = st.tempo - 1; story.push("slows down"); }
+    return { state: out, story };
+  }
+
+  root.YogaProfile = { ANIMALS, ANIMAL, AGES, TEMPOS, LEVELS, TEMPO_CFG, THEMES, THEME, CARE, CARE_BY, CORE, KEEP, code, parse, suggestAnimals, options, assess, next, norm };
+  if (typeof module !== "undefined") module.exports = root.YogaProfile;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
 <script>
 (() => {
-  const E = window.PoseEngine, G = window.YogaComposer, POSES = window.YogaPoses.POSES;
+  const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES;
   const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
   const $ = id => document.getElementById(id);
   const CAT = { style: "cat" };
@@ -1692,50 +2031,165 @@ body.is-live { overflow: hidden; }
   const holdTxt = st => st.breath ? (st.breath === "in" ? "inhale" : "exhale") : st.secs >= 90 ? mmss(st.secs) + " min" : `${st.breaths} breaths`;
   const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
-  // ---------- settings ----------
-  let S = Object.assign({ minutes: 30, style: "vinyasa", energy: "medium", focus: ["hamstrings", "back"], cycle: 6, sound: "bowls", volume: 60 }, store.get("matcat-settings", {}));
-  if (S.sound === "drone") S.sound = "bowls"; // the Om drone was removed
+  // ---------- settings (this device) ----------
+  let S = Object.assign({ minutes: 30, theme: "chef", sound: "bowls", volume: 60 }, store.get("matcat-settings", {}));
+  if (S.sound === "drone") S.sound = "bowls";
   const saveS = () => store.set("matcat-settings", S);
   function paintSeg() {
     document.querySelectorAll(".seg[data-key]").forEach(seg => {
       const k = seg.dataset.key;
-      seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", (seg.dataset.multi ? S[k].includes(b.dataset.v) : String(S[k]) === b.dataset.v) ? "true" : "false"));
+      seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(S[k]) === b.dataset.v ? "true" : "false"));
     });
   }
   document.querySelectorAll(".seg[data-key]").forEach(seg => seg.addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
     const k = seg.dataset.key, v = b.dataset.v;
-    if (seg.dataset.multi) S[k] = S[k].includes(v) ? S[k].filter(x => x !== v) : S[k].concat(v);
-    else S[k] = (k === "minutes" || k === "cycle") ? Number(v) : v;
+    S[k] = k === "minutes" ? Number(v) : v;
     paintSeg(); saveS();
   }));
   paintSeg();
   $("vol").value = S.volume;
   $("vol").addEventListener("input", () => { S.volume = Number($("vol").value); saveS(); Sound.setVolume(); });
-  $("heroCat").innerHTML = fig(BY["sukhasana"].p);
+  document.querySelectorAll(".heroCat").forEach(el => { el.innerHTML = fig(BY["sukhasana"].p); });
 
-  const SCREENS = ["build", "preview", "live", "done", "library"];
+  const SCREENS = ["welcome", "pick", "assess", "reveal", "build", "preview", "live", "done", "library"];
   function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); document.body.classList.toggle("is-live", id === "live"); try { window.scrollTo(0, 0); } catch (e) {} }
 
-  // ---------- stored data (ratings + practice log) ----------
-  let db = null, ME = store.get("matcat-ratings", {});
-  (async () => {
-    await null; // let the rest of the script set up first, also when there is no Claude viewer
-    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { db = null; }
-    if (!db) { renderLibrary(); return; }
-    try {
-      const snap = await db.collection("practices").orderBy("at", "desc").limit(6).get();
-      HIST = snap.docs.map(d => d.data()).filter(r => r && r.meta && r.meta.peak).reverse().map(r => Object.assign({}, r.meta, { loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] }));
-    } catch (e) {}
-    db.collection("ratings").onSnapshot(snap => {
-      const m = {}; snap.docs.forEach(d => { const v = d.data(); if (v && v.me) m[d.id] = v.me; });
-      ME = m; store.set("matcat-ratings", ME); renderLibrary();
-    }, () => {});
-  })();
-  async function rate(id, v) {
-    ME = Object.assign({}, ME, { [id]: v }); store.set("matcat-ratings", ME); renderLibrary();
-    if (db) { try { await db.doc("ratings/" + id).set({ me: v, at: new Date().toISOString() }); } catch (e) { $("libIntro").textContent = "Couldn't save that rating right now. It is kept on this device."; } }
+  // ---------- profile: animal, level (age), tempo; remembered on this device ----------
+  let ST = store.get("matcat-profile", null); // { animal, level, tempo, streak, care: [], skip: [] }
+  const saveST = () => store.set("matcat-profile", ST);
+  const phrase = (st, lang) => P.code(st, lang);
+  const cap = t => t ? t[0].toUpperCase() + t.slice(1) : t;
+
+  // ---------- welcome ----------
+  let entry = { animal: null, level: null, tempo: null };
+  function showWelcome(known) {
+    $("wKnown").hidden = !known; $("wUnknown").hidden = !!known;
+    if (known) { $("wPhrase").textContent = cap(phrase(ST, "en")); $("wPhraseDe").textContent = phrase(ST, "de"); }
+    else { entry = { animal: null, level: null, tempo: null }; $("codeIn").value = ""; paintEntry(); }
+    show("welcome");
   }
+  $("wContinue").addEventListener("click", () => showToday());
+  $("wNotMe").addEventListener("click", () => showWelcome(false));
+  $("newBtn").addEventListener("click", () => { pickAnimal = entry.animal; renderPick(); show("pick"); });
+  function paintEntry() {
+    const a = entry.animal && P.ANIMAL[entry.animal];
+    const tag = (ok, txt) => `<span class="${ok ? "ok" : ""}">${ok ? "✓ " : ""}${txt}</span>`;
+    $("codeFound").innerHTML = $("codeIn").value.trim() ? tag(!!a, a ? `${a.en} · ${a.de}` : "animal")
+      + tag(!!entry.level, entry.level ? `${P.AGES[entry.level - 1].en} · ${P.AGES[entry.level - 1].de}` : "age")
+      + tag(!!entry.tempo, entry.tempo ? `${P.TEMPOS[entry.tempo - 1].en} · ${P.TEMPOS[entry.tempo - 1].de}` : "pace") : "";
+    const missing = a && (!entry.level || !entry.tempo);
+    $("codeAsk").hidden = !missing;
+    if (missing) {
+      $("codeAskTxt").textContent = `Hello, ${a.en}! Which one were you? Tap it if you recognise it.`;
+      $("askAge").hidden = !!entry.level; $("askTempo").hidden = !!entry.tempo;
+      $("askAge").innerHTML = P.AGES.map(x => `<button type="button" data-v="${x.n}">${x.en} · ${x.de}</button>`).join("") + `<button type="button" data-v="?">I don't remember</button>`;
+      $("askTempo").innerHTML = P.TEMPOS.map(x => `<button type="button" data-v="${x.n}">${x.en} · ${x.de}</button>`).join("") + `<button type="button" data-v="?">I don't remember</button>`;
+    }
+    $("codeGo").disabled = !(a && entry.level && entry.tempo);
+  }
+  $("codeIn").addEventListener("input", () => {
+    const r = P.parse($("codeIn").value);
+    entry = { animal: r.animal, level: r.level, tempo: r.tempo };
+    const last = $("codeIn").value.split(/\s+/).pop();
+    const sug = r.animal ? [] : P.suggestAnimals(last);
+    $("codeSugg").hidden = !sug.length;
+    $("codeSugg").innerHTML = sug.map(a => `<button type="button" data-id="${a.id}">${a.en} · ${a.de}</button>`).join("");
+    paintEntry();
+  });
+  $("codeSugg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const words = $("codeIn").value.split(/\s+/); words[words.length - 1] = P.ANIMAL[b.dataset.id].en.toLowerCase();
+    $("codeIn").value = words.join(" ") + " "; $("codeSugg").hidden = true; $("codeIn").dispatchEvent(new Event("input")); $("codeIn").focus();
+  });
+  $("codeIn").addEventListener("keydown", e => { if (e.key === "Enter" && !$("codeGo").disabled) $("codeGo").click(); });
+  $("askAge").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess(); return; } entry.level = Number(b.dataset.v); paintEntry(); });
+  $("askTempo").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess(); return; } entry.tempo = Number(b.dataset.v); paintEntry(); });
+  $("codeGo").addEventListener("click", () => {
+    const prev = ST && ST.animal === entry.animal ? ST : {};
+    ST = { animal: entry.animal, level: entry.level, tempo: entry.tempo, streak: 0, care: prev.care || [], skip: prev.skip || [] };
+    saveST(); showToday();
+  });
+
+  // ---------- choose an animal ----------
+  let pickAnimal = null;
+  function renderPick() {
+    $("animalGrid").innerHTML = P.ANIMALS.slice().sort((a, b) => a.en.localeCompare(b.en)).map(a => `<button type="button" data-id="${a.id}" aria-pressed="${pickAnimal === a.id}"><b>${a.en}</b><small>${a.de}</small></button>`).join("");
+    $("pickGo").disabled = !pickAnimal;
+  }
+  $("animalGrid").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; pickAnimal = b.dataset.id; renderPick(); });
+  $("pickGo").addEventListener("click", () => startAssess());
+  $("pickBack").addEventListener("click", () => showWelcome(false));
+
+  // ---------- assessment ----------
+  const QS = [
+    { k: "yoga", ask: "How much yoga have you done?", opts: ["Never", "A few classes", "Regularly, under a year", "Regularly, a year or more", "Many years"] },
+    { k: "moves", multi: true, ask: "What else do you do? Tick all that fit.", opts: [["endurance", "Running, cycling, swimming"], ["strength", "Strength training"], ["martial", "Martial arts"], ["dance", "Dance or gymnastics"], ["team", "Team or racket sports"]] },
+    { k: "age", ask: "Your age", opts: ["Under 30", "30–49", "50–64", "65–74", "75 or older"] },
+    { k: "active", ask: "How active are you at the moment?", opts: ["Rarely", "1–2 times a week", "3 times a week or more"] },
+    { k: "fold", pose: "uttanasana", ask: "Try it: stand and fold forward with straight legs. Your hands reach…", opts: ["My knees", "My shins", "My ankles", "The floor", "Palms flat on the floor"] },
+    { k: "plank", pose: "phalakasana", ask: "Try it: hold a plank. How long feels OK?", opts: ["Not yet", "Under 20 seconds", "20 to 60 seconds", "Over a minute"] },
+    { k: "balance", pose: "vrksasana", ask: "Try it: stand on one leg, arms relaxed.", opts: ["Wobbly, under 10 seconds", "10 to 30 seconds", "Steady for 30 seconds or more"] },
+    { k: "stairs", ask: "Three floors of stairs at a brisk pace leave you…", opts: ["Out of breath", "A bit puffed", "Easy"] },
+    { k: "care", multi: true, ask: "Anything to take care of? (You can change this every day.)", opts: P.CARE.map(c => [c.id, c.en]) },
+  ];
+  let ANS = {};
+  function startAssess() { ANS = { moves: [], care: [] }; renderQs(); show("assess"); }
+  function renderQs() {
+    $("qList").innerHTML = QS.map(q => {
+      const opts = q.opts.map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
+        const on = q.multi ? (ANS[q.k] || []).includes(v) : String(ANS[q.k]) === v;
+        return `<button type="button" data-v="${v}" aria-pressed="${on}">${t}</button>`; }).join("");
+      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p)}</svg><span class="ask">${q.ask}</span></div>` : `<span class="ask">${q.ask}</span>`;
+      return `<div class="q">${head}<div class="seg" data-q="${q.k}" data-multi="${q.multi ? 1 : ""}">${opts}</div></div>`;
+    }).join("");
+  }
+  $("qList").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const seg = b.closest("[data-q]"), k = seg.dataset.q;
+    if (seg.dataset.multi) { const l = ANS[k] || []; ANS[k] = l.includes(b.dataset.v) ? l.filter(x => x !== b.dataset.v) : l.concat(b.dataset.v); }
+    else ANS[k] = Number(b.dataset.v);
+    seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", seg.dataset.multi ? String((ANS[k] || []).includes(x.dataset.v)) : String(String(ANS[k]) === x.dataset.v)));
+  });
+  $("assessBack").addEventListener("click", () => { renderPick(); show("pick"); });
+  $("assessGo").addEventListener("click", () => {
+    const r = P.assess(ANS);
+    ST = { animal: pickAnimal || "heron", level: r.level, tempo: r.tempo, streak: 0, care: ANS.care || [], skip: (ST && ST.skip) || [] };
+    saveST();
+    $("rPhrase").textContent = cap(phrase(ST, "en")); $("rPhraseDe").textContent = phrase(ST, "de"); $("rStory").textContent = "";
+    $("rExplain").textContent = `"${P.AGES[ST.level - 1].en}" is your level (${ST.level} of 5: ${P.LEVELS[ST.level - 1].name.toLowerCase()}), "${P.TEMPOS[ST.tempo - 1].en}" is your pace. Your ${P.ANIMAL[ST.animal].en.toLowerCase()} grows up as you practise.`;
+    show("reveal");
+  });
+  $("rGo").addEventListener("click", () => showToday());
+
+  // ---------- today ----------
+  let CARE_TODAY = [];
+  function showToday() {
+    if (!ST) { showWelcome(false); return; }
+    $("tPhrase").textContent = cap(phrase(ST, "en")); $("tPhraseDe").textContent = phrase(ST, "de");
+    CARE_TODAY = (ST.care || []).slice();
+    renderThemes(); renderCare(); show("build");
+  }
+  $("tChange").addEventListener("click", () => showWelcome(false));
+  function renderThemes() {
+    $("themeSeg").innerHTML = `<button type="button" data-v="chef" aria-pressed="${S.theme === "chef"}">Chef's choice</button>` + P.THEMES.map(t => `<button type="button" data-v="${t.id}" aria-pressed="${S.theme === t.id}">${t.en}</button>`).join("");
+    $("themeText").textContent = S.theme === "chef" ? "A theme you haven't had for a while." : P.THEME[S.theme].text;
+  }
+  $("themeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.theme = b.dataset.v; saveS(); renderThemes(); });
+  function renderCare() { $("careSeg").innerHTML = P.CARE.map(c => `<button type="button" data-v="${c.id}" aria-pressed="${CARE_TODAY.includes(c.id)}">${c.en}</button>`).join(""); }
+  $("careSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const v = b.dataset.v; CARE_TODAY = CARE_TODAY.includes(v) ? CARE_TODAY.filter(x => x !== v) : CARE_TODAY.concat(v); ST.care = CARE_TODAY.slice(); saveST(); renderCare(); });
+
+  // ---------- stored log (inside Claude, the owner's practice log; elsewhere this device) ----------
+  let db = null, HIST = [];
+  (async () => {
+    await null;
+    try { db = window.claude && window.claude.use ? await window.claude.use("db") : null; } catch (e) { db = null; }
+    if (!db) return;
+    try {
+      const snap = await db.collection("practices").orderBy("at", "desc").limit(8).get();
+      HIST = snap.docs.map(d => d.data()).filter(r => r && r.meta && r.meta.peak).reverse().map(r => Object.assign({}, r.meta, { theme: r.theme, loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] }));
+    } catch (e) {}
+  })();
 
   // ---------- sound: synthesized singing bowls and an optional breath-paced drone ----------
   const Sound = (() => {
@@ -1789,18 +2243,29 @@ body.is-live { overflow: hidden; }
   $("testSound").addEventListener("click", () => { Sound.resume(); Sound.bowl(174.6, 1, 7); setTimeout(() => Sound.bowl(523, .35, 3), 1800); });
 
   // ---------- preview ----------
-  let plan = null, seed = Date.now() % 100000, challenges = {}, source = "composer";
-  let HIST = [];
-  function localHistory() { return store.get("matcat-log", []).map(r => Object.assign({}, r.meta || {}, { loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] })).filter(h => h.peak).slice(-6); }
+  let plan = null, seed = Date.now() % 100000, challenges = {}, source = "composer", CYCLE = 6, THEME_NOW = "flow";
+  function localHistory() { return store.get("matcat-log", []).map(r => Object.assign({}, r.meta || {}, { theme: r.theme, loved: (r.feedback || {}).loved || [], hard: (r.feedback || {}).hard || [] })).filter(h => h.peak).slice(-8); }
+  const history = () => (HIST.length ? HIST : localHistory());
+  function chefTheme() {
+    const recent = history().slice(-6).map(h => h.theme).filter(Boolean);
+    const score = t => { const i = recent.lastIndexOf(t.id); return (i < 0 ? 100 : i) + Math.random(); }; // never had or long ago scores highest
+    return P.THEMES.map(t => [score(t), t.id]).sort((a, b) => b[0] - a[0])[0][1];
+  }
+  function todayOpts() {
+    THEME_NOW = S.theme === "chef" ? chefTheme() : S.theme;
+    const o = P.options(ST, { theme: THEME_NOW, minutes: S.minutes, care: CARE_TODAY, seed, challenges, history: history() });
+    CYCLE = o.cycle; return o;
+  }
   function buildPlan() {
     source = "composer";
-    plan = G.generate(Object.assign({}, S, { seed, challenges, me: ME, history: HIST.length ? HIST : localHistory() }));
+    const o = todayOpts();
+    plan = G.generate(o); plan.opts = o;
     renderPreview(); show("preview");
   }
   $("buildBtn").addEventListener("click", () => { challenges = {}; seed = (Date.now() + Math.floor(Math.random() * 1e6)) % 1000000; buildPlan(); });
   $("shuffleBtn").addEventListener("click", () => { if (source === "claude") { surprise(); return; } seed = (seed * 7919 + 13) % 1000000; challenges = {}; buildPlan(); });
-  $("backBtn").addEventListener("click", () => show("build"));
-  $("againBtn").addEventListener("click", () => show("build"));
+  $("backBtn").addEventListener("click", () => showToday());
+  $("againBtn").addEventListener("click", () => showWelcome(!!ST));
 
   // ---------- surprise me: Claude writes a class, the same rules check and time it ----------
   let sampleFn = null, sampleCtl = null;
@@ -1809,17 +2274,19 @@ body.is-live { overflow: hidden; }
     $("surpriseBtn").hidden = !sampleFn; $("surpriseNote").hidden = !sampleFn;
   })();
   function surprisePrompt() {
-    const mine = id => ME[id] || BY[id].me;
-    const lib = POSES.filter(p => mine(p.id) !== "new").map(p => `${p.id} | ${p.en} | ${p.cat} | ${p.sides === 2 ? "both sides" : "centre"} | level ${p.lvl} | for me: ${mine(p.id)}`).join("\n");
-    const hist = (HIST.length ? HIST : localHistory()).slice(-4).map(h => `${h.peakName || h.peak}${h.loved && h.loved.length ? " (loved: " + h.loved.join(", ") + ")" : ""}`).join("; ");
-    return `You are an experienced Vinyasa teacher writing one yoga class for Michael, to be guided live by an app.
-About Michael: very strong legs, good at strength, dynamic transitions, backbends, twists and balance. Hard for him: straight-leg hamstring work (forward folds, splits), deep hip "pretzel" poses, binds behind the back. Inversions are untested; use none unless listed as allowed.
-Today: ${S.minutes} minutes, style ${S.style === "slow" ? "slow flow" : "Vinyasa"}, energy ${S.energy}, focus ${S.focus.join(", ") || "none"}. Breath length ${S.cycle} s.
+    const o = todayOpts();
+    const L = P.LEVELS[ST.level - 1], T = P.TEMPO_CFG[ST.tempo - 1], th = P.THEME[THEME_NOW];
+    const lib = POSES.filter(p => o.me[p.id] !== "new" && !(p.id in o.swap && !o.swap[p.id])).map(p => `${p.id} | ${p.en} | ${p.cat} | ${p.sides === 2 ? "both sides" : "centre"} | level ${p.lvl}`).join("\n");
+    const hist = history().slice(-4).map(h => h.peakName || h.peak).join("; ");
+    const care = CARE_TODAY.map(id => P.CARE_BY[id].en).join(", ");
+    return `You are an experienced yoga teacher writing one class, to be guided live by an app.
+The practitioner: level ${ST.level} of 5 (${L.name}: ${L.text}) Pace ${ST.tempo} of 3 (${T.text}) Breath length ${o.cycle} s.
+Today's theme: ${th.en} (${th.text}). Length: ${S.minutes} minutes.${care ? " Take care of: " + care + "." : ""}
 Recent peaks (pick something different): ${hist || "none yet"}.
 
-Write a creative, well-sequenced class: arrival, warm-up, a sun salutation variation, standing work, balance, a peak pose with real preparation, backbends or core as fits, cool-down, Savasana. Both sides for every pose marked "both sides" (right then left, same holds). Put a neutral pose (Child's Pose, Knees to Chest or a twist) between a deep backbend and any forward fold. Hard-for-me poses: shorter, with props in mind. Flowing movements use "breath": "in" or "out" (one movement per half breath); holds use "breaths": 1–12. Aim for about ${Math.round(S.minutes * 60 / S.cycle * 0.8)} breaths in total before Savasana; the app fine-tunes the timing.
+Write a creative, well-sequenced class: arrival, warm-up, a salutation variation, standing work, balance, a peak pose that fits the theme with real preparation, backbends or core as fits, cool-down, Savasana. Every pose marked "both sides" is done right then left with the same holds. Put a neutral pose (Child's Pose, Knees to Chest or a twist) between a deep backbend and any forward fold. Flowing movements use "breath": "in" or "out" (one movement per half breath); holds use "breaths": 1–12. Aim for about ${Math.round(S.minutes * 60 / o.cycle * 0.8)} breaths in total before Savasana; the app fine-tunes the timing.
 
-Use ONLY these pose ids (id | name | type | sides | level | difficulty for Michael):
+Use ONLY these pose ids (id | name | type | sides | level):
 ${lib}
 
 Answer with JSON only, no prose, in exactly this shape:
@@ -1835,7 +2302,7 @@ Answer with JSON only, no prose, in exactly this shape:
     sampleCtl = new AbortController();
     try {
       const spec = await sampleFn.json(surprisePrompt(), { signal: sampleCtl.signal, cache: false, onText: () => { $("thinkingTxt").textContent = "Claude is writing the sequence…"; } });
-      plan = G.fromSpec(spec, Object.assign({}, S, { me: ME, seed }));
+      const o = todayOpts(); plan = G.fromSpec(spec, o); plan.opts = o;
       if (!plan.steps.length || plan.steps.length < 8) throw { code: "empty" };
       source = "claude"; challenges = {};
       renderPreview();
@@ -1851,7 +2318,7 @@ Answer with JSON only, no prose, in exactly this shape:
 
   function chip(st) {
     const p = BY[st.id];
-    return `<div class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${p.en}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></div>`;
+    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${p.en}: change or leave out"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${p.en}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></button>`;
   }
   function groupFlow(list) {
     const out = [];
@@ -1877,10 +2344,10 @@ Answer with JSON only, no prose, in exactly this shape:
     return html;
   }
   function renderPreview() {
-    $("sumTitle").textContent = (source === "claude" ? "By Claude · " : "") + `${S.minutes} min ${S.style === "slow" ? "slow flow" : "Vinyasa"}` + (plan.meta && plan.meta.peakName ? ` · ${plan.meta.peakName}` : "");
+    $("sumTitle").textContent = (source === "claude" ? "By Claude · " : "") + `${P.THEME[THEME_NOW].en} · ${S.minutes} min` + (plan.meta && plan.meta.peakName ? ` · ${plan.meta.peakName}` : "");
     $("sumWhy").textContent = (plan.why || "") + (plan.dropped && plan.dropped.length ? ` Skipped unknown poses: ${plan.dropped.join(", ")}.` : "");
     $("shuffleBtn").textContent = source === "claude" ? "Ask Claude again" : "Shuffle";
-    $("sumMeta").textContent = `${S.energy} energy${S.focus.length ? " · " + S.focus.join(", ") : ""} · ${S.cycle} s breath`;
+    $("sumMeta").textContent = `For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath` + (CARE_TODAY.length ? ` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}` : "");
     let top = "";
     plan.offers.forEach(o => {
       const on = challenges[o.id] === true;
@@ -1898,6 +2365,42 @@ Answer with JSON only, no prose, in exactly this shape:
       return `<div class="sec"><div class="sec-head"><h3>${name}</h3><span class="muted">${mmss(secs)}</span></div><div class="strip">${(name === "Sun Salutations" || name === "Moon Salutation") && source !== "claude" ? groupSun(list) : groupFlow(list)}</div></div>`;
     }).join("");
   }
+
+  // ---------- edit a pose in the preview ----------
+  let sheetId = null;
+  function swapFor(id) {
+    const p = BY[id], me = plan.opts.me, used = new Set(plan.steps.map(s => s.id));
+    const ok = q => q.id !== id && me[q.id] !== "new" && !(q.id in plan.opts.swap) && !P.KEEP.has(q.id) && q.sides === p.sides && !used.has(q.id);
+    let c = POSES.filter(q => ok(q) && q.cat === p.cat);
+    if (!c.length) c = POSES.filter(q => ok(q) && q.focus.some(f => p.focus.includes(f)));
+    return c.sort((a, b) => Math.abs(a.lvl - p.lvl) - Math.abs(b.lvl - p.lvl) || a.lvl - b.lvl)[0] || null;
+  }
+  function openSheet(id) {
+    sheetId = id; const p = BY[id], alt = swapFor(id), keep = P.KEEP.has(id);
+    $("shFig").innerHTML = fig(p.p); $("shName").textContent = p.en; $("shSub").textContent = `${p.sa} · ${p.de}`;
+    $("shSwap").hidden = !alt; $("shSwap").textContent = alt ? `Swap for ${alt.en}` : "";
+    $("shOut").hidden = keep; $("shNever").hidden = keep;
+    $("shMsg").textContent = keep ? `${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".` : "";
+    $("sheet").hidden = false; $("shCancel").focus();
+  }
+  function closeSheet() { $("sheet").hidden = true; sheetId = null; }
+  function applyEdit(steps, note) {
+    const meta = plan.meta, offers = plan.offers, why = plan.why, opts = plan.opts;
+    plan = G.retime(steps, opts); Object.assign(plan, { meta, offers, why, opts, edited: (note ? [note] : []) });
+    renderPreview(); closeSheet();
+  }
+  $("sections").addEventListener("click", e => { const b = e.target.closest("button.chip[data-id]"); if (b) openSheet(b.dataset.id); });
+  $("shCancel").addEventListener("click", closeSheet);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+  $("shSwap").addEventListener("click", () => {
+    const alt = swapFor(sheetId); if (!alt) return;
+    applyEdit(plan.steps.map(s => s.id === sheetId ? Object.assign({}, s, { id: alt.id, side: alt.sides === 2 ? s.side : null, how: null }) : s));
+  });
+  $("shOut").addEventListener("click", () => applyEdit(plan.steps.filter(s => s.id !== sheetId)));
+  $("shNever").addEventListener("click", () => {
+    ST.skip = [...new Set((ST.skip || []).concat(sheetId))]; saveST();
+    applyEdit(plan.steps.filter(s => s.id !== sheetId));
+  });
 
   // ---------- full screen ----------
   const fsOK = !!(document.fullscreenEnabled && document.documentElement.requestFullscreen);
@@ -1969,7 +2472,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (st.breath === "in") return sm(phaseT / st.secs);
     if (st.breath === "out") return 1 - sm(phaseT / st.secs);
     if (st.id === "savasana") return 0.35 + 0.1 * Math.sin(phaseT / 10 * 2 * Math.PI);
-    const c = S.cycle, x = (phaseT % c) / c;
+    const c = CYCLE, x = (phaseT % c) / c;
     return x < 0.5 ? sm(x * 2) : 1 - sm((x - 0.5) * 2);
   }
   function paint() {
@@ -2015,64 +2518,75 @@ Answer with JSON only, no prose, in exactly this shape:
   document.addEventListener("keydown", e => { if (!running) return; if (e.code === "Space") { e.preventDefault(); setPaused(!paused); } if (e.code === "ArrowRight") enter(idx + 1); if (e.code === "ArrowLeft") enter(Math.max(0, idx - 1)); });
 
   // ---------- done + feedback ----------
-  let session = null, fb = { overall: null, intensity: null, marks: {} };
+  let session = null, fb = { poses: null, pace: null, marks: {} };
   function finish(complete) {
     if (!running) return;
     running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
     if (complete) { Sound.bowl(174.6, 1, 9); setTimeout(() => Sound.bowl(174.6, .8, 9), 3500); setTimeout(() => Sound.bowl(174.6, .6, 10), 7000); }
     exitFS();
     const secs = Math.round((Date.now() - startedAt) / 1000);
-    session = { at: new Date().toISOString(), minutes: S.minutes, style: S.style, energy: S.energy, focus: S.focus, cycle: S.cycle, seed,
+    session = { at: new Date().toISOString(), minutes: S.minutes, theme: THEME_NOW, level: ST.level, tempo: ST.tempo, care: CARE_TODAY, seed,
       plannedSecs: plan.totalSecs, actualSecs: secs, completed: !!complete, reachedStep: idx + 1, totalSteps: plan.steps.length,
       challenges: plan.offers.map(o => ({ id: o.id, accepted: challenges[o.id] === true })),
       poses: [...new Set(plan.steps.map(s => s.id))], source, meta: plan.meta || null };
-    fb = { overall: null, intensity: null, marks: {} };
+    fb = { poses: null, pace: null, marks: {} };
     $("doneCat").innerHTML = fig(BY["savasana"].p);
     $("doneMeta").textContent = `${mmss(secs)} on the mat${complete ? "" : " · ended early"}`;
-    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false;
+    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false; $("nextCard").hidden = true;
     paintFb();
     show("done");
   }
   function paintFb() {
-    $("fbOverall").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(fb.overall) === b.dataset.v ? "true" : "false"));
-    $("fbIntensity").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.intensity === b.dataset.v ? "true" : "false"));
+    $("fbPoses").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.poses === b.dataset.v ? "true" : "false"));
+    $("fbPace").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.pace === b.dataset.v ? "true" : "false"));
     $("fbMarks").innerHTML = session.poses.filter(id => id !== "savasana").map(id => `<button type="button" data-id="${id}" data-m="${fb.marks[id] || ""}">${fb.marks[id] === "love" ? "♡ " : fb.marks[id] === "hard" ? "! " : ""}${BY[id].en}</button>`).join("");
   }
-  $("fbOverall").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.overall = Number(b.dataset.v); paintFb(); });
-  $("fbIntensity").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.intensity = b.dataset.v; paintFb(); });
+  $("fbPoses").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.poses = b.dataset.v; paintFb(); });
+  $("fbPace").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.pace = b.dataset.v; paintFb(); });
   $("fbMarks").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const id = b.dataset.id; fb.marks[id] = fb.marks[id] === "love" ? "hard" : fb.marks[id] === "hard" ? undefined : "love"; paintFb(); });
   $("fbSave").addEventListener("click", async () => {
-    const rec = Object.assign({}, session, { feedback: { overall: fb.overall, intensity: fb.intensity, note: $("fbNote").value.trim(),
-      loved: Object.keys(fb.marks).filter(k => fb.marks[k] === "love"), hard: Object.keys(fb.marks).filter(k => fb.marks[k] === "hard") } });
+    const before = Object.assign({}, ST);
+    const nx = P.next(ST, { poses: fb.poses, pace: fb.pace });
+    ST = nx.state; saveST();
+    const an = P.ANIMAL[ST.animal].en.toLowerCase();
+    $("nPhrase").textContent = cap(phrase(ST, "en")); $("nPhraseDe").textContent = phrase(ST, "de");
+    $("nStory").textContent = nx.story.length ? `Your ${an} ${nx.story.join(" and ")}.` : (fb.poses === "just right" && ST.level < 5 ? `Same ${an} again. After ${3 - ST.streak} more good ${3 - ST.streak === 1 ? "practice" : "practices"} it grows up.` : `Same ${an} again.`);
+    $("nextCard").hidden = false; try { $("nextCard").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+    const rec = Object.assign({}, session, { before: { level: before.level, tempo: before.tempo }, after: { level: ST.level, tempo: ST.tempo },
+      feedback: { poses: fb.poses, pace: fb.pace, note: $("fbNote").value.trim(),
+        loved: Object.keys(fb.marks).filter(k => fb.marks[k] === "love"), hard: Object.keys(fb.marks).filter(k => fb.marks[k] === "hard") } });
     const log = store.get("matcat-log", []); log.push(rec); store.set("matcat-log", log.slice(-60));
-    if (!db) { $("fbStatus").textContent = "Saved on this device. Open the page inside Claude to keep the log where Claude can read it."; return; }
-    $("fbSave").disabled = true; $("fbStatus").textContent = "Saving…";
-    if (rec.meta && rec.meta.peak) HIST = HIST.concat([Object.assign({}, rec.meta, { loved: rec.feedback.loved, hard: rec.feedback.hard })]).slice(-6);
-    try { await db.collection("practices").add(rec); $("fbStatus").textContent = "Saved. The next practices will build on it."; }
-    catch (e) { $("fbSave").disabled = false; $("fbStatus").textContent = "Couldn't save right now. It is kept on this device; try Save again in a moment."; }
+    $("fbSave").disabled = true;
+    if (rec.meta && rec.meta.peak) HIST = HIST.concat([Object.assign({}, rec.meta, { theme: rec.theme, loved: rec.feedback.loved, hard: rec.feedback.hard })]).slice(-8);
+    if (!db) { $("fbStatus").textContent = "Saved on this phone."; return; }
+    try { await db.collection("practices").add(rec); $("fbStatus").textContent = "Saved."; }
+    catch (e) { $("fbStatus").textContent = "Saved on this phone."; }
   });
 
   // ---------- library ----------
   let fLevel = "all", fMe = "all";
   $("libBtn").addEventListener("click", () => { renderLibrary(); show("library"); });
-  $("libBack").addEventListener("click", () => show("build"));
+  $("libBack").addEventListener("click", () => showToday());
   function segFilter(el, set) { el.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; set(b.dataset.v); el.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); renderLibrary(); }); }
   segFilter($("fLevel"), v => fLevel = v); segFilter($("fMe"), v => fMe = v);
   function renderLibrary() {
-    const rated = Object.keys(ME).length;
-    $("libIntro").textContent = `${POSES.length} poses. Levels are general; "for me" starts as a proposal from what you told me and becomes yours when you tap it (${rated} rated so far).`;
-    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "unrated" ? !ME[p.id] : (ME[p.id] || p.me) === fMe)));
-    $("libGrid").innerHTML = list.map(p => {
-      const mine = ME[p.id] || p.me;
-      return `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
+    const L = ST ? P.LEVELS[ST.level - 1] : P.LEVELS[2], skip = new Set((ST && ST.skip) || []);
+    const inMine = p => p.lvl <= L.maxLvl && !skip.has(p.id);
+    $("libIntro").textContent = ST ? `${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.` : `${POSES.length} poses.`;
+    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : skip.has(p.id))));
+    $("libGrid").innerHTML = list.map(p => `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
         <span class="s">${p.sa}</span><span class="e">${p.en}</span><span class="d">${p.de}</span>
         <span class="lvl">${[1, 2, 3].map(k => `<i class="${k <= p.lvl ? "on" : ""}"></i>`).join("")} ${LEVEL[p.lvl]}</span>
-        <div class="mine" data-id="${p.id}">${["easy", "ok", "hard", "new"].map(v => `<button type="button" data-v="${v}" aria-pressed="${mine === v}" title="${v === "new" ? "Untested: kept out of practices, offered only as a safe step" : ""}">${v === "ok" ? "OK" : v === "new" ? "New" : v[0].toUpperCase() + v.slice(1)}</button>`).join("")}</div>
-        ${ME[p.id] ? "" : `<span class="proposed">proposed</span>`}</div>`;
-    }).join("") || `<p class="muted">No poses match these filters.</p>`;
+        ${ST && !P.KEEP.has(p.id) ? `<div class="mine" data-id="${p.id}"><button type="button" data-v="toggle" aria-pressed="${skip.has(p.id)}">${skip.has(p.id) ? "Left out · undo" : "Leave out"}</button></div>` : ""}</div>`).join("") || `<p class="muted">No poses match these filters.</p>`;
   }
-  $("libGrid").addEventListener("click", e => { const b = e.target.closest(".mine button"); if (!b) return; rate(b.parentElement.dataset.id, b.dataset.v); });
-  renderLibrary();
+  $("libGrid").addEventListener("click", e => {
+    const b = e.target.closest(".mine button"); if (!b || !ST) return;
+    const id = b.parentElement.dataset.id; const sk = new Set(ST.skip || []);
+    sk.has(id) ? sk.delete(id) : sk.add(id); ST.skip = [...sk]; saveST(); renderLibrary();
+  });
+
+  // ---------- start ----------
+  if (ST && ST.animal && P.ANIMAL[ST.animal]) showWelcome(true); else showWelcome(false);
 })();
 </script>
 

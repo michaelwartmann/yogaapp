@@ -1,8 +1,11 @@
 # Mat Cat Yoga
 
-A yoga practice guide for the mat. It composes a fresh 30, 45 or 60 minute class around a peak pose,
-shows the whole sequence to read before you start, then guides it live: a cat shows each pose, with names in
-Sanskrit, English and German, breath cues, a breathing circle, singing bowls and the next pose with how to get there.
+A yoga practice guide for anyone. Newcomers choose an animal and answer a few questions (three are small tests
+to try on the spot). They get a code like **calm young heron** / **ruhiger junger Reiher**: the animal is theirs
+for good, its age is the level (baby → young → grown → wise → ancient), the first word is the pace
+(calm → lively → swift). Each day they pick a theme and a length, can swap or leave out poses, practise with
+the cat guiding live, and give two answers of feedback. The animal grows up when the poses feel easy and changes
+pace with the tempo. No accounts: the phone remembers, and the code works on any other device.
 
 ## Run it
 
@@ -29,6 +32,8 @@ On your own web address the screen-on lock and full screen work best (HTTPS, top
 | File | What it is |
 |---|---|
 | `index.html` | The built app, ready to host |
+| `tree.html` | Animal Tree: explorer for the code model (age × pace × theme × length) with sample classes |
+| `src/profile.js` | Code words (42 animals EN/DE, ages, paces), levels, themes, care areas, assessment, feedback rules, profile → composer settings |
 | `src/player.template.html` | Page layout, styles and app logic |
 | `src/pose-engine.js` | Draws a figure (stick, bean or cat) from joint angles and interpolates between poses |
 | `src/poses.js` | 71 poses: names in three languages, level, personal difficulty, cues, props, angles |

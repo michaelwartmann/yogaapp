@@ -13,7 +13,7 @@ def b64(name):
 def build_fragment():
     page = (SRC / "player.template.html").read_text(encoding="utf-8")
     for marker, file in [("ENGINE", "pose-engine.js"), ("POSES", "poses.js"), ("GENERATOR", "generator.js"),
-                         ("BLOCKS", "blocks.js"), ("COMPOSER", "composer.js")]:
+                         ("BLOCKS", "blocks.js"), ("COMPOSER", "composer.js"), ("PROFILE", "profile.js")]:
         page = page.replace(f"/*{marker}*/", (SRC / file).read_text(encoding="utf-8"))
     page = page.replace("__WEBM__", "data:video/webm;base64," + b64("keep-awake.webm"))
     page = page.replace("__MP4__", "data:video/mp4;base64," + b64("keep-awake.mp4"))
@@ -30,7 +30,16 @@ HEAD = """<!doctype html>
 <body>
 """
 
+def build_tree():
+    page = (SRC / "tree.template.html").read_text(encoding="utf-8")
+    for marker, file in [("ENGINE", "pose-engine.js"), ("POSES", "poses.js"), ("GENERATOR", "generator.js"),
+                         ("BLOCKS", "blocks.js"), ("COMPOSER", "composer.js"), ("PROFILE", "profile.js")]:
+        page = page.replace(f"/*{marker}*/", (SRC / file).read_text(encoding="utf-8"))
+    return page
+
 if __name__ == "__main__":
+    (ROOT / "tree.html").write_text(HEAD + build_tree() + "\n</body>\n</html>\n", encoding="utf-8")
+    print("wrote tree.html")
     frag = build_fragment()
     if "--fragment" in sys.argv:
         (ROOT / "claude-artifact.html").write_text(frag, encoding="utf-8")
