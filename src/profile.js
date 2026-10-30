@@ -1,6 +1,7 @@
 // Profile: who is practising, without accounts.
 // A person carries a code like "calm young heron" / "ruhiger junger Reiher":
-//   animal = their own symbol, chosen once, never changes (like a kindergarten coat-hook symbol)
+//   animal = their nature, read from three small tests (strong but stiff → bear, flexible → cat, …); one of three per nature
+//            is chosen, so it is both meaningful and their own
 //   age    = level (skill): baby → young → grown → wise → ancient
 //   tempo  = cardio/pace: calm → lively → swift
 // What they pick each day: a theme (like choosing a cuisine) and a length.
@@ -8,20 +9,45 @@
   const POSES = (root.YogaPoses || require("./poses.js")).POSES;
   const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
 
-  // Singular, picturable, no sound-alikes; g = German gender for adjective endings.
-  const ANIMALS = [
-    ["heron", "Heron", "Reiher", "m"], ["wolf", "Wolf", "Wolf", "m"], ["fox", "Fox", "Fuchs", "m"], ["bear", "Bear", "Bär", "m"],
-    ["owl", "Owl", "Eule", "f"], ["otter", "Otter", "Otter", "m"], ["hedgehog", "Hedgehog", "Igel", "m"], ["squirrel", "Squirrel", "Eichhörnchen", "n"],
-    ["rabbit", "Rabbit", "Kaninchen", "n"], ["turtle", "Turtle", "Schildkröte", "f"], ["dolphin", "Dolphin", "Delfin", "m"], ["whale", "Whale", "Wal", "m"],
-    ["penguin", "Penguin", "Pinguin", "m"], ["panda", "Panda", "Panda", "m"], ["koala", "Koala", "Koala", "m"], ["lion", "Lion", "Löwe", "m"],
-    ["tiger", "Tiger", "Tiger", "m"], ["zebra", "Zebra", "Zebra", "n"], ["giraffe", "Giraffe", "Giraffe", "f"], ["elephant", "Elephant", "Elefant", "m"],
-    ["camel", "Camel", "Kamel", "n"], ["flamingo", "Flamingo", "Flamingo", "m"], ["swan", "Swan", "Schwan", "m"], ["eagle", "Eagle", "Adler", "m"],
-    ["falcon", "Falcon", "Falke", "m"], ["parrot", "Parrot", "Papagei", "m"], ["frog", "Frog", "Frosch", "m"], ["butterfly", "Butterfly", "Schmetterling", "m"],
-    ["bee", "Bee", "Biene", "f"], ["ladybird", "Ladybird", "Marienkäfer", "m"], ["seal", "Seal", "Robbe", "f"], ["octopus", "Octopus", "Krake", "m"],
-    ["starfish", "Starfish", "Seestern", "m"], ["badger", "Badger", "Dachs", "m"], ["beaver", "Beaver", "Biber", "m"],
-    ["raccoon", "Raccoon", "Waschbär", "m"], ["llama", "Llama", "Lama", "n"], ["kangaroo", "Kangaroo", "Känguru", "n"], ["cat", "Cat", "Katze", "f"],
-    ["horse", "Horse", "Pferd", "n"], ["goat", "Goat", "Ziege", "f"], ["mouse", "Mouse", "Maus", "f"],
-  ].map(([id, en, de, g]) => ({ id, en, de, g }));
+  // Natures: what the body brings and what the practice works on. Three animals each (singular, picturable, no sound-alikes;
+  // g = German gender for adjective endings). work = themes Chef's choice leans to; hard = pose families that get longer holds
+  // and props; peaks = preferred peak themes; focus = tags the composer favours; challenge = extra challenge offers.
+  const NATURES = [
+    { id: "stiff", en: "Strong, but stiff", de: "Stark, aber steif", short: "strong but stiff", shortDe: "stark, aber steif",
+      textDe: "Kraft fällt dir leicht; Vorwärtsbeugen und Hüften brauchen Zeit. Deine Praxis setzt auf Beweglichkeit: Beinrückseite, Hüften und Schultern, mit längeren Haltezeiten und Hilfsmitteln.",
+      text: "Strength comes easily; folds and hips take time. Your practice leans towards mobility: hamstrings, hips and shoulders, with longer holds and props.",
+      animals: [["bear", "Bear", "Bär", "m"], ["bison", "Bison", "Bison", "m"], ["gorilla", "Gorilla", "Gorilla", "m"]],
+      work: ["hamstrings", "hips", "shoulders", "calm"], hard: ["forward fold", "hip opener"], focus: ["hamstrings", "hips"], peaks: ["pk-halfsplits", "pk-pigeon", "pk-triangle", "pk-handtoe"] },
+    { id: "flexible", en: "Flexible, less strong", de: "Beweglich, weniger kräftig", short: "flexible, less strong", shortDe: "beweglich, weniger kräftig",
+      textDe: "Vorwärtsbeugen fallen dir leicht; dich selbst zu halten ist Arbeit. Deine Praxis setzt auf Kraft und Stabilität: Rumpf, Arme und kräftige Standhaltungen.",
+      text: "Folds come easily; holding yourself up takes work. Your practice leans towards strength and stability: core, arms and strong standing poses.",
+      animals: [["cat", "Cat", "Katze", "f"], ["octopus", "Octopus", "Krake", "m"], ["seal", "Seal", "Robbe", "f"]],
+      work: ["core", "balance", "flow"], hard: ["core", "arm balance"], focus: ["core", "legs"], peaks: ["pk-sideplank", "pk-boat", "pk-w3", "pk-dolphin", "pk-revchair"], extraCore: 1 },
+    { id: "power", en: "Strong and flexible", de: "Stark und beweglich", short: "strong and flexible", shortDe: "stark und beweglich",
+      textDe: "Du bringst beides mit. Deine Praxis setzt auf Herausforderung: Armbalancen, tiefe Rückbeugen und längere Flows.",
+      text: "You bring both. Your practice leans towards challenge: arm balances, deep backbends and longer flows.",
+      animals: [["tiger", "Tiger", "Tiger", "m"], ["panther", "Panther", "Panther", "m"], ["dolphin", "Dolphin", "Delfin", "m"]],
+      work: ["backbends", "core", "balance", "flow"], hard: [], focus: ["core", "back"], peaks: ["pk-crow", "pk-wheel", "pk-camel", "pk-dancer", "pk-halfmoon"], challenge: 1, extraCore: 1 },
+    { id: "balance", en: "Steady balance", de: "Gutes Gleichgewicht", short: "steady balance", shortDe: "gutes Gleichgewicht",
+      textDe: "Du stehst sicher auf einem Bein. Deine Praxis nutzt das Gleichgewicht als Anker und baut Beweglichkeit und Kraft darum herum auf.",
+      text: "You stand steady on one leg. Your practice uses balance as the anchor and builds mobility and strength around it.",
+      animals: [["heron", "Heron", "Reiher", "m"], ["flamingo", "Flamingo", "Flamingo", "m"], ["crane", "Crane", "Kranich", "m"]],
+      work: ["balance", "hamstrings", "hips", "flow"], hard: ["forward fold"], focus: ["balance", "hamstrings"], peaks: ["pk-halfmoon", "pk-w3", "pk-dancer", "pk-eagle", "pk-handtoe"] },
+    { id: "allround", en: "All-rounder", de: "Allrounder", short: "all-rounder", shortDe: "Allrounder",
+      textDe: "Nichts sticht heraus, nichts hält dich zurück. Deine Praxis bringt Abwechslung: von allem etwas.",
+      text: "Nothing stands out, nothing holds you back. Your practice brings variety: a bit of everything.",
+      animals: [["fox", "Fox", "Fuchs", "m"], ["wolf", "Wolf", "Wolf", "m"], ["otter", "Otter", "Otter", "m"]],
+      work: ["flow", "backbends", "twists", "balance", "hips", "hamstrings", "core", "shoulders"], hard: [], focus: [], peaks: [] },
+    { id: "gentle", en: "Gentle start", de: "Sanfter Start", short: "gentle start", shortDe: "sanfter Start",
+      textDe: "Kraft, Beweglichkeit und Gleichgewicht wachsen alle noch. Deine Praxis baut alles Schritt für Schritt auf, in Ruhe.",
+      text: "Strength, flexibility and balance are all still growing. Your practice builds everything step by step, calmly.",
+      animals: [["panda", "Panda", "Panda", "m"], ["koala", "Koala", "Koala", "m"], ["turtle", "Turtle", "Schildkröte", "f"]],
+      work: ["calm", "flow", "hips", "hamstrings"], hard: ["arm balance", "core"], focus: ["hips", "hamstrings"], peaks: ["pk-triangle", "pk-halfsplits", "pk-pigeon"], pace: 1.5 },
+  ];
+  const NATURE = Object.fromEntries(NATURES.map(n => [n.id, n]));
+  const ANIMALS = NATURES.flatMap(n => n.animals.map(([id, en, de, g]) => ({ id, en, de, g, nature: n.id })));
+  // Animals from the first version (free choice) → ask for the three tests again.
+  const OLD_ANIMALS = ["wolf", "owl", "hedgehog", "squirrel", "rabbit", "whale", "penguin", "lion", "zebra", "giraffe", "elephant", "camel", "swan", "eagle", "falcon", "parrot", "frog", "butterfly", "bee", "ladybird", "starfish", "badger", "beaver", "raccoon", "llama", "kangaroo", "horse", "goat", "mouse"];
   const ANIMAL = Object.fromEntries(ANIMALS.map(a => [a.id, a]));
 
   // Age = level. stem = German adjective stem (endings added by gender), baby is a compound in German.
@@ -41,34 +67,39 @@
   // Level = skill: which poses, which adaptations, how much intensity.
   const LEVELS = [
     { n: 1, name: "First steps", de: "Erste Schritte", maxLvl: 1, energy: "low", swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" },
-      text: "New to yoga or back after a long break: basic poses, gentle versions, no Chaturanga." },
+      text: "New to yoga or back after a long break: basic poses, gentle versions, no Chaturanga.",
+      textDe: "Neu im Yoga oder zurück nach langer Pause: Grundhaltungen, sanfte Varianten, kein Chaturanga." },
     { n: 2, name: "Foundation", de: "Fundament", maxLvl: 1, energy: "low", swap: { chaturanga: null },
-      text: "Knows the basics: simple flows, Chaturanga still left out." },
+      text: "Knows the basics: simple flows, Chaturanga still left out.",
+      textDe: "Kennt die Grundlagen: einfache Flows, Chaturanga noch ausgelassen." },
     { n: 3, name: "Steady", de: "Sicher", maxLvl: 2, energy: "medium", swap: {},
-      text: "Practises regularly: full vinyasa, intermediate poses, a peak with preparation." },
+      text: "Practises regularly: full vinyasa, intermediate poses, a peak with preparation.",
+      textDe: "Übt regelmäßig: volle Vinyasa, mittlere Haltungen, ein Höhepunkt mit Vorbereitung." },
     { n: 4, name: "Strong practice", de: "Kräftige Praxis", maxLvl: 2, energy: "high", swap: {},
-      text: "Confident: more rounds, deeper backbends, challenge offers." },
+      text: "Confident: more rounds, deeper backbends, challenge offers.",
+      textDe: "Sicher: mehr Runden, tiefere Rückbeugen, Herausforderungen zur Wahl." },
     { n: 5, name: "Advanced", de: "Fortgeschritten", maxLvl: 3, energy: "high", swap: {},
-      text: "Experienced: advanced peaks, Wheel and wall inversions as challenges." },
+      text: "Experienced: advanced peaks, Wheel and wall inversions as challenges.",
+      textDe: "Erfahren: anspruchsvolle Höhepunkte, Rad und Umkehrhaltungen an der Wand als Herausforderung." },
   ];
   // Tempo = cardio: breath length, pace (cost per pose change), intensity shift.
   const TEMPO_CFG = [
-    { n: 1, cycle: 7, pace: 6, energy: -1, style: "slow", text: "Slow breath, fewer changes, longer rests." },
-    { n: 2, cycle: 6, pace: 3, energy: 0, style: "vinyasa", text: "Steady breath and flow." },
-    { n: 3, cycle: 5, pace: 1.2, energy: 1, style: "vinyasa", text: "Quicker breath, more rounds and more poses." },
+    { n: 1, cycle: 7, pace: 6, energy: -1, style: "slow", text: "Slow breath, fewer changes, longer rests.", textDe: "Langsamer Atem, weniger Wechsel, längere Pausen." },
+    { n: 2, cycle: 6, pace: 3, energy: 0, style: "vinyasa", text: "Steady breath and flow.", textDe: "Gleichmäßiger Atem und Fluss." },
+    { n: 3, cycle: 5, pace: 1.2, energy: 1, style: "vinyasa", text: "Quicker breath, more rounds and more poses.", textDe: "Schnellerer Atem, mehr Runden und mehr Haltungen." },
   ];
 
   // Themes = what you cook today. peaks = preferred peak themes from blocks.js; focus = tags the composer favours.
   const THEMES = [
-    { id: "flow", en: "Classic flow", de: "Klassischer Flow", text: "A bit of everything.", focus: [], peaks: [] },
-    { id: "hamstrings", en: "Hamstrings", de: "Beinrückseite", text: "Forward folds and long legs.", focus: ["hamstrings"], peaks: ["pk-halfsplits", "pk-handtoe", "pk-triangle", "pk-w3", "pk-halfmoon"] },
-    { id: "hips", en: "Hips", de: "Hüften", text: "Lunges, squats and hip openers.", focus: ["hips"], peaks: ["pk-pigeon", "pk-eagle", "pk-crow"] },
-    { id: "backbends", en: "Backbends", de: "Rückbeugen", text: "Open the front body, a strong back.", focus: ["back"], peaks: ["pk-camel", "pk-bow", "pk-wheel", "pk-dancer"] },
-    { id: "twists", en: "Twists", de: "Drehungen", text: "Wring out the spine.", focus: ["back"], tags: ["twist"], peaks: ["pk-revchair"] },
-    { id: "balance", en: "Balance", de: "Gleichgewicht", text: "Standing on one leg, steady mind.", focus: ["balance"], peaks: ["pk-w3", "pk-halfmoon", "pk-dancer", "pk-eagle", "pk-handtoe"] },
-    { id: "core", en: "Core and arms", de: "Rumpf und Arme", text: "Plank, boat, arm balances.", focus: ["core"], peaks: ["pk-crow", "pk-sideplank", "pk-boat", "pk-dolphin"] },
-    { id: "shoulders", en: "Shoulders and sides", de: "Schultern und Flanken", text: "Side bends, open shoulders.", focus: [], tags: ["shoulders", "sidebody"], peaks: ["pk-dolphin", "pk-triangle", "pk-halfmoon", "pk-sideplank"] },
-    { id: "calm", en: "Calm", de: "Ruhe", text: "Slow, long holds, mostly on the floor.", focus: ["hips", "hamstrings"], style: "slow", energy: -1, cycle: 1, pace: 2, peaks: ["pk-pigeon", "pk-halfsplits", "pk-triangle"] },
+    { id: "flow", en: "Classic flow", de: "Klassischer Flow", text: "A bit of everything.", textDe: "Von allem etwas.", focus: [], peaks: [] },
+    { id: "hamstrings", en: "Hamstrings", de: "Beinrückseite", text: "Forward folds and long legs.", textDe: "Vorwärtsbeugen und lange Beine.", focus: ["hamstrings"], peaks: ["pk-halfsplits", "pk-handtoe", "pk-triangle", "pk-w3", "pk-halfmoon"] },
+    { id: "hips", en: "Hips", de: "Hüften", text: "Lunges, squats and hip openers.", textDe: "Ausfallschritte, Hocken und Hüftöffner.", focus: ["hips"], peaks: ["pk-pigeon", "pk-eagle", "pk-crow"] },
+    { id: "backbends", en: "Backbends", de: "Rückbeugen", text: "Open the front body, a strong back.", textDe: "Die Vorderseite öffnen, ein starker Rücken.", focus: ["back"], peaks: ["pk-camel", "pk-bow", "pk-wheel", "pk-dancer"] },
+    { id: "twists", en: "Twists", de: "Drehungen", text: "Wring out the spine.", textDe: "Die Wirbelsäule auswringen.", focus: ["back"], tags: ["twist"], peaks: ["pk-revchair"] },
+    { id: "balance", en: "Balance", de: "Gleichgewicht", text: "Standing on one leg, steady mind.", textDe: "Auf einem Bein stehen, ruhiger Geist.", focus: ["balance"], peaks: ["pk-w3", "pk-halfmoon", "pk-dancer", "pk-eagle", "pk-handtoe"] },
+    { id: "core", en: "Core and arms", de: "Rumpf und Arme", text: "Plank, boat, arm balances.", textDe: "Brett, Boot, Armbalancen.", focus: ["core"], peaks: ["pk-crow", "pk-sideplank", "pk-boat", "pk-dolphin"] },
+    { id: "shoulders", en: "Shoulders and sides", de: "Schultern und Flanken", text: "Side bends, open shoulders.", textDe: "Seitbeugen, offene Schultern.", focus: [], tags: ["shoulders", "sidebody"], peaks: ["pk-dolphin", "pk-triangle", "pk-halfmoon", "pk-sideplank"] },
+    { id: "calm", en: "Calm", de: "Ruhe", text: "Slow, long holds, mostly on the floor.", textDe: "Langsam, lange Haltezeiten, meist am Boden.", focus: ["hips", "hamstrings"], style: "slow", energy: -1, cycle: 1, pace: 2, peaks: ["pk-pigeon", "pk-halfsplits", "pk-triangle"] },
   ];
   const THEME = Object.fromEntries(THEMES.map(t => [t.id, t]));
 
@@ -147,14 +178,16 @@
     const care = (today.care || st.care || []).map(id => CARE_BY[id]).filter(Boolean);
     const skip = new Set((st.skip || []).concat(today.skip || []));
     const me = {}, swap = Object.assign({}, L.swap);
-    POSES.forEach(p => { me[p.id] = p.lvl > L.maxLvl ? "new" : "ok"; });
+    const nat = NATURE[(ANIMAL[st.animal] || {}).nature] || NATURE.allround;
+    POSES.forEach(p => { me[p.id] = p.lvl > L.maxLvl ? "new" : nat.hard.includes(p.cat) ? "hard" : "ok"; });
     care.forEach(c => { c.avoid.forEach(id => { me[id] = "new"; }); Object.assign(swap, c.swap); });
     skip.forEach(id => { if (!BY[id] || KEEP.has(id)) return; if (CORE.has(id)) swap[id] = null; else me[id] = "new"; });
     Object.keys(swap).forEach(id => { if (me[id] === "new" && CORE.has(id)) me[id] = "ok"; });
     const lenF = minutes === 30 ? 1 : minutes === 45 ? 0.5 : 0.35;
     return {
-      minutes, energy, style: th.style || T.style, cycle: T.cycle + (th.cycle || 0), pace: T.pace * lenF + (th.pace || 0),
-      focus: th.focus.concat(th.tags || []), peaks: th.peaks, me, swap, challenges: today.challenges || {},
+      minutes, energy, style: th.style || T.style, cycle: T.cycle + (th.cycle || 0), pace: T.pace * lenF + (th.pace || 0) + (nat.pace || 0),
+      focus: [...new Set(th.focus.concat(th.tags || [], nat.focus))], peaks: th.peaks, naturePeaks: nat.peaks, extraOffers: nat.challenge || 0, extraCore: nat.extraCore || 0, nature: nat.id,
+      me, swap, challenges: today.challenges || {},
       history: today.history || [], seed: today.seed || 1,
     };
   }
@@ -177,6 +210,23 @@
     return { level, tempo };
   }
 
+  // Nature from the three small tests and the sports background. Returns the best nature first, then the rest in order of fit.
+  function natureOf(a) {
+    const mv = new Set(a.moves || []);
+    const F = (a.fold ?? 1) / 4 + (mv.has("dance") ? 0.2 : 0);
+    const S = (a.plank ?? 2) / 3 + (mv.has("strength") ? 0.15 : 0) + (mv.has("martial") ? 0.1 : 0);
+    const B = (a.balance ?? 1) / 2 + (mv.has("martial") || mv.has("dance") ? 0.15 : 0);
+    const fit = {
+      gentle: (1 - F) + (1 - S) + (1 - B) - 1.9,
+      stiff: S - F - 0.3 - (F >= 0.6 ? 0.5 : 0),
+      flexible: F - S - 0.3 - (S >= 0.6 ? 0.5 : 0),
+      power: Math.min(F, S) - 0.6,
+      balance: B - Math.max(F, S) - 0.05 + (B >= 0.9 ? 0.15 : 0),
+      allround: 0.35 - Math.abs(F - S) * 0.5 - Math.abs(B - (F + S) / 2) * 0.3,
+    };
+    return Object.entries(fit).sort((x, y) => y[1] - x[1]).map(([id]) => id);
+  }
+
   // ---------- feedback → next code ----------
   // poses: too easy | just right | too hard;  pace: too slow | just right | too fast
   function next(st, fb) {
@@ -192,6 +242,6 @@
     return { state: out, story };
   }
 
-  root.YogaProfile = { ANIMALS, ANIMAL, AGES, TEMPOS, LEVELS, TEMPO_CFG, THEMES, THEME, CARE, CARE_BY, CORE, KEEP, code, parse, suggestAnimals, options, assess, next, norm };
+  root.YogaProfile = { NATURES, NATURE, OLD_ANIMALS, natureOf, ANIMALS, ANIMAL, AGES, TEMPOS, LEVELS, TEMPO_CFG, THEMES, THEME, CARE, CARE_BY, CORE, KEEP, code, parse, suggestAnimals, options, assess, next, norm };
   if (typeof module !== "undefined") module.exports = root.YogaProfile;
 })(typeof window !== "undefined" ? window : globalThis);

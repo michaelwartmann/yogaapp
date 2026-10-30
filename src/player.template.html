@@ -209,8 +209,13 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 .sheet .head { display: flex; gap: 12px; align-items: center; }
 .sheet .head svg { width: 84px; flex: none; height: auto; aspect-ratio: 260 / 230; }
 .sheet .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.langbar { max-width: 1040px; margin: 0 auto 2px; display: flex; justify-content: flex-end; }
+.langbar .seg button { padding: 4px 12px; font-size: .82rem; letter-spacing: .04em; }
+body.is-live .langbar { display: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stage .ring { transform: scale(.93) !important; } }
 </style>
+
+<div class="langbar"><div class="seg" id="langSeg" role="group" aria-label="Language · Sprache"><button type="button" data-v="en" lang="en">EN</button><button type="button" data-v="de" lang="de">DE</button></div></div>
 
 <section class="screen" id="welcome">
   <div class="hero">
@@ -221,7 +226,7 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     </div>
   </div>
   <div id="wKnown" hidden style="display:flex;flex-direction:column;gap:14px">
-    <div class="codecard"><span class="label">Welcome back</span><span class="phrase" id="wPhrase"></span><span class="phrase-de" id="wPhraseDe"></span></div>
+    <div class="codecard"><span class="label">Welcome back</span><span class="phrase" id="wPhrase"></span><span class="phrase-de" id="wPhraseDe"></span><span class="muted" id="wNature"></span></div>
     <div class="row"><button class="btn primary big" id="wContinue" type="button">Continue</button><button class="linkbtn" id="wNotMe" type="button">Not you? Enter another animal</button></div>
   </div>
   <div id="wUnknown" style="display:flex;flex-direction:column;gap:14px">
@@ -231,6 +236,7 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
       <div class="sugg" id="codeSugg" hidden></div>
     </div>
     <div class="found" id="codeFound"></div>
+    <div id="oldNote" hidden class="codecard" style="gap:10px"><span>Animals now say something about you. Your age and pace stay; three small tests find your new animal.</span><div class="row"><button class="btn primary" id="oldGo" type="button">Do the three tests</button></div></div>
     <div id="codeAsk" hidden style="display:flex;flex-direction:column;gap:10px">
       <span class="muted" id="codeAskTxt"></span>
       <div class="seg" id="askAge"></div>
@@ -243,11 +249,16 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 
 <section class="screen" id="pick" hidden>
   <div style="display:flex;flex-direction:column;gap:6px">
-    <h2 style="font-size:1.8rem">Choose your animal</h2>
-    <p class="muted">It stays yours. As you practise it grows up, from baby to ancient. Pick one you like, that makes it easy to remember.</p>
+    <span class="label" id="pickLabel">Your nature</span>
+    <h2 style="font-size:1.8rem" id="natTitle"></h2>
+    <p id="natText" style="max-width:62ch"></p>
   </div>
-  <div class="animals" id="animalGrid"></div>
-  <div class="startbar"><button class="btn primary big" id="pickGo" type="button" disabled>Next</button><button class="btn quiet" id="pickBack" type="button">Back</button></div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label">Choose your animal</span>
+    <div class="animals" id="animalGrid"></div>
+  </div>
+  <details id="otherNatures"><summary class="muted" style="cursor:pointer">Doesn't fit? Choose another nature</summary><div id="natList" style="display:flex;flex-direction:column;gap:14px;margin-top:12px"></div></details>
+  <div class="startbar"><button class="btn primary big" id="pickGo" type="button" disabled>That's me</button><button class="btn quiet" id="pickBack" type="button">Back</button></div>
 </section>
 
 <section class="screen" id="assess" hidden>
@@ -278,10 +289,12 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
       <span class="label">Today, for the</span>
       <h1 id="tPhrase" style="font-size:clamp(1.5rem,5.5vw,2.1rem)"></h1>
       <span class="muted" id="tPhraseDe"></span>
+      <span class="muted" id="tNature" style="font-size:.88rem"></span>
       <button class="linkbtn" id="tChange" type="button" style="align-self:flex-start">Not you?</button>
     </div>
   </div>
   <div class="form">
+    <p id="recheck" hidden class="muted" style="font-size:.9rem">Ten practices done. Bodies change: <button class="linkbtn" id="recheckGo" type="button">redo the three small tests</button>?</p>
     <div class="field"><span class="label">What do you feel like?</span><div class="seg" id="themeSeg"></div><span class="muted" id="themeText" style="font-size:.88rem"></span></div>
     <div class="field"><span class="label">Time</span><div class="seg" data-key="minutes"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
     <div class="field"><span class="label">Take care today</span><div class="seg" id="careSeg"></div></div>
@@ -394,21 +407,41 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 <script>/*BLOCKS*/</script>
 <script>/*COMPOSER*/</script>
 <script>/*PROFILE*/</script>
+<script>/*I18N*/</script>
 <script>
 (() => {
-  const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES;
+  const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES, I = window.YogaI18n;
   const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
   const $ = id => document.getElementById(id);
   const CAT = { style: "cat" };
   const fig = (pose, mirror) => mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, CAT)}</g>` : E.svgInner(pose, CAT);
   const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
-  const sideTxt = s => s === "right" ? "Right" : s === "left" ? "Left" : "";
-  const LEVEL = { 1: "Basic", 2: "Intermediate", 3: "Advanced" };
-  const holdTxt = st => st.breath ? (st.breath === "in" ? "inhale" : "exhale") : st.secs >= 90 ? mmss(st.secs) + " min" : `${st.breaths} breaths`;
+  // ---------- language ----------
+  let LANG = "en";
+  const DE = () => LANG === "de";
+  const tr = (en, de) => DE() ? de : en;
+  const pn = p => DE() ? p.de : p.en;            // pose name in the chosen language
+  const pn2 = p => DE() ? p.en : p.de;           // the other one, shown smaller
+  const an = a => DE() ? a.de : a.en;            // animal name
+  const ntName = n => DE() ? n.de : n.en, ntShort = n => DE() ? n.shortDe : n.short, ntText = n => DE() ? n.textDe : n.text;
+  const thName = t => DE() ? t.de : t.en, thText = t => DE() ? t.textDe : t.text;
+  const lvName = L => DE() ? L.de : L.name, careName = c => DE() ? c.de : c.en;
+  const blockName = (id, fallback) => (DE() && I.BLOCKS_DE[id]) || fallback;
+  const sideTxt = s => s === "right" ? tr("Right", "Rechts") : s === "left" ? tr("Left", "Links") : "";
+  const LEVEL_EN = { 1: "Basic", 2: "Intermediate", 3: "Advanced" }, LEVEL_DE = { 1: "Einfach", 2: "Mittel", 3: "Fortgeschritten" };
+  const LEVEL = new Proxy({}, { get: (o, k) => (DE() ? LEVEL_DE : LEVEL_EN)[k] });
+  const breathWord = b => b === "in" ? tr("inhale", "einatmen") : tr("exhale", "ausatmen");
+  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs >= 90 ? mmss(st.secs) + " min" : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`);
+  const cueOf = p => (DE() && I.CUES_DE[p.id]) || p.cue || "";
+  const propTxt = t => (DE() && I.PROPS_DE[t]) || t;
+  const howTxt = st => st.howT ? I.hint(st.howT, st.howSide, LANG) : st.how;
+  const secName = name => I.section(name, LANG, plan && plan.meta ? I.BLOCKS_DE[plan.meta.peak] : null);
   const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
   // ---------- settings (this device) ----------
   let S = Object.assign({ minutes: 30, theme: "chef", sound: "bowls", volume: 60 }, store.get("matcat-settings", {}));
+  if (S.lang !== "en" && S.lang !== "de") { let nl = ""; try { nl = (navigator.languages && navigator.languages[0]) || navigator.language || ""; } catch (e) {} S.lang = /^de\b/i.test(nl) ? "de" : "en"; }
+  LANG = S.lang;
   if (S.sound === "drone") S.sound = "bowls";
   const saveS = () => store.set("matcat-settings", S);
   function paintSeg() {
@@ -434,89 +467,133 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   // ---------- profile: animal, level (age), tempo; remembered on this device ----------
   let ST = store.get("matcat-profile", null); // { animal, level, tempo, streak, care: [], skip: [] }
   const saveST = () => store.set("matcat-profile", ST);
-  const phrase = (st, lang) => P.code(st, lang);
+  const phrase = (st, lang) => P.code(st, lang || LANG);
   const cap = t => t ? t[0].toUpperCase() + t.slice(1) : t;
+  function paintPhrase(big, small, st) { $(big).textContent = cap(phrase(st, LANG)); $(small).textContent = phrase(st, DE() ? "en" : "de"); }
 
   // ---------- welcome ----------
   let entry = { animal: null, level: null, tempo: null };
   function showWelcome(known) {
     $("wKnown").hidden = !known; $("wUnknown").hidden = !!known;
-    if (known) { $("wPhrase").textContent = cap(phrase(ST, "en")); $("wPhraseDe").textContent = phrase(ST, "de"); }
+    if (known) { paintPhrase("wPhrase", "wPhraseDe", ST); $("wNature").textContent = natureLine(ST); }
     else { entry = { animal: null, level: null, tempo: null }; $("codeIn").value = ""; paintEntry(); }
     show("welcome");
   }
   $("wContinue").addEventListener("click", () => showToday());
   $("wNotMe").addEventListener("click", () => showWelcome(false));
-  $("newBtn").addEventListener("click", () => { pickAnimal = entry.animal; renderPick(); show("pick"); });
+  $("newBtn").addEventListener("click", () => { pickAnimal = entry.animal; startAssess("full"); });
+  const natureOfAnimal = id => P.NATURE[(P.ANIMAL[id] || {}).nature];
+  function natureLine(st) { const n = natureOfAnimal(st.animal); return n ? `${an(P.ANIMAL[st.animal])}: ${ntShort(n)}. ${ntText(n).split(". ").slice(1).join(". ")}` : ""; }
+  const both = x => DE() ? `${x.de} · ${x.en}` : `${x.en} · ${x.de}`;
   function paintEntry() {
     const a = entry.animal && P.ANIMAL[entry.animal];
     const tag = (ok, txt) => `<span class="${ok ? "ok" : ""}">${ok ? "✓ " : ""}${txt}</span>`;
-    $("codeFound").innerHTML = $("codeIn").value.trim() ? tag(!!a, a ? `${a.en} · ${a.de}` : "animal")
-      + tag(!!entry.level, entry.level ? `${P.AGES[entry.level - 1].en} · ${P.AGES[entry.level - 1].de}` : "age")
-      + tag(!!entry.tempo, entry.tempo ? `${P.TEMPOS[entry.tempo - 1].en} · ${P.TEMPOS[entry.tempo - 1].de}` : "pace") : "";
+    $("codeFound").innerHTML = $("codeIn").value.trim() ? tag(!!a, a ? both(a) : tr("animal", "Tier"))
+      + tag(!!entry.level, entry.level ? both(P.AGES[entry.level - 1]) : tr("age", "Alter"))
+      + tag(!!entry.tempo, entry.tempo ? both(P.TEMPOS[entry.tempo - 1]) : tr("pace", "Tempo")) : "";
     const missing = a && (!entry.level || !entry.tempo);
     $("codeAsk").hidden = !missing;
     if (missing) {
-      $("codeAskTxt").textContent = `Hello, ${a.en}! Which one were you? Tap it if you recognise it.`;
+      $("codeAskTxt").textContent = tr(`Hello, ${a.en}! Which one were you? Tap it if you recognise it.`, `Hallo, ${a.de}! Welches warst du? Tippe es an, wenn du es wiedererkennst.`);
       $("askAge").hidden = !!entry.level; $("askTempo").hidden = !!entry.tempo;
-      $("askAge").innerHTML = P.AGES.map(x => `<button type="button" data-v="${x.n}">${x.en} · ${x.de}</button>`).join("") + `<button type="button" data-v="?">I don't remember</button>`;
-      $("askTempo").innerHTML = P.TEMPOS.map(x => `<button type="button" data-v="${x.n}">${x.en} · ${x.de}</button>`).join("") + `<button type="button" data-v="?">I don't remember</button>`;
+      const dunno = `<button type="button" data-v="?">${tr("I don't remember", "Weiß ich nicht mehr")}</button>`;
+      $("askAge").innerHTML = P.AGES.map(x => `<button type="button" data-v="${x.n}">${both(x)}</button>`).join("") + dunno;
+      $("askTempo").innerHTML = P.TEMPOS.map(x => `<button type="button" data-v="${x.n}">${both(x)}</button>`).join("") + dunno;
     }
     $("codeGo").disabled = !(a && entry.level && entry.tempo);
   }
   $("codeIn").addEventListener("input", () => {
     const r = P.parse($("codeIn").value);
     entry = { animal: r.animal, level: r.level, tempo: r.tempo };
+    const old = !r.animal && r.unknown.some(t => P.OLD_ANIMALS.includes(t));
+    $("oldNote").hidden = !old;
     const last = $("codeIn").value.split(/\s+/).pop();
     const sug = r.animal ? [] : P.suggestAnimals(last);
     $("codeSugg").hidden = !sug.length;
-    $("codeSugg").innerHTML = sug.map(a => `<button type="button" data-id="${a.id}">${a.en} · ${a.de}</button>`).join("");
+    $("codeSugg").innerHTML = sug.map(a => `<button type="button" data-id="${a.id}">${both(a)}</button>`).join("");
     paintEntry();
   });
   $("codeSugg").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    const words = $("codeIn").value.split(/\s+/); words[words.length - 1] = P.ANIMAL[b.dataset.id].en.toLowerCase();
+    const words = $("codeIn").value.split(/\s+/); words[words.length - 1] = DE() ? P.ANIMAL[b.dataset.id].de : P.ANIMAL[b.dataset.id].en.toLowerCase();
     $("codeIn").value = words.join(" ") + " "; $("codeSugg").hidden = true; $("codeIn").dispatchEvent(new Event("input")); $("codeIn").focus();
   });
   $("codeIn").addEventListener("keydown", e => { if (e.key === "Enter" && !$("codeGo").disabled) $("codeGo").click(); });
-  $("askAge").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess(); return; } entry.level = Number(b.dataset.v); paintEntry(); });
-  $("askTempo").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess(); return; } entry.tempo = Number(b.dataset.v); paintEntry(); });
+  $("askAge").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess("full"); return; } entry.level = Number(b.dataset.v); paintEntry(); });
+  $("askTempo").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess("full"); return; } entry.tempo = Number(b.dataset.v); paintEntry(); });
+  $("oldGo").addEventListener("click", () => {
+    const r = P.parse($("codeIn").value);
+    if (r.level && r.tempo) KEEP_LT = { level: r.level, tempo: r.tempo };
+    if (KEEP_LT) startAssess("nature"); else startAssess("full");
+  });
   $("codeGo").addEventListener("click", () => {
     const prev = ST && ST.animal === entry.animal ? ST : {};
-    ST = { animal: entry.animal, level: entry.level, tempo: entry.tempo, streak: 0, care: prev.care || [], skip: prev.skip || [] };
+    ST = { animal: entry.animal, level: entry.level, tempo: entry.tempo, streak: 0, care: prev.care || [], skip: prev.skip || [], count: prev.count || 0, checked: prev.checked || 0 };
     saveST(); showToday();
   });
 
-  // ---------- choose an animal ----------
-  let pickAnimal = null;
+  // ---------- nature and animal ----------
+  let pickAnimal = null, NAT_ORDER = P.NATURES.map(n => n.id), PENDING = null, KEEP_LT = null, ASSESS_MODE = "full";
+  const animalBtns = n => n.animals.map(([id, en, de]) => `<button type="button" data-id="${id}" aria-pressed="${pickAnimal === id}"><b>${DE() ? de : en}</b><small>${DE() ? en : de}</small></button>`).join("");
   function renderPick() {
-    $("animalGrid").innerHTML = P.ANIMALS.slice().sort((a, b) => a.en.localeCompare(b.en)).map(a => `<button type="button" data-id="${a.id}" aria-pressed="${pickAnimal === a.id}"><b>${a.en}</b><small>${a.de}</small></button>`).join("");
+    const n = P.NATURE[NAT_ORDER[0]];
+    $("pickLabel").textContent = tr("Your nature", "Deine Natur");
+    $("natTitle").textContent = both(n);
+    $("natText").textContent = ntText(n);
+    $("animalGrid").innerHTML = animalBtns(n);
+    $("natList").innerHTML = NAT_ORDER.slice(1).map(id => { const m = P.NATURE[id]; return `<div style="display:flex;flex-direction:column;gap:6px"><b>${ntName(m)} · <span class="muted">${DE() ? m.en : m.de}</span></b><span class="muted" style="font-size:.88rem">${ntText(m)}</span><div class="animals">${animalBtns(m)}</div></div>`; }).join("");
     $("pickGo").disabled = !pickAnimal;
   }
-  $("animalGrid").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; pickAnimal = b.dataset.id; renderPick(); });
-  $("pickGo").addEventListener("click", () => startAssess());
-  $("pickBack").addEventListener("click", () => showWelcome(false));
+  $("pick").addEventListener("click", e => { const b = e.target.closest(".animals button[data-id]"); if (!b) return; pickAnimal = b.dataset.id; $("pick").querySelectorAll(".animals button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.id === pickAnimal))); $("pickGo").disabled = false; });
+  $("pickGo").addEventListener("click", () => {
+    const prev = ST || {};
+    const lt = PENDING || { level: prev.level || 1, tempo: prev.tempo || 2 };
+    const changed = prev.animal && prev.animal !== pickAnimal;
+    ST = { animal: pickAnimal, level: lt.level, tempo: lt.tempo, streak: prev.animal ? prev.streak || 0 : 0, care: PENDING && PENDING.care ? PENDING.care : prev.care || [], skip: prev.skip || [], count: prev.count || 0, checked: prev.count || 0 };
+    saveST(); REVEAL_CHANGED = changed;
+    paintReveal(); show("reveal");
+  });
+  let REVEAL_CHANGED = false;
+  function paintReveal() {
+    const n = natureOfAnimal(ST.animal), A = P.ANIMAL[ST.animal], L = P.LEVELS[ST.level - 1];
+    paintPhrase("rPhrase", "rPhraseDe", ST);
+    $("rStory").textContent = REVEAL_CHANGED ? tr(`New animal: your nature is now ${n.short}.`, `Neues Tier: deine Natur ist jetzt ${n.shortDe}.`) : "";
+    $("rExplain").textContent = tr(`${A.en}: ${n.short}. "${P.AGES[ST.level - 1].en}" is your level (${ST.level} of 5: ${L.name.toLowerCase()}), "${P.TEMPOS[ST.tempo - 1].en}" is your pace. Your ${A.en.toLowerCase()} grows up as you practise.`,
+      `${A.de}: ${n.shortDe}. „${P.AGES[ST.level - 1].de}“ ist deine Stufe (${ST.level} von 5: ${L.de}), „${P.TEMPOS[ST.tempo - 1].de}“ ist dein Tempo. ${A.g === "f" ? "Deine" : "Dein"} ${A.de} wird älter, während du übst.`);
+  }
+  $("pickBack").addEventListener("click", () => show("assess"));
 
   // ---------- assessment ----------
   const QS = [
-    { k: "yoga", ask: "How much yoga have you done?", opts: ["Never", "A few classes", "Regularly, under a year", "Regularly, a year or more", "Many years"] },
-    { k: "moves", multi: true, ask: "What else do you do? Tick all that fit.", opts: [["endurance", "Running, cycling, swimming"], ["strength", "Strength training"], ["martial", "Martial arts"], ["dance", "Dance or gymnastics"], ["team", "Team or racket sports"]] },
-    { k: "age", ask: "Your age", opts: ["Under 30", "30–49", "50–64", "65–74", "75 or older"] },
-    { k: "active", ask: "How active are you at the moment?", opts: ["Rarely", "1–2 times a week", "3 times a week or more"] },
-    { k: "fold", pose: "uttanasana", ask: "Try it: stand and fold forward with straight legs. Your hands reach…", opts: ["My knees", "My shins", "My ankles", "The floor", "Palms flat on the floor"] },
-    { k: "plank", pose: "phalakasana", ask: "Try it: hold a plank. How long feels OK?", opts: ["Not yet", "Under 20 seconds", "20 to 60 seconds", "Over a minute"] },
-    { k: "balance", pose: "vrksasana", ask: "Try it: stand on one leg, arms relaxed.", opts: ["Wobbly, under 10 seconds", "10 to 30 seconds", "Steady for 30 seconds or more"] },
-    { k: "stairs", ask: "Three floors of stairs at a brisk pace leave you…", opts: ["Out of breath", "A bit puffed", "Easy"] },
-    { k: "care", multi: true, ask: "Anything to take care of? (You can change this every day.)", opts: P.CARE.map(c => [c.id, c.en]) },
+    { k: "yoga", ask: "How much yoga have you done?", askDe: "Wie viel Yoga hast du schon gemacht?",
+      opts: ["Never", "A few classes", "Regularly, under a year", "Regularly, a year or more", "Many years"],
+      optsDe: ["Noch nie", "Ein paar Stunden", "Regelmäßig, unter einem Jahr", "Regelmäßig, ein Jahr oder länger", "Viele Jahre"] },
+    { k: "moves", multi: true, ask: "What else do you do? Tick all that fit.", askDe: "Was machst du sonst noch? Wähle alles, was passt.",
+      opts: [["endurance", "Running, cycling, swimming"], ["strength", "Strength training"], ["martial", "Martial arts"], ["dance", "Dance or gymnastics"], ["team", "Team or racket sports"]],
+      optsDe: [["endurance", "Laufen, Radfahren, Schwimmen"], ["strength", "Krafttraining"], ["martial", "Kampfsport"], ["dance", "Tanz oder Turnen"], ["team", "Mannschafts- oder Rückschlagsport"]] },
+    { k: "age", ask: "Your age", askDe: "Dein Alter", opts: ["Under 30", "30–49", "50–64", "65–74", "75 or older"], optsDe: ["Unter 30", "30–49", "50–64", "65–74", "75 oder älter"] },
+    { k: "active", ask: "How active are you at the moment?", askDe: "Wie aktiv bist du zurzeit?",
+      opts: ["Rarely", "1–2 times a week", "3 times a week or more"], optsDe: ["Selten", "1–2 Mal pro Woche", "3 Mal pro Woche oder öfter"] },
+    { k: "fold", pose: "uttanasana", ask: "Try it: stand and fold forward with straight legs. Your hands reach…", askDe: "Probier es aus: im Stehen mit gestreckten Beinen vorbeugen. Deine Hände kommen bis…",
+      opts: ["My knees", "My shins", "My ankles", "The floor", "Palms flat on the floor"], optsDe: ["Zu den Knien", "Zu den Schienbeinen", "Zu den Fußgelenken", "Zum Boden", "Handflächen flach auf dem Boden"] },
+    { k: "plank", pose: "phalakasana", ask: "Try it: hold a plank. How long feels OK?", askDe: "Probier es aus: halte ein Brett. Wie lange geht es gut?",
+      opts: ["Not yet", "Under 20 seconds", "20 to 60 seconds", "Over a minute"], optsDe: ["Noch nicht", "Unter 20 Sekunden", "20 bis 60 Sekunden", "Über eine Minute"] },
+    { k: "balance", pose: "vrksasana", ask: "Try it: stand on one leg, arms relaxed.", askDe: "Probier es aus: auf einem Bein stehen, Arme locker.",
+      opts: ["Wobbly, under 10 seconds", "10 to 30 seconds", "Steady for 30 seconds or more"], optsDe: ["Wackelig, unter 10 Sekunden", "10 bis 30 Sekunden", "Sicher, 30 Sekunden oder länger"] },
+    { k: "stairs", ask: "Three floors of stairs at a brisk pace leave you…", askDe: "Drei Stockwerke Treppe in zügigem Tempo, danach bist du…",
+      opts: ["Out of breath", "A bit puffed", "Easy"], optsDe: ["Außer Atem", "Etwas aus der Puste", "Ganz entspannt"] },
+    { k: "care", multi: true, ask: "Anything to take care of? (You can change this every day.)", askDe: "Gibt es etwas zu schonen? (Das kannst du jeden Tag ändern.)",
+      opts: P.CARE.map(c => [c.id, c.en]), optsDe: P.CARE.map(c => [c.id, c.de]) },
   ];
   let ANS = {};
-  function startAssess() { ANS = { moves: [], care: [] }; renderQs(); show("assess"); }
+  const NATURE_QS = ["moves", "fold", "plank", "balance"];
+  function startAssess(mode) { ASSESS_MODE = mode || "full"; ANS = { moves: [], care: [] }; renderQs(); show("assess"); }
   function renderQs() {
-    $("qList").innerHTML = QS.map(q => {
-      const opts = q.opts.map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
+    $("qList").innerHTML = QS.filter(q => ASSESS_MODE === "full" || NATURE_QS.includes(q.k)).map(q => {
+      const opts = (DE() ? q.optsDe : q.opts).map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
         const on = q.multi ? (ANS[q.k] || []).includes(v) : String(ANS[q.k]) === v;
         return `<button type="button" data-v="${v}" aria-pressed="${on}">${t}</button>`; }).join("");
-      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p)}</svg><span class="ask">${q.ask}</span></div>` : `<span class="ask">${q.ask}</span>`;
+      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p)}</svg><span class="ask">${tr(q.ask, q.askDe)}</span></div>` : `<span class="ask">${tr(q.ask, q.askDe)}</span>`;
       return `<div class="q">${head}<div class="seg" data-q="${q.k}" data-multi="${q.multi ? 1 : ""}">${opts}</div></div>`;
     }).join("");
   }
@@ -527,14 +604,16 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     else ANS[k] = Number(b.dataset.v);
     seg.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", seg.dataset.multi ? String((ANS[k] || []).includes(x.dataset.v)) : String(String(ANS[k]) === x.dataset.v)));
   });
-  $("assessBack").addEventListener("click", () => { renderPick(); show("pick"); });
+  $("assessBack").addEventListener("click", () => ST && ASSESS_MODE === "nature" && P.ANIMAL[ST.animal] ? showToday() : showWelcome(false));
   $("assessGo").addEventListener("click", () => {
-    const r = P.assess(ANS);
-    ST = { animal: pickAnimal || "heron", level: r.level, tempo: r.tempo, streak: 0, care: ANS.care || [], skip: (ST && ST.skip) || [] };
-    saveST();
-    $("rPhrase").textContent = cap(phrase(ST, "en")); $("rPhraseDe").textContent = phrase(ST, "de"); $("rStory").textContent = "";
-    $("rExplain").textContent = `"${P.AGES[ST.level - 1].en}" is your level (${ST.level} of 5: ${P.LEVELS[ST.level - 1].name.toLowerCase()}), "${P.TEMPOS[ST.tempo - 1].en}" is your pace. Your ${P.ANIMAL[ST.animal].en.toLowerCase()} grows up as you practise.`;
-    show("reveal");
+    NAT_ORDER = P.natureOf(ANS);
+    if (ASSESS_MODE === "full") { const r = P.assess(ANS); PENDING = { level: r.level, tempo: r.tempo, care: ANS.care || [] }; }
+    else PENDING = KEEP_LT ? Object.assign({}, KEEP_LT) : (ST ? { level: ST.level, tempo: ST.tempo } : { level: 1, tempo: 2 });
+    KEEP_LT = null;
+    const inNature = id => P.NATURE[NAT_ORDER[0]].animals.some(a => a[0] === id);
+    if (!(pickAnimal && inNature(pickAnimal))) pickAnimal = ST && inNature(ST.animal) ? ST.animal : null;
+    $("otherNatures").open = false;
+    renderPick(); show("pick");
   });
   $("rGo").addEventListener("click", () => showToday());
 
@@ -542,17 +621,24 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   let CARE_TODAY = [];
   function showToday() {
     if (!ST) { showWelcome(false); return; }
-    $("tPhrase").textContent = cap(phrase(ST, "en")); $("tPhraseDe").textContent = phrase(ST, "de");
     CARE_TODAY = (ST.care || []).slice();
-    renderThemes(); renderCare(); show("build");
+    paintToday(); show("build");
+  }
+  function paintToday() {
+    paintPhrase("tPhrase", "tPhraseDe", ST); $("tNature").textContent = natureLine(ST);
+    $("recheck").hidden = !((ST.count || 0) - (ST.checked || 0) >= 10);
+    renderThemes(); renderCare();
   }
   $("tChange").addEventListener("click", () => showWelcome(false));
+  $("recheckGo").addEventListener("click", () => { pickAnimal = ST.animal; startAssess("nature"); });
   function renderThemes() {
-    $("themeSeg").innerHTML = `<button type="button" data-v="chef" aria-pressed="${S.theme === "chef"}">Chef's choice</button>` + P.THEMES.map(t => `<button type="button" data-v="${t.id}" aria-pressed="${S.theme === t.id}">${t.en}</button>`).join("");
-    $("themeText").textContent = S.theme === "chef" ? "A theme you haven't had for a while." : P.THEME[S.theme].text;
+    $("themeSeg").innerHTML = `<button type="button" data-v="chef" aria-pressed="${S.theme === "chef"}">${tr("Chef's choice", "Empfehlung des Hauses")}</button>` + P.THEMES.map(t => `<button type="button" data-v="${t.id}" aria-pressed="${S.theme === t.id}">${thName(t)}</button>`).join("");
+    const n = natureOfAnimal(ST.animal);
+    $("themeText").textContent = S.theme === "chef" ? tr(`Mostly ${n.work.slice(0, 3).map(t => P.THEME[t].en.toLowerCase()).join(", ")} for a ${P.ANIMAL[ST.animal].en.toLowerCase()}, and one you haven't had for a while.`,
+      `Meist ${n.work.slice(0, 3).map(t => P.THEME[t].de).join(", ")}, passend zu deinem Tier, und ab und zu etwas, das du länger nicht hattest.`) : thText(P.THEME[S.theme]);
   }
   $("themeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.theme = b.dataset.v; saveS(); renderThemes(); });
-  function renderCare() { $("careSeg").innerHTML = P.CARE.map(c => `<button type="button" data-v="${c.id}" aria-pressed="${CARE_TODAY.includes(c.id)}">${c.en}</button>`).join(""); }
+  function renderCare() { $("careSeg").innerHTML = P.CARE.map(c => `<button type="button" data-v="${c.id}" aria-pressed="${CARE_TODAY.includes(c.id)}">${careName(c)}</button>`).join(""); }
   $("careSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const v = b.dataset.v; CARE_TODAY = CARE_TODAY.includes(v) ? CARE_TODAY.filter(x => x !== v) : CARE_TODAY.concat(v); ST.care = CARE_TODAY.slice(); saveST(); renderCare(); });
 
   // ---------- stored log (inside Claude, the owner's practice log; elsewhere this device) ----------
@@ -624,8 +710,10 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
   const history = () => (HIST.length ? HIST : localHistory());
   function chefTheme() {
     const recent = history().slice(-6).map(h => h.theme).filter(Boolean);
+    const work = (natureOfAnimal(ST.animal) || P.NATURE.allround).work;
+    const pool = Math.random() < 0.75 ? P.THEMES.filter(t => work.includes(t.id)) : P.THEMES; // mostly your nature's themes
     const score = t => { const i = recent.lastIndexOf(t.id); return (i < 0 ? 100 : i) + Math.random(); }; // never had or long ago scores highest
-    return P.THEMES.map(t => [score(t), t.id]).sort((a, b) => b[0] - a[0])[0][1];
+    return pool.map(t => [score(t), t.id]).sort((a, b) => b[0] - a[0])[0][1];
   }
   function todayOpts() {
     THEME_NOW = S.theme === "chef" ? chefTheme() : S.theme;
@@ -656,9 +744,10 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
     const hist = history().slice(-4).map(h => h.peakName || h.peak).join("; ");
     const care = CARE_TODAY.map(id => P.CARE_BY[id].en).join(", ");
     return `You are an experienced yoga teacher writing one class, to be guided live by an app.
-The practitioner: level ${ST.level} of 5 (${L.name}: ${L.text}) Pace ${ST.tempo} of 3 (${T.text}) Breath length ${o.cycle} s.
+The practitioner: level ${ST.level} of 5 (${L.name}: ${L.text}) Pace ${ST.tempo} of 3 (${T.text}) Breath length ${o.cycle} s. Nature: ${natureOfAnimal(ST.animal).en}: ${natureOfAnimal(ST.animal).text}
 Today's theme: ${th.en} (${th.text}). Length: ${S.minutes} minutes.${care ? " Take care of: " + care + "." : ""}
-Recent peaks (pick something different): ${hist || "none yet"}.
+Recent peaks (pick something different): ${hist || "none yet"}.${DE() ? `
+Language: the practitioner reads German. Write "title", "why" and every section "name" in German (e.g. "Ankommen", "Aufwärmen", "Sonnengrüße", "Im Stehen", "Höhepunkt", "Ausklang", "Savasana"). Pose ids stay as given.` : ""}
 
 Write a creative, well-sequenced class: arrival, warm-up, a salutation variation, standing work, balance, a peak pose that fits the theme with real preparation, backbends or core as fits, cool-down, Savasana. Every pose marked "both sides" is done right then left with the same holds. Put a neutral pose (Child's Pose, Knees to Chest or a twist) between a deep backbend and any forward fold. Flowing movements use "breath": "in" or "out" (one movement per half breath); holds use "breaths": 1–12. Aim for about ${Math.round(S.minutes * 60 / o.cycle * 0.8)} breaths in total before Savasana; the app fine-tunes the timing.
 
@@ -672,18 +761,20 @@ Answer with JSON only, no prose, in exactly this shape:
   async function surprise() {
     if (!sampleFn) return;
     show("preview");
-    $("thinking").hidden = false; $("thinkingTxt").textContent = "Claude is composing your class…";
-    $("sections").innerHTML = ""; $("topCards").innerHTML = ""; $("sumTitle").textContent = "Surprise me"; $("sumMeta").textContent = ""; $("sumWhy").textContent = "";
+    $("thinking").hidden = false; $("thinkingTxt").textContent = tr("Claude is composing your class…", "Claude stellt deine Stunde zusammen…");
+    $("sections").innerHTML = ""; $("topCards").innerHTML = ""; $("sumTitle").textContent = tr("Surprise me", "Überrasch mich"); $("sumMeta").textContent = ""; $("sumWhy").textContent = "";
     $("startBtn").disabled = true; $("shuffleBtn").disabled = true;
     sampleCtl = new AbortController();
     try {
-      const spec = await sampleFn.json(surprisePrompt(), { signal: sampleCtl.signal, cache: false, onText: () => { $("thinkingTxt").textContent = "Claude is writing the sequence…"; } });
+      const spec = await sampleFn.json(surprisePrompt(), { signal: sampleCtl.signal, cache: false, onText: () => { $("thinkingTxt").textContent = tr("Claude is writing the sequence…", "Claude schreibt die Abfolge…"); } });
       const o = todayOpts(); plan = G.fromSpec(spec, o); plan.opts = o;
       if (!plan.steps.length || plan.steps.length < 8) throw { code: "empty" };
       source = "claude"; challenges = {};
       renderPreview();
     } catch (e) {
-      const msg = { not_granted: "Claude wasn't allowed to answer, so here is a class from the app instead.", rate_limited: "Claude is busy right now, so here is a class from the app instead.", cancelled: "Stopped. Here is a class from the app instead." }[e && e.code] || "Claude's answer couldn't be used, so here is a class from the app instead.";
+      const msg = DE()
+        ? ({ not_granted: "Claude durfte nicht antworten, darum hier eine Stunde aus der App.", rate_limited: "Claude ist gerade beschäftigt, darum hier eine Stunde aus der App.", cancelled: "Gestoppt. Hier ist eine Stunde aus der App." }[e && e.code] || "Claudes Antwort ließ sich nicht verwenden, darum hier eine Stunde aus der App.")
+        : ({ not_granted: "Claude wasn't allowed to answer, so here is a class from the app instead.", rate_limited: "Claude is busy right now, so here is a class from the app instead.", cancelled: "Stopped. Here is a class from the app instead." }[e && e.code] || "Claude's answer couldn't be used, so here is a class from the app instead.");
       buildPlan(); $("sumWhy").textContent = msg + " " + $("sumWhy").textContent;
     } finally {
       $("thinking").hidden = true; $("startBtn").disabled = false; $("shuffleBtn").disabled = false; sampleCtl = null;
@@ -694,14 +785,14 @@ Answer with JSON only, no prose, in exactly this shape:
 
   function chip(st) {
     const p = BY[st.id];
-    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${p.en}: change or leave out"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${p.en}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></button>`;
+    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></button>`;
   }
   function groupFlow(list) {
     const out = [];
     for (let i = 0; i < list.length; i++) {
       const s = list[i], n1 = list[i + 1], n2 = list[i + 2];
       if (s.id === "phalakasana" && n1 && n1.id === "chaturanga" && n2 && n2.id === "urdhva-mukha-svanasana") {
-        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>Plank · Chaturanga · Up Dog</small></div>`); i += 2; continue;
+        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>${["phalakasana", "chaturanga", "urdhva-mukha-svanasana"].map(id => DE() ? BY[id].de : ({ "urdhva-mukha-svanasana": "Up Dog" })[id] || BY[id].en).join(" · ")}</small></div>`); i += 2; continue;
       }
       if (n1 && list[i + 2] && list[i + 2].id === s.id && list[i + 3] && list[i + 3].id === n1.id && s.breath && n1.breath) {
         let c = 0; while (list[i + 2 * c] && list[i + 2 * c].id === s.id && list[i + 2 * c + 1] && list[i + 2 * c + 1].id === n1.id) c++;
@@ -715,21 +806,31 @@ Answer with JSON only, no prose, in exactly this shape:
     const m = plan.meta || {};
     if (!m.sunRoundLen) return groupFlow(list);
     const lead = list.slice(0, m.sunLead), round = list.slice(m.sunLead, m.sunLead + m.sunRoundLen);
-    let html = groupFlow(lead) + `<span class="note">${m.sunName}${m.sunAlt ? " · the leading leg alternates each round" : ""}</span>` + groupFlow(round) + `<span class="rounds">× ${m.sunRounds}</span>`;
-    if (list.some(s => s.challenge)) html += `<span class="note">Last round: Crow before stepping back to Plank.</span>`;
+    let html = groupFlow(lead) + `<span class="note">${blockName(m.sun, m.sunName)}${m.sunAlt ? tr(" · the leading leg alternates each round", " · das führende Bein wechselt jede Runde") : ""}</span>` + groupFlow(round) + `<span class="rounds">× ${m.sunRounds}</span>`;
+    if (list.some(s => s.challenge)) html += `<span class="note">${tr("Last round: Crow before stepping back to Plank.", "Letzte Runde: Krähe, bevor du zurück ins Brett gehst.")}</span>`;
     return html;
   }
+  // the idea of the class, phrased in the chosen language from the composer's plain data
+  function whyTxt() {
+    const w = plan.whyData;
+    if (!w || !DE()) return plan.why || "";
+    const tags = w.needs.map(t => I.TAGS_DE[t] || t).join(", ");
+    const prep = w.prep.map(id => I.BLOCKS_DE[id] || id);
+    return `Aufgebaut um ${I.BLOCKS_DE[w.peak] || w.peak}. ` + (prep.length ? `${prep.join(", ")} ${prep.length === 1 ? "bereitet" : "bereiten"} ${tags} vor. ` : `Vorbereitung für ${tags}. `)
+      + `Aufwärmen: ${I.BLOCKS_DE[w.warm] || w.warm}, dann ${I.BLOCKS_DE[w.sun] || w.sun}.`;
+  }
   function renderPreview() {
-    $("sumTitle").textContent = (source === "claude" ? "By Claude · " : "") + `${P.THEME[THEME_NOW].en} · ${S.minutes} min` + (plan.meta && plan.meta.peakName ? ` · ${plan.meta.peakName}` : "");
-    $("sumWhy").textContent = (plan.why || "") + (plan.dropped && plan.dropped.length ? ` Skipped unknown poses: ${plan.dropped.join(", ")}.` : "");
-    $("shuffleBtn").textContent = source === "claude" ? "Ask Claude again" : "Shuffle";
-    $("sumMeta").textContent = `For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath` + (CARE_TODAY.length ? ` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}` : "");
+    $("sumTitle").textContent = (source === "claude" ? tr("By Claude · ", "Von Claude · ") : "") + `${thName(P.THEME[THEME_NOW])} · ${S.minutes} min` + (plan.meta && plan.meta.peakName ? ` · ${blockName(plan.meta.peak, plan.meta.peakName)}` : "");
+    $("sumWhy").textContent = whyTxt() + (plan.dropped && plan.dropped.length ? tr(` Skipped unknown poses: ${plan.dropped.join(", ")}.`, ` Unbekannte Haltungen übersprungen: ${plan.dropped.join(", ")}.`) : "");
+    $("shuffleBtn").textContent = source === "claude" ? tr("Ask Claude again", "Claude noch mal fragen") : tr("Shuffle", "Neu mischen");
+    $("sumMeta").textContent = tr(`For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath`, `Für: ${phrase(ST, "de")} · ${P.LEVELS[ST.level - 1].de} · ${CYCLE} s Atem`)
+      + (CARE_TODAY.length ? tr(` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${CARE_TODAY.map(id => P.CARE_BY[id].de).join(", ")}`) : "");
     let top = "";
     plan.offers.forEach(o => {
       const on = challenges[o.id] === true;
-      top += `<div class="card"><span class="label">Challenge offer</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${BY[o.id].en} · <i>${BY[o.id].sa}</i></b><span class="muted">${o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">Add it</button><button type="button" data-v="no" aria-pressed="${!on}">Not today</button></div></div></div></div>`;
+      top += `<div class="card"><span class="label">${tr("Challenge offer", "Herausforderung")}</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${pn(BY[o.id])} · <i>${BY[o.id].sa}</i></b><span class="muted">${(DE() && I.OFFERS_DE[o.id]) || o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">${tr("Add it", "Dazunehmen")}</button><button type="button" data-v="no" aria-pressed="${!on}">${tr("Not today", "Heute nicht")}</button></div></div></div></div>`;
     });
-    if (plan.props.length) top += `<div class="card"><span class="label">Have ready</span><ul class="props">${plan.props.map(p => `<li>${p}</li>`).join("")}</ul></div>`;
+    if (plan.props.length) top += `<div class="card"><span class="label">${tr("Have ready", "Bereitlegen")}</span><ul class="props">${plan.props.map(p => `<li>${propTxt(p)}</li>`).join("")}</ul></div>`;
     $("topCards").innerHTML = top;
     $("topCards").querySelectorAll("[data-offer]").forEach(seg => seg.addEventListener("click", e => {
       const b = e.target.closest("button"); if (!b) return;
@@ -738,7 +839,7 @@ Answer with JSON only, no prose, in exactly this shape:
     $("sections").innerHTML = plan.sections.map(name => {
       const list = plan.steps.filter(s => s.section === name);
       const secs = list.reduce((a, s) => a + s.secs, 0);
-      return `<div class="sec"><div class="sec-head"><h3>${name}</h3><span class="muted">${mmss(secs)}</span></div><div class="strip">${(name === "Sun Salutations" || name === "Moon Salutation") && source !== "claude" ? groupSun(list) : groupFlow(list)}</div></div>`;
+      return `<div class="sec"><div class="sec-head"><h3>${secName(name)}</h3><span class="muted">${mmss(secs)}</span></div><div class="strip">${(name === "Sun Salutations" || name === "Moon Salutation") && source !== "claude" ? groupSun(list) : groupFlow(list)}</div></div>`;
     }).join("");
   }
 
@@ -753,16 +854,17 @@ Answer with JSON only, no prose, in exactly this shape:
   }
   function openSheet(id) {
     sheetId = id; const p = BY[id], alt = swapFor(id), keep = P.KEEP.has(id);
-    $("shFig").innerHTML = fig(p.p); $("shName").textContent = p.en; $("shSub").textContent = `${p.sa} · ${p.de}`;
-    $("shSwap").hidden = !alt; $("shSwap").textContent = alt ? `Swap for ${alt.en}` : "";
+    $("shFig").innerHTML = fig(p.p); $("shName").textContent = pn(p); $("shSub").textContent = `${p.sa} · ${pn2(p)}`;
+    $("shSwap").hidden = !alt; $("shSwap").textContent = alt ? tr(`Swap for ${alt.en}`, `Tauschen gegen ${alt.de}`) : "";
     $("shOut").hidden = keep; $("shNever").hidden = keep;
-    $("shMsg").textContent = keep ? `${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".` : "";
+    $("shMsg").textContent = keep ? tr(`${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".`, `${p.de} hält die Stunde zusammen und bleibt deshalb. Wenn etwas wehtut, wähle es unter „Heute schonen“.`) : "";
     $("sheet").hidden = false; $("shCancel").focus();
   }
   function closeSheet() { $("sheet").hidden = true; sheetId = null; }
   function applyEdit(steps, note) {
     const meta = plan.meta, offers = plan.offers, why = plan.why, opts = plan.opts;
-    plan = G.retime(steps, opts); Object.assign(plan, { meta, offers, why, opts, edited: (note ? [note] : []) });
+    const whyData = plan.whyData;
+    plan = G.retime(steps, opts); Object.assign(plan, { meta, offers, why, whyData, opts, edited: (note ? [note] : []) });
     renderPreview(); closeSheet();
   }
   $("sections").addEventListener("click", e => { const b = e.target.closest("button.chip[data-id]"); if (b) openSheet(b.dataset.id); });
@@ -787,7 +889,8 @@ Answer with JSON only, no prose, in exactly this shape:
     try { await screen.orientation.lock("landscape"); } catch (e) {}
   }
   function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
-  document.addEventListener("fullscreenchange", () => { $("fsBtn").textContent = document.fullscreenElement ? "Exit full screen" : "Full screen"; });
+  const paintFsBtn = () => { $("fsBtn").textContent = document.fullscreenElement ? tr("Exit full screen", "Vollbild beenden") : tr("Full screen", "Vollbild"); };
+  document.addEventListener("fullscreenchange", paintFsBtn);
   $("fsBtn").addEventListener("click", () => document.fullscreenElement ? exitFS() : enterFS());
 
   // ---------- screen on ----------
@@ -798,12 +901,12 @@ Answer with JSON only, no prose, in exactly this shape:
     if ("wakeLock" in navigator) {
       try {
         lock = await navigator.wakeLock.request("screen");
-        setWake(true, "screen on");
-        lock.addEventListener("release", () => { lock = null; if (running) setWake(false, "tap to keep the screen on"); });
+        setWake(true, tr("screen on", "Bildschirm an"));
+        lock.addEventListener("release", () => { lock = null; if (running) setWake(false, tr("tap to keep the screen on", "tippen, damit der Bildschirm anbleibt")); });
         return;
       } catch (e) {}
     }
-    try { await video.play(); setWake(true, "screen on"); } catch (e) { setWake(false, "screen may sleep"); }
+    try { await video.play(); setWake(true, tr("screen on", "Bildschirm an")); } catch (e) { setWake(false, tr("screen may sleep", "Bildschirm kann ausgehen")); }
   }
   function releaseLock() { if (lock) { lock.release().catch(() => {}); lock = null; } video.pause(); }
   document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible" && !lock) requestLock(); });
@@ -829,16 +932,16 @@ Answer with JSON only, no prose, in exactly this shape:
     if (!prev || prev.section !== st.section) Sound.bowl(174.6, 1, 8);
     else if (!st.breath && st.breaths >= 3 && st.id !== prev.id) Sound.bowl(523.3, .3, 3);
     else if (!st.breath && st.id === prev.id) Sound.bowl(523.3, .2, 2.5);
-    $("lSect").textContent = st.section;
-    $("lSa").textContent = p.sa; $("lEn").textContent = p.en; $("lDe").textContent = p.de;
-    $("lCue").textContent = (st.challenge ? "Challenge · " : "") + (p.cue || "");
-    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? sideTxt(st.side) + " side" : "";
+    $("lSect").textContent = source === "claude" ? st.section : secName(st.section);
+    $("lSa").textContent = p.sa; $("lEn").textContent = pn(p); $("lDe").textContent = pn2(p);
+    $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p);
+    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? tr(sideTxt(st.side) + " side", st.side === "right" ? "Rechte Seite" : "Linke Seite") : "";
     const bw = $("lBreath");
-    if (st.breath) { bw.dataset.b = st.breath; bw.textContent = st.breath === "in" ? "inhale" : "exhale"; } else { bw.dataset.b = ""; bw.textContent = ""; }
+    if (st.breath) { bw.dataset.b = st.breath; bw.textContent = breathWord(st.breath); } else { bw.dataset.b = ""; bw.textContent = ""; }
     $("lDots").innerHTML = st.breath || st.breaths > 12 || !st.breaths ? "" : Array.from({ length: st.breaths }, () => "<i></i>").join("");
     const nx = plan.steps[idx + 1];
-    if (nx) { $("nFig").innerHTML = fig(BY[nx.id].p, nx.side === "left"); $("nName").textContent = BY[nx.id].en + (nx.side ? " · " + sideTxt(nx.side) : ""); $("nHow").textContent = nx.how || BY[nx.id].sa; }
-    else { $("nFig").innerHTML = ""; $("nName").textContent = "End of practice"; $("nHow").textContent = ""; }
+    if (nx) { $("nFig").innerHTML = fig(BY[nx.id].p, nx.side === "left"); $("nName").textContent = pn(BY[nx.id]) + (nx.side ? " · " + sideTxt(nx.side) : ""); $("nHow").textContent = howTxt(nx) || BY[nx.id].sa; }
+    else { $("nFig").innerHTML = ""; $("nName").textContent = tr("End of practice", "Ende der Praxis"); $("nHow").textContent = ""; }
     animateTo(p.p, st.side === "left");
     paint();
   }
@@ -855,7 +958,7 @@ Answer with JSON only, no prose, in exactly this shape:
     const st = plan.steps[idx];
     const done = elapsedBefore(idx) + (st.secs - left);
     $("lBar").style.width = (100 * done / total).toFixed(2) + "%";
-    $("lTime").textContent = `${mmss(total - done)} left`;
+    $("lTime").textContent = tr(`${mmss(total - done)} left`, `noch ${mmss(total - done)}`);
     $("lCount").textContent = !st.breath && (st.breaths > 12 || !st.breaths || st.secs >= 60) ? mmss(left) : "";
     const dots = $("lDots").children;
     if (dots.length) { const lit = Math.min(dots.length, Math.floor((st.secs - left) / (st.secs / dots.length)) + 1); for (let k = 0; k < dots.length; k++) dots[k].classList.toggle("on", k < lit); }
@@ -869,7 +972,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (!paused) { left -= dt; phaseT += dt; if (left <= 0) enter(idx + 1); else paint(); }
     if (running) requestAnimationFrame(loop);
   }
-  function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? "Resume" : "Pause"; }
+  function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? tr("Resume", "Weiter") : tr("Pause", "Pause"); }
 
   // controls fade after a few quiet seconds; the first tap only brings them back
   function wake() { $("live").classList.remove("quiet"); clearTimeout(quietTimer); quietTimer = setTimeout(() => { if (running && !paused) $("live").classList.add("quiet"); }, 4000); }
@@ -894,7 +997,8 @@ Answer with JSON only, no prose, in exactly this shape:
   document.addEventListener("keydown", e => { if (!running) return; if (e.code === "Space") { e.preventDefault(); setPaused(!paused); } if (e.code === "ArrowRight") enter(idx + 1); if (e.code === "ArrowLeft") enter(Math.max(0, idx - 1)); });
 
   // ---------- done + feedback ----------
-  let session = null, fb = { poses: null, pace: null, marks: {} };
+  let session = null, fb = { poses: null, pace: null, marks: {} }, DONE_SECS = 0, DONE_COMPLETE = true, NEXT_STORY = null;
+  function paintDoneMeta() { $("doneMeta").textContent = tr(`${mmss(DONE_SECS)} on the mat${DONE_COMPLETE ? "" : " · ended early"}`, `${mmss(DONE_SECS)} auf der Matte${DONE_COMPLETE ? "" : " · früher beendet"}`); }
   function finish(complete) {
     if (!running) return;
     running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
@@ -907,15 +1011,25 @@ Answer with JSON only, no prose, in exactly this shape:
       poses: [...new Set(plan.steps.map(s => s.id))], source, meta: plan.meta || null };
     fb = { poses: null, pace: null, marks: {} };
     $("doneCat").innerHTML = fig(BY["savasana"].p);
-    $("doneMeta").textContent = `${mmss(secs)} on the mat${complete ? "" : " · ended early"}`;
-    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false; $("nextCard").hidden = true;
+    DONE_SECS = secs; DONE_COMPLETE = !!complete; paintDoneMeta();
+    $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false; $("nextCard").hidden = true; NEXT_STORY = null;
     paintFb();
     show("done");
+  }
+  const STORY_DE = { "grew up": "ist älter geworden", "takes a step back": "geht einen Schritt zurück", "grew up after three good practices": "ist nach drei guten Einheiten älter geworden", "gets quicker": "wird flinker", "slows down": "wird ruhiger" };
+  function paintNext() {
+    if (!NEXT_STORY) return;
+    const A = P.ANIMAL[ST.animal], a = A.en.toLowerCase(), story = NEXT_STORY.story, k = 3 - ST.streak, grow = NEXT_STORY.right && ST.level < 5;
+    paintPhrase("nPhrase", "nPhraseDe", ST);
+    if (!DE()) { $("nStory").textContent = story.length ? `Your ${a} ${story.join(" and ")}.` : (grow ? `Same ${a} again. After ${k} more good ${k === 1 ? "practice" : "practices"} it grows up.` : `Same ${a} again.`); return; }
+    const g = A.g, dein = g === "f" ? "Deine" : "Dein", same = { m: "derselbe", f: "dieselbe", n: "dasselbe" }[g], pron = { m: "er", f: "sie", n: "es" }[g];
+    $("nStory").textContent = story.length ? `${dein} ${A.de} ${story.map(x => STORY_DE[x] || x).join(" und ")}.`
+      : (grow ? `Wieder ${same} ${A.de}. Noch ${k} gute ${k === 1 ? "Einheit" : "Einheiten"}, dann wird ${pron} älter.` : `Wieder ${same} ${A.de}.`);
   }
   function paintFb() {
     $("fbPoses").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.poses === b.dataset.v ? "true" : "false"));
     $("fbPace").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", fb.pace === b.dataset.v ? "true" : "false"));
-    $("fbMarks").innerHTML = session.poses.filter(id => id !== "savasana").map(id => `<button type="button" data-id="${id}" data-m="${fb.marks[id] || ""}">${fb.marks[id] === "love" ? "♡ " : fb.marks[id] === "hard" ? "! " : ""}${BY[id].en}</button>`).join("");
+    $("fbMarks").innerHTML = session.poses.filter(id => id !== "savasana").map(id => `<button type="button" data-id="${id}" data-m="${fb.marks[id] || ""}">${fb.marks[id] === "love" ? "♡ " : fb.marks[id] === "hard" ? "! " : ""}${pn(BY[id])}</button>`).join("");
   }
   $("fbPoses").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.poses = b.dataset.v; paintFb(); });
   $("fbPace").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.pace = b.dataset.v; paintFb(); });
@@ -923,10 +1037,9 @@ Answer with JSON only, no prose, in exactly this shape:
   $("fbSave").addEventListener("click", async () => {
     const before = Object.assign({}, ST);
     const nx = P.next(ST, { poses: fb.poses, pace: fb.pace });
-    ST = nx.state; saveST();
-    const an = P.ANIMAL[ST.animal].en.toLowerCase();
-    $("nPhrase").textContent = cap(phrase(ST, "en")); $("nPhraseDe").textContent = phrase(ST, "de");
-    $("nStory").textContent = nx.story.length ? `Your ${an} ${nx.story.join(" and ")}.` : (fb.poses === "just right" && ST.level < 5 ? `Same ${an} again. After ${3 - ST.streak} more good ${3 - ST.streak === 1 ? "practice" : "practices"} it grows up.` : `Same ${an} again.`);
+    ST = Object.assign(nx.state, { count: (ST.count || 0) + 1 }); saveST();
+    NEXT_STORY = { story: nx.story, right: fb.poses === "just right" };
+    paintNext();
     $("nextCard").hidden = false; try { $("nextCard").scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
     const rec = Object.assign({}, session, { before: { level: before.level, tempo: before.tempo }, after: { level: ST.level, tempo: ST.tempo },
       feedback: { poses: fb.poses, pace: fb.pace, note: $("fbNote").value.trim(),
@@ -934,9 +1047,9 @@ Answer with JSON only, no prose, in exactly this shape:
     const log = store.get("matcat-log", []); log.push(rec); store.set("matcat-log", log.slice(-60));
     $("fbSave").disabled = true;
     if (rec.meta && rec.meta.peak) HIST = HIST.concat([Object.assign({}, rec.meta, { theme: rec.theme, loved: rec.feedback.loved, hard: rec.feedback.hard })]).slice(-8);
-    if (!db) { $("fbStatus").textContent = "Saved on this phone."; return; }
-    try { await db.collection("practices").add(rec); $("fbStatus").textContent = "Saved."; }
-    catch (e) { $("fbStatus").textContent = "Saved on this phone."; }
+    if (!db) { $("fbStatus").textContent = tr("Saved on this phone.", "Auf diesem Handy gespeichert."); return; }
+    try { await db.collection("practices").add(rec); $("fbStatus").textContent = tr("Saved.", "Gespeichert."); }
+    catch (e) { $("fbStatus").textContent = tr("Saved on this phone.", "Auf diesem Handy gespeichert."); }
   });
 
   // ---------- library ----------
@@ -948,12 +1061,13 @@ Answer with JSON only, no prose, in exactly this shape:
   function renderLibrary() {
     const L = ST ? P.LEVELS[ST.level - 1] : P.LEVELS[2], skip = new Set((ST && ST.skip) || []);
     const inMine = p => p.lvl <= L.maxLvl && !skip.has(p.id);
-    $("libIntro").textContent = ST ? `${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.` : `${POSES.length} poses.`;
+    $("libIntro").textContent = ST ? tr(`${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.`,
+      `${POSES.length} Haltungen. Auf deiner Stufe (${L.de}) nutzen die Stunden Haltungen bis „${LEVEL[L.maxLvl]}“. Tippe auf „Weglassen“ bei allem, was nie in einer Stunde vorkommen soll.`) : tr(`${POSES.length} poses.`, `${POSES.length} Haltungen.`);
     const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : skip.has(p.id))));
     $("libGrid").innerHTML = list.map(p => `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
-        <span class="s">${p.sa}</span><span class="e">${p.en}</span><span class="d">${p.de}</span>
+        <span class="s">${p.sa}</span><span class="e">${pn(p)}</span><span class="d">${pn2(p)}</span>
         <span class="lvl">${[1, 2, 3].map(k => `<i class="${k <= p.lvl ? "on" : ""}"></i>`).join("")} ${LEVEL[p.lvl]}</span>
-        ${ST && !P.KEEP.has(p.id) ? `<div class="mine" data-id="${p.id}"><button type="button" data-v="toggle" aria-pressed="${skip.has(p.id)}">${skip.has(p.id) ? "Left out · undo" : "Leave out"}</button></div>` : ""}</div>`).join("") || `<p class="muted">No poses match these filters.</p>`;
+        ${ST && !P.KEEP.has(p.id) ? `<div class="mine" data-id="${p.id}"><button type="button" data-v="toggle" aria-pressed="${skip.has(p.id)}">${skip.has(p.id) ? tr("Left out · undo", "Ausgelassen · rückgängig") : tr("Leave out", "Weglassen")}</button></div>` : ""}</div>`).join("") || `<p class="muted">${tr("No poses match these filters.", "Keine Haltungen passen zu diesen Filtern.")}</p>`;
   }
   $("libGrid").addEventListener("click", e => {
     const b = e.target.closest(".mine button"); if (!b || !ST) return;
@@ -961,7 +1075,75 @@ Answer with JSON only, no prose, in exactly this shape:
     sk.has(id) ? sk.delete(id) : sk.add(id); ST.skip = [...sk]; saveST(); renderLibrary();
   });
 
+  // ---------- language switch: static texts are swapped in place, the current screen is drawn again ----------
+  const UI_DE = {
+    "A yoga practice that fits you, guided on your phone.": "Eine Yogapraxis, die zu dir passt, angeleitet auf deinem Handy.",
+    "Welcome back": "Willkommen zurück", "Continue": "Weiter", "Not you? Enter another animal": "Nicht du? Anderes Tier eingeben",
+    "Do you know your animal?": "Kennst du dein Tier?",
+    "Animals now say something about you. Your age and pace stay; three small tests find your new animal.": "Die Tiere sagen jetzt etwas über dich. Alter und Tempo bleiben; drei kleine Tests finden dein neues Tier.",
+    "Do the three tests": "Die drei Tests machen", "I'm new here": "Ich bin neu hier",
+    "On this phone the app remembers you. The animal is for a new phone or browser.": "Auf diesem Handy erinnert sich die App an dich. Dein Tier brauchst du nur für ein neues Handy oder einen anderen Browser.",
+    "Your nature": "Deine Natur", "Choose your animal": "Wähle dein Tier", "Doesn't fit? Choose another nature": "Passt nicht? Andere Natur wählen",
+    "That's me": "Das bin ich", "Back": "Zurück", "A few questions": "Ein paar Fragen",
+    "Two minutes. Three of them are small tests you can try right now.": "Zwei Minuten. Drei davon sind kleine Tests, die du gleich ausprobieren kannst.",
+    "This app is not medical advice. With an injury, pregnancy or a health condition, check with your doctor before you start.": "Diese App ersetzt keinen ärztlichen Rat. Bei einer Verletzung, in der Schwangerschaft oder mit einer Erkrankung sprich vor dem Start mit deiner Ärztin oder deinem Arzt.",
+    "Find my animal": "Mein Tier finden", "You are": "Du bist",
+    "Picture it for a moment: that's what you bring back next time. On this phone you don't even need to.": "Stell es dir kurz bildlich vor: Das bringst du beim nächsten Mal mit. Auf diesem Handy brauchst du nicht einmal das.",
+    "Let's practise": "Los geht's", "Today, for the": "Heute für dich als", "Not you?": "Nicht du?",
+    "Ten practices done. Bodies change:": "Zehn Einheiten geschafft. Körper verändern sich:", "redo the three small tests": "die drei kleinen Tests wiederholen",
+    "What do you feel like?": "Worauf hast du Lust?", "Time": "Zeit", "Take care today": "Heute schonen", "Sound": "Klang",
+    "Bowls": "Klangschalen", "Silent": "Stumm", "Volume": "Lautstärke", "Listen": "Anhören",
+    "Build practice": "Praxis erstellen", "Surprise me": "Überrasch mich", "Pose library": "Haltungen",
+    "Surprise me asks Claude to write a class just for you. It takes about half a minute and uses your Claude account.": "„Überrasch mich“ bittet Claude, eine Stunde nur für dich zu schreiben. Das dauert etwa eine halbe Minute und nutzt dein Claude-Konto.",
+    "Claude is composing your class…": "Claude stellt deine Stunde zusammen…", "Stop": "Stopp",
+    "Tap a pose to swap it or leave it out.": "Tippe auf eine Haltung, um sie zu tauschen oder wegzulassen.",
+    "Swap for a similar pose": "Gegen eine ähnliche Haltung tauschen", "Leave out today": "Heute weglassen", "Never include": "Nie einbauen", "Cancel": "Abbrechen",
+    "Begin": "Beginnen", "Full screen": "Vollbild", "Shuffle": "Neu mischen", "Settings": "Einstellungen",
+    "Next": "Als Nächstes", "Pause": "Pause", "Skip": "Überspringen", "End": "Ende",
+    "The poses were": "Die Haltungen waren", "Too easy": "Zu leicht", "Just right": "Genau richtig", "Too hard": "Zu schwer",
+    "The pace was": "Das Tempo war", "Too slow": "Zu langsam", "Too fast": "Zu schnell",
+    "Poses · tap once for loved, twice for hard": "Haltungen · einmal tippen für geliebt, zweimal für schwer", "Notes": "Notizen",
+    "Save and see my animal": "Speichern und mein Tier sehen", "Back to start": "Zurück zum Start", "Next time you are": "Nächstes Mal bist du",
+    "Done": "Fertig", "All levels": "Alle Stufen", "Basic": "Einfach", "Intermediate": "Mittel", "Advanced": "Fortgeschritten",
+    "All": "Alle", "In my practices": "In meinen Stunden", "Left out": "Ausgelassen",
+  };
+  const ATTR_DE = {
+    "e.g. calm young heron · ruhiger junger Reiher": "z. B. ruhiger junger Reiher · calm young heron",
+    "What felt good, what was missing, what to change": "Was tat gut, was hat gefehlt, was soll anders werden",
+    "Change this pose": "Diese Haltung ändern", "Current pose": "Aktuelle Haltung",
+  };
+  const TEXTS = [], ATTRS = [];
+  (function collect() {
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let n; while ((n = walk.nextNode())) { const t = n.nodeValue.trim(); if (t && UI_DE[t] && !n.parentElement.closest("script,style")) TEXTS.push([n, n.nodeValue, n.nodeValue.replace(t, UI_DE[t])]); }
+    document.querySelectorAll("[placeholder],[aria-label]").forEach(el => ["placeholder", "aria-label"].forEach(a => { const v = el.getAttribute(a); if (v && ATTR_DE[v]) ATTRS.push([el, a, v, ATTR_DE[v]]); }));
+  })();
+  function applyStatic() {
+    TEXTS.forEach(([n, en, de]) => { n.nodeValue = DE() ? de : en; });
+    ATTRS.forEach(([el, a, en, de]) => el.setAttribute(a, DE() ? de : en));
+    document.documentElement.lang = LANG;
+    $("langSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === LANG)));
+  }
+  function redraw() {
+    const cur = SCREENS.find(id => !$(id).hidden);
+    if (cur === "welcome") { if (!$("wKnown").hidden && ST) { paintPhrase("wPhrase", "wPhraseDe", ST); $("wNature").textContent = natureLine(ST); } else { paintEntry(); if (!$("codeSugg").hidden) $("codeIn").dispatchEvent(new Event("input")); } }
+    if (cur === "pick") renderPick();
+    if (cur === "assess") renderQs();
+    if (cur === "reveal" && ST) paintReveal();
+    if (cur === "build" && ST) paintToday();
+    if (cur === "preview" && plan && $("thinking").hidden) renderPreview();
+    if (cur === "done" && session) { paintDoneMeta(); paintFb(); paintNext(); }
+    if (cur === "library") renderLibrary();
+    if (!$("sheet").hidden && sheetId) openSheet(sheetId);
+    setPaused(paused); paintFsBtn();
+  }
+  function setLang(l) { LANG = S.lang = l; saveS(); applyStatic(); redraw(); }
+  $("langSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (b && b.dataset.v !== LANG) setLang(b.dataset.v); });
+  applyStatic(); paintFsBtn();
+
   // ---------- start ----------
-  if (ST && ST.animal && P.ANIMAL[ST.animal]) showWelcome(true); else showWelcome(false);
+  if (ST && ST.animal && P.ANIMAL[ST.animal]) showWelcome(true);
+  else if (ST && ST.animal) { showWelcome(false); $("oldNote").hidden = false; KEEP_LT = { level: ST.level, tempo: ST.tempo }; } // animal from the first version
+  else showWelcome(false);
 })();
 </script>

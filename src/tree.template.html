@@ -100,14 +100,15 @@ button { cursor: pointer; }
 <main>
   <header style="display:flex;flex-direction:column;gap:8px">
     <h1>Animal Tree</h1>
-    <p class="lede">Everyone carries a code like <b>calm young heron</b>. The animal is chosen once and stays. Its age is the level, from baby to ancient, and grows through feedback on the poses. The first word is the pace, from calm to swift, and changes through feedback on the tempo. The theme and the length are picked fresh every day.</p>
+    <p class="lede">Everyone carries a code like <b>calm young bear</b>. The animal is the nature, read from three small tests: strong but stiff, flexible, strong and flexible, steady balance, all-rounder or gentle start, with three animals to choose from in each. Its age is the level, from baby to ancient, and grows through feedback on the poses. The first word is the pace, from calm to swift. Theme and length are picked fresh every day. 6 natures × 5 ages × 3 paces = 90 positions.</p>
   </header>
 
   <section style="display:flex;flex-direction:column;gap:12px">
     <div class="row" style="justify-content:space-between">
-      <div class="row"><span class="label">Animal</span><div class="seg" id="animalSeg"></div></div>
+      <div class="row"><span class="label">Nature</span><div class="seg" id="natureSeg"></div></div>
       <div class="row"><span class="label">Names</span><div class="seg" id="langSeg"><button type="button" data-v="en">EN</button><button type="button" data-v="de">DE</button></div></div>
     </div>
+    <div class="row"><span class="label">Animal</span><div class="seg" id="animalSeg"></div><span class="muted" id="natureText" style="font-size:.88rem;max-width:60ch"></span></div>
     <div class="row"><span class="label">Today</span><div class="seg" id="themeSeg"></div></div>
     <div class="row"><span class="label">Length</span><div class="seg" id="lenSeg"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
     <div class="row">
@@ -141,19 +142,23 @@ button { cursor: pointer; }
   const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   const fig = (pose, mirror) => mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, { style: "cat" })}</g>` : E.svgInner(pose, { style: "cat" });
   const cap = t => t[0].toUpperCase() + t.slice(1);
-  let lang = "en", minutes = 30, theme = "flow", st = { animal: "heron", level: 2, tempo: 1, streak: 0 }, seed = 11;
+  let lang = "en", minutes = 30, theme = "flow", st = { animal: "bear", level: 2, tempo: 1, streak: 0 }, seed = 11;
   try { const v = JSON.parse(localStorage.getItem("animal-tree-v2") || "null"); if (v) { lang = v.lang || lang; minutes = v.minutes || minutes; theme = v.theme || theme; if (v.st && P.ANIMAL[v.st.animal]) st = v.st; } } catch (e) {}
   const save = () => { try { localStorage.setItem("animal-tree-v2", JSON.stringify({ lang, minutes, theme, st })); } catch (e) {} };
-  const SHOW = ["heron", "otter", "bear", "owl", "fox", "turtle"];
+  const natOf = id => P.NATURE[P.ANIMAL[id].nature];
   const seg = (id, val) => $(id).querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === String(val) ? "true" : "false"));
 
   function renderMenus() {
-    const shown = SHOW.includes(st.animal) ? SHOW : SHOW.concat(st.animal);
-    $("animalSeg").innerHTML = shown.map(id => `<button type="button" data-v="${id}">${lang === "de" ? P.ANIMAL[id].de : P.ANIMAL[id].en}</button>`).join("");
+    const nat = natOf(st.animal);
+    $("natureSeg").innerHTML = P.NATURES.map(n => `<button type="button" data-v="${n.id}">${lang === "de" ? n.de : n.en}</button>`).join("");
+    $("animalSeg").innerHTML = nat.animals.map(([id, en, de]) => `<button type="button" data-v="${id}">${lang === "de" ? de : en}</button>`).join("");
+    $("natureText").textContent = nat.text;
+    seg("natureSeg", nat.id);
     $("themeSeg").innerHTML = P.THEMES.map(t => `<button type="button" data-v="${t.id}">${lang === "de" ? t.de : t.en}</button>`).join("");
     seg("animalSeg", st.animal); seg("themeSeg", theme); seg("lenSeg", minutes); seg("langSeg", lang);
   }
   $("animalSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; st = Object.assign({}, st, { animal: b.dataset.v }); render(); });
+  $("natureSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; st = Object.assign({}, st, { animal: P.NATURE[b.dataset.v].animals[0][0] }); render(); });
   $("themeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; theme = b.dataset.v; render(); });
   $("lenSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; minutes = Number(b.dataset.v); render(); });
   $("langSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; lang = b.dataset.v; render(); });
@@ -187,6 +192,7 @@ button { cursor: pointer; }
         <dt>Poses</dt><dd>up to level ${L.maxLvl} (${POSES.filter(p => p.lvl <= L.maxLvl).length} of ${POSES.length})</dd>
         <dt>Adaptations</dt><dd>${swaps}</dd>
         <dt>Tempo</dt><dd>${o.style === "slow" ? "slow flow" : "vinyasa"}, ${o.energy} intensity, ${o.cycle} s breath</dd>
+        <dt>Nature</dt><dd>${natOf(st.animal).en}: ${o.focus.length ? "favours " + o.focus.join(", ") : "all-round"}${natOf(st.animal).hard.length ? "; longer holds for " + natOf(st.animal).hard.join(" and ") + " poses" : ""}</dd>
         <dt>Today</dt><dd>${lang === "de" ? th.de : th.en}: ${th.text}</dd>
       </dl>
       <div style="display:flex;flex-direction:column;gap:6px">

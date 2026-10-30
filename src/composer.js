@@ -161,7 +161,7 @@
 
     // 1. peak
     const peaks = B.PEAKS.filter(p => p.int <= cap && me(p.pose) !== "new" && (me(p.pose) !== "hard" || p.thread) && usable(p) && !(p.place === "core" && opt.minutes === 30 && !opt.focus.includes("core")));
-    const peakScore = p => (opt.peaks && opt.peaks.includes(p.id) ? 7 : 0) + overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
+    const peakScore = p => (opt.peaks && opt.peaks.includes(p.id) ? 7 : 0) + (opt.naturePeaks && opt.naturePeaks.includes(p.id) ? 3 : 0) + overlap(p.needs, ftags) * 2 + (p.thread && opt.focus.includes("hamstrings") ? 1 : 0) + (loved.has(p.pose) ? 1.5 : 0)
       + (cap === 1 && p.int === 1 ? 2 : 0) - recency(p.id) * 8 + R() * 4;
     const peak = (peaks.length ? peaks : B.PEAKS.filter(p => p.id === "pk-triangle")).map(p => [peakScore(p), p]).sort((a, b) => b[0] - a[0])[0][1];
 
@@ -198,6 +198,7 @@
     if (opt.energy === "high") { D.rounds += 1; D.core = Math.max(D.core, 1); }
     if (opt.focus.includes("balance")) D.bal += 1;
     if (opt.focus.includes("core")) D.core += 1;
+    if (opt.extraCore) D.core += opt.extraCore; // natures that work on strength
     if (sun.id === "sun-moon") D.rounds = Math.max(1, Math.round(D.rounds / 2));
     if (sun.id === "sun-classic") D.rounds = Math.max(2, D.rounds + (D.rounds % 2)); // even: both sides lead equally
 
@@ -314,11 +315,11 @@
       const meta = { peak: peak.id, peakPose: peak.pose, peakName: peak.name, warmup: warm.id, sun: sun.id, modules: used.filter(id => id !== peak.id && id !== warm.id),
         sunName: sun.name, sunRounds: K.rounds, sunLead: roundsStart - sunStart, sunRoundLen: firstLen, sunAlt: !!sun.alt };
       const plan = finalize(raw, opt, K.scale, me);
-      return Object.assign(plan, { meta, offers: offersFor(peak, used), why: whyText(peak, standing.concat(bal, core, back, finish), warm, sun) });
+      return Object.assign(plan, { meta, offers: offersFor(peak, used), why: whyText(peak, standing.concat(bal, core, back, finish), warm, sun), whyData: whyData(peak, standing.concat(bal, core, back, finish), warm, sun) });
     }
 
     function offersFor(peak, used) {
-      const nOffers = { low: 0, medium: 2, high: 3 }[opt.energy];
+      const nOffers = { low: 0, medium: 2, high: 3 }[opt.energy] + (opt.energy !== "low" ? (opt.extraOffers || 0) : 0);
       const c = [];
       if (peak.pose !== "bakasana" && me("bakasana") !== "new" && sun.id !== "sun-moon") c.push({ id: "bakasana", text: "Crow in the last sun salutation round" });
       if (peak.id !== "pk-wheel" && me("urdhva-dhanurasana") !== "new") c.push({ id: "urdhva-dhanurasana", text: "Wheel after Bridge" });
@@ -328,6 +329,10 @@
     }
   }
 
+  function whyData(peak, blocks, warm, sun) {
+    const prep = blocks.filter(b => b.prepares && !['cool', 'hips'].includes(b.kind) && b.prepares.some(t => peak.needs.includes(t))).map(b => b.id);
+    return { peak: peak.id, prep: [...new Set(prep)].slice(0, 3), needs: peak.needs.slice(), warm: warm.id, sun: sun.id };
+  }
   function whyText(peak, blocks, warm, sun) {
     const prep = blocks.filter(b => b.prepares && !['cool', 'hips'].includes(b.kind) && b.prepares.some(t => peak.needs.includes(t))).map(b => b.name);
     const uniq = [...new Set(prep)].slice(0, 3);
@@ -372,6 +377,7 @@
       if (!h) return;
       const side = s.side || prev.side || "right";
       s.how = h.replace(/\{side\}/g, side).replace(/\{other\}/g, side === "right" ? "left" : "right");
+      s.howT = h; s.howSide = side; // template and side, so the app can say it in another language
     });
     const sections = [...new Set(steps.map(s => s.section))];
     const props = [...new Set(steps.map(s => BY[s.id].prop).filter(Boolean))];
