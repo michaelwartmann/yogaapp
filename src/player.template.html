@@ -196,6 +196,24 @@ body.is-live { overflow: hidden; }
 /* library */
 .lib-tools { display: flex; flex-direction: column; gap: 10px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+/* discover: one pose at a time, swipe right for more of it, left for never */
+.dstack { position: relative; display: grid; place-items: center; min-height: 0; touch-action: none; }
+.dcard { width: min(420px, 100%); background: var(--surface); border-radius: 26px; padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08); user-select: none; -webkit-user-select: none; cursor: grab; touch-action: none; transition: transform .28s ease, opacity .28s ease; position: relative; }
+.dcard.drag { transition: none; cursor: grabbing; }
+.dcard svg { width: 100%; height: auto; max-height: 36dvh; aspect-ratio: 260 / 230; pointer-events: none; }
+.dcard .s { font-family: var(--font-display); font-weight: 500; font-size: 1.6rem; line-height: 1.1; }
+.dcard .e { font-weight: 700; }
+.dcard .meta { font-size: .86rem; color: var(--muted); }
+.dcard .stamp { position: absolute; top: 22px; padding: 4px 12px; border: 3px solid; border-radius: 10px; font-weight: 800; font-size: 1.1rem; opacity: 0; transform: rotate(-12deg); letter-spacing: .04em; }
+.dcard .stamp.yes { left: 18px; color: var(--good); border-color: var(--good); }
+.dcard .stamp.no { right: 18px; color: var(--hard); border-color: var(--hard); transform: rotate(12deg); }
+.dbtns { display: flex; justify-content: center; gap: 12px; align-items: center; }
+.dbtns .round { width: 64px; height: 64px; border-radius: 50%; font-size: 1.5rem; padding: 0; display: grid; place-items: center; border: 1px solid var(--line); background: var(--surface); }
+.dbtns .round.no { color: var(--hard); } .dbtns .round.yes { color: var(--good); }
+.dbtns .round.later { width: 48px; height: 48px; font-size: 1.1rem; color: var(--muted); }
+.dlabels { display: flex; justify-content: center; gap: 22px; font-size: .78rem; color: var(--muted); }
+.pcard .fav { color: var(--good); font-weight: 700; }
 .pcard { background: var(--surface); border-radius: 18px; padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .pcard svg { width: 100%; height: auto; aspect-ratio: 260 / 230; }
 .pcard .s { font-family: var(--font-display); font-weight: 500; font-size: 1.02rem; line-height: 1.2; }
@@ -344,7 +362,7 @@ body.is-live .langbar { display: none; }
     <div class="field"><span class="label">Sound</span><div class="seg" data-key="sound"><button type="button" data-v="bowls">Bowls</button><button type="button" data-v="off">Silent</button></div>
       <label class="row muted" for="vol" style="font-size:.88rem">Volume <input type="range" id="vol" min="0" max="100" step="5"> <button class="btn quiet" id="testSound" type="button">Listen</button></label>
     </div>
-    <div class="row"><button class="btn primary big" id="buildBtn" type="button">Build practice</button><button class="btn big" id="surpriseBtn" type="button" hidden>Surprise me</button><button class="btn" id="libBtn" type="button">Pose library</button></div>
+    <div class="row"><button class="btn primary big" id="buildBtn" type="button">Build practice</button><button class="btn big" id="surpriseBtn" type="button" hidden>Surprise me</button><button class="btn" id="libBtn" type="button">Pose library</button><button class="btn" id="dsBtn" type="button">♡ Discover poses</button></div>
     <div class="field"><span class="label">Short on time?</span>
       <div class="row"><button class="btn" id="gtBtn" type="button">Fundamental · 10 min</button><span class="muted" style="font-size:.88rem">Every part of the body once: the shortest complete practice.</span></div>
     </div>
@@ -443,6 +461,20 @@ body.is-live .langbar { display: none; }
   </div>
 </section>
 
+<section class="screen" id="discover" hidden>
+  <div class="row" style="justify-content:space-between">
+    <h2 style="font-size:1.45rem">Discover poses</h2>
+    <button class="btn" id="dsDone" type="button">Done</button>
+  </div>
+  <p class="muted" id="dsIntro" style="font-size:.9rem"></p>
+  <div class="dstack" id="dStack"></div>
+  <div id="dControls" style="display:flex;flex-direction:column;gap:6px">
+    <div class="dbtns"><button class="round no" id="dNo" type="button" aria-label="Not for me">✕</button><button class="round later" id="dLater" type="button" aria-label="Later">↻</button><button class="round yes" id="dYes" type="button" aria-label="I like it">♡</button></div>
+    <div class="dlabels"><span>Not for me</span><span>Later</span><span>I like it</span></div>
+    <div class="row" style="justify-content:center"><button class="linkbtn" id="dUndo" type="button">Undo</button></div>
+  </div>
+</section>
+
 <section class="screen" id="library" hidden>
   <div class="row" style="justify-content:space-between">
     <h2 style="font-size:1.8rem">Pose library</h2>
@@ -451,7 +483,7 @@ body.is-live .langbar { display: none; }
   <p class="muted" id="libIntro"></p>
   <div class="lib-tools">
     <div class="seg" id="fLevel"><button type="button" data-v="all" aria-pressed="true">All levels</button><button type="button" data-v="1">Basic</button><button type="button" data-v="2">Intermediate</button><button type="button" data-v="3">Advanced</button></div>
-    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="mine">In my practices</button><button type="button" data-v="out">Left out</button></div>
+    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="mine">In my practices</button><button type="button" data-v="fav">♡ Liked</button><button type="button" data-v="out">Left out</button></div>
   </div>
   <div class="grid" id="libGrid"></div>
 </section>
@@ -518,7 +550,7 @@ body.is-live .langbar { display: none; }
   $("vol").addEventListener("input", () => { S.volume = Number($("vol").value); saveS(); Sound.setVolume(); });
   document.querySelectorAll(".heroCat").forEach(el => { el.innerHTML = fig(BY["sukhasana"].p, false, "cat"); });
 
-  const SCREENS = ["welcome", "pick", "assess", "reveal", "build", "preview", "live", "done", "library"];
+  const SCREENS = ["welcome", "pick", "assess", "reveal", "build", "preview", "live", "done", "library", "discover"];
   function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); document.body.classList.toggle("is-live", id === "live"); try { window.scrollTo(0, 0); } catch (e) {} }
 
   // ---------- profile: animal, level (age), tempo; remembered on this device ----------
@@ -1238,17 +1270,103 @@ Answer with JSON only, no prose, in exactly this shape:
     const inMine = p => p.lvl <= L.maxLvl && !skip.has(p.id);
     $("libIntro").textContent = ST ? tr(`${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.`,
       `${POSES.length} Haltungen. Auf deiner Stufe (${L.de}) nutzen die Stunden Haltungen bis „${LEVEL[L.maxLvl]}“. Tippe auf „Weglassen“ bei allem, was nie in einer Stunde vorkommen soll.`) : tr(`${POSES.length} poses.`, `${POSES.length} Haltungen.`);
-    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : skip.has(p.id))));
+    const likes = new Set((ST && ST.likes) || []);
+    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : fMe === "fav" ? likes.has(p.id) : skip.has(p.id))));
     $("libGrid").innerHTML = list.map(p => `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
-        <span class="s">${p.sa}</span><span class="e">${pn(p)}</span><span class="d">${pn2(p)}</span>
+        <span class="s">${p.sa}${likes.has(p.id) ? ` <span class="fav">♡</span>` : ""}</span><span class="e">${pn(p)}</span><span class="d">${pn2(p)}</span>
         <span class="lvl">${[1, 2, 3].map(k => `<i class="${k <= p.lvl ? "on" : ""}"></i>`).join("")} ${LEVEL[p.lvl]}</span>
         ${ST && !P.KEEP.has(p.id) ? `<div class="mine" data-id="${p.id}"><button type="button" data-v="toggle" aria-pressed="${skip.has(p.id)}">${skip.has(p.id) ? tr("Left out · undo", "Ausgelassen · rückgängig") : tr("Leave out", "Weglassen")}</button></div>` : ""}</div>`).join("") || `<p class="muted">${tr("No poses match these filters.", "Keine Haltungen passen zu diesen Filtern.")}</p>`;
   }
   $("libGrid").addEventListener("click", e => {
     const b = e.target.closest(".mine button"); if (!b || !ST) return;
     const id = b.parentElement.dataset.id; const sk = new Set(ST.skip || []);
-    sk.has(id) ? sk.delete(id) : sk.add(id); ST.skip = [...sk]; saveST(); renderLibrary();
+    sk.has(id) ? sk.delete(id) : sk.add(id); ST.skip = [...sk]; if (sk.has(id)) ST.likes = (ST.likes || []).filter(x => x !== id); saveST(); renderLibrary();
   });
+
+  // ---------- discover: swipe through the library, like (more of it) or not for me (never included) ----------
+  let DQ = [], DHIST = [], dCur = null;
+  function dQueue() {
+    const L = P.LEVELS[ST.level - 1], done = new Set((ST.likes || []).concat(ST.skip || [], ST.passed || []));
+    const R = (() => { let x = (ST.level * 977 + (ST.count || 0) * 31 + 7) % 2147483647; return () => (x = x * 16807 % 2147483647) / 2147483647; })();
+    const rest = POSES.filter(p => !done.has(p.id) && p.id !== "savasana").map(p => [(p.lvl > L.maxLvl ? 1 : 0) + R() * 0.9, p.id]);
+    return rest.sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  }
+  function openDiscover() {
+    if (!ST) return;
+    GUIDE = mine(); DQ = dQueue(); DHIST = []; show("discover"); paintDiscover();
+  }
+  function dCounts() { return { likes: (ST.likes || []).length, no: (ST.skip || []).length }; }
+  function paintDiscover() {
+    const c = dCounts(), left = DQ.length;
+    $("dsIntro").textContent = tr(`Swipe right if you like a pose: it comes up more often. Left: never in a class. Up or ↻: decide later. ${left} to go · ${c.likes} ♡ · ${c.no} ✕`,
+      `Nach rechts wischen, wenn dir eine Haltung gefällt: Sie kommt öfter vor. Nach links: nie in einer Stunde. Nach oben oder ↻: später entscheiden. Noch ${left} · ${c.likes} ♡ · ${c.no} ✕`);
+    $("dUndo").hidden = !DHIST.length;
+    dCur = DQ[0] || null;
+    if (!dCur) {
+      $("dControls").hidden = true;
+      $("dStack").innerHTML = `<div class="dcard" style="cursor:default;text-align:center;gap:10px"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY["savasana"].p)}</svg>
+        <b style="font-size:1.2rem">${tr("All poses seen.", "Alle Haltungen gesehen.")}</b><span class="muted">${tr(`${c.likes} you like, ${c.no} not for you. Your likes now show up in your classes; change anything in the pose library.`, `${c.likes} magst du, ${c.no} sind nichts für dich. Deine Lieblinge kommen jetzt in deinen Stunden vor; ändern kannst du alles in der Haltungen-Übersicht.`)}</span>
+        <div class="row" style="justify-content:center"><button class="btn" id="dToLib" type="button">${tr("Pose library", "Haltungen")}</button><button class="btn quiet" id="dAgain" type="button">${tr("Go through the undecided again", "Die unentschiedenen noch mal")}</button></div></div>`;
+      $("dToLib").onclick = () => { fMe = "fav"; document.querySelectorAll("#fMe button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === "fav"))); renderLibrary(); show("library"); };
+      $("dAgain").onclick = () => { ST.passed = []; saveST(); DQ = dQueue(); paintDiscover(); };
+      return;
+    }
+    $("dControls").hidden = false;
+    const p = BY[dCur], L = P.LEVELS[ST.level - 1];
+    const lvlNote = p.lvl > L.maxLvl ? tr(`Not at your level yet: comes with "${LEVEL[p.lvl].toLowerCase()}".`, `Noch nicht auf deiner Stufe: kommt mit „${LEVEL[p.lvl]}“.`) : "";
+    const v = p.var && BY[p.var] ? tr(`Can take the place of ${BY[p.var].en} in a flow.`, `Kann im Flow für ${BY[p.var].de} einspringen.`) : "";
+    $("dStack").innerHTML = `<div class="dcard" id="dCard" role="group" aria-label="${pn(p)}">
+      <span class="stamp yes">♡</span><span class="stamp no">✕</span>
+      <svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
+      <span class="s">${p.sa}</span><span class="e">${pn(p)} <span class="muted" style="font-weight:400">· ${pn2(p)}</span></span>
+      <span class="meta">${[1, 2, 3].map(k => k <= p.lvl ? "●" : "○").join("")} ${LEVEL[p.lvl]}${p.sides === 2 ? tr(" · both sides", " · beide Seiten") : ""}</span>
+      <span class="muted" style="font-size:.92rem">${cueOf(p)}</span>
+      ${v || lvlNote ? `<span class="meta">${[v, lvlNote].filter(Boolean).join(" ")}</span>` : ""}
+    </div>`;
+    dragSetup($("dCard"));
+  }
+  function decide(kind) {
+    if (!dCur) return;
+    const id = dCur;
+    if (kind === "no" && P.KEEP.has(id)) { $("dsIntro").textContent = tr(`${pn(BY[id])} holds every class together, so it stays.`, `${pn(BY[id])} hält jede Stunde zusammen und bleibt deshalb.`); kind = "later"; }
+    DHIST.push({ id, kind });
+    DQ.shift();
+    if (kind === "yes") ST.likes = [...new Set((ST.likes || []).concat(id))];
+    else if (kind === "no") ST.skip = [...new Set((ST.skip || []).concat(id))];
+    else ST.passed = [...new Set((ST.passed || []).concat(id))];
+    saveST();
+    const card = $("dCard");
+    if (card) { card.style.transform = kind === "yes" ? "translateX(130%) rotate(18deg)" : kind === "no" ? "translateX(-130%) rotate(-18deg)" : "translateY(-120%)"; card.style.opacity = "0"; setTimeout(paintDiscover, 230); }
+    else paintDiscover();
+  }
+  function undo() {
+    const h = DHIST.pop(); if (!h) return;
+    ST.likes = (ST.likes || []).filter(x => x !== h.id); ST.skip = (ST.skip || []).filter(x => x !== h.id); ST.passed = (ST.passed || []).filter(x => x !== h.id); saveST();
+    DQ.unshift(h.id); paintDiscover();
+  }
+  function dragSetup(card) {
+    let x0 = 0, y0 = 0, dx = 0, dy = 0, on = false;
+    const yes = card.querySelector(".stamp.yes"), no = card.querySelector(".stamp.no");
+    card.addEventListener("pointerdown", e => { on = true; x0 = e.clientX; y0 = e.clientY; dx = dy = 0; card.classList.add("drag"); try { card.setPointerCapture(e.pointerId); } catch (er) {} });
+    card.addEventListener("pointermove", e => {
+      if (!on) return; dx = e.clientX - x0; dy = e.clientY - y0;
+      card.style.transform = `translate(${dx}px, ${Math.min(0, dy)}px) rotate(${dx / 18}deg)`;
+      yes.style.opacity = Math.max(0, Math.min(1, dx / 90)); no.style.opacity = Math.max(0, Math.min(1, -dx / 90));
+    });
+    const end = () => {
+      if (!on) return; on = false; card.classList.remove("drag");
+      if (dx > 90) decide("yes"); else if (dx < -90) decide("no"); else if (dy < -90) decide("later");
+      else { card.style.transform = ""; yes.style.opacity = 0; no.style.opacity = 0; }
+    };
+    card.addEventListener("pointerup", end); card.addEventListener("pointercancel", end);
+  }
+  $("dsBtn").addEventListener("click", openDiscover);
+  $("dsDone").addEventListener("click", () => showToday());
+  $("dYes").addEventListener("click", () => decide("yes"));
+  $("dNo").addEventListener("click", () => decide("no"));
+  $("dLater").addEventListener("click", () => decide("later"));
+  $("dUndo").addEventListener("click", undo);
+  document.addEventListener("keydown", e => { if ($("discover").hidden) return; if (e.key === "ArrowRight") decide("yes"); if (e.key === "ArrowLeft") decide("no"); if (e.key === "ArrowUp") decide("later"); });
 
   // ---------- language switch: static texts are swapped in place, the current screen is drawn again ----------
   const UI_DE = {
@@ -1281,7 +1399,8 @@ Answer with JSON only, no prose, in exactly this shape:
     "Save and see my animal": "Speichern und mein Tier sehen", "Back to start": "Zurück zum Start", "Next time you are": "Nächstes Mal bist du",
     "Done": "Fertig", "All levels": "Alle Stufen", "Basic": "Einfach", "Intermediate": "Mittel", "Advanced": "Fortgeschritten",
     "All": "Alle", "In my practices": "In meinen Stunden", "Left out": "Ausgelassen",
-    "Short on time?": "Wenig Zeit?", "Transitions": "Übergänge", "Slow": "Langsam", "Slow transitions": "Langsame Übergänge",
+    "Short on time?": "Wenig Zeit?", "Discover poses": "Haltungen entdecken", "♡ Discover poses": "♡ Haltungen entdecken", "Not for me": "Nicht für mich",
+    "Later": "Später", "I like it": "Mag ich", "Undo": "Rückgängig", "♡ Liked": "♡ Lieblinge", "Transitions": "Übergänge", "Slow": "Langsam", "Slow transitions": "Langsame Übergänge",
     "Slow: time to get into every pose before the breaths are counted.": "Langsam: Zeit, in jede Haltung zu kommen, bevor die Atemzüge gezählt werden.", "Ready": "Bereit", "Step by step": "Schritt für Schritt", "First time: step by step": "Zum ersten Mal: Schritt für Schritt", "Start": "Starten", "Save": "Speichern",
     "Every part of the body once. The same practice for everyone, no animal needed.": "Jeder Teil des Körpers einmal. Für alle gleich, ohne Tier.", "Fundamental · 10 min": "Grundton · 10 min",
     "Every part of the body once: the shortest complete practice.": "Jeder Teil des Körpers einmal: die kürzeste vollständige Praxis.",
@@ -1289,7 +1408,7 @@ Answer with JSON only, no prose, in exactly this shape:
   const ATTR_DE = {
     "e.g. calm young heron · ruhiger junger Reiher": "z. B. ruhiger junger Reiher · calm young heron",
     "What felt good, what was missing, what to change": "Was tat gut, was hat gefehlt, was soll anders werden",
-    "Change this pose": "Diese Haltung ändern", "Current pose": "Aktuelle Haltung",
+    "Change this pose": "Diese Haltung ändern", "Current pose": "Aktuelle Haltung", "Not for me": "Nicht für mich", "Later": "Später", "I like it": "Mag ich",
   };
   const TEXTS = [], ATTRS = [];
   (function collect() {
@@ -1313,6 +1432,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (cur === "preview" && plan && $("thinking").hidden) renderPreview();
     if (cur === "done" && session) { paintDoneMeta(); paintFb(); paintNext(); }
     if (cur === "library") renderLibrary();
+    if (cur === "discover") paintDiscover();
     if (!$("sheet").hidden && sheetId) openSheet(sheetId);
     setPaused(paused); paintFsBtn();
   }

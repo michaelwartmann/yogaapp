@@ -25,6 +25,21 @@
     "ashta-chandrasana>parivrtta-anjaneyasana": "Back knee down, hands to heart, twist",
     "parivrtta-anjaneyasana>anjaneyasana": "Unwind, arms up",
     "parivrtta-anjaneyasana>phalakasana": "Hands down, step back to Plank",
+    "bharmanasana>dandayamana-bharmanasana": "{side} arm forward, {other} leg back",
+    "dandayamana-bharmanasana>dandayamana-marjaryasana": "Round the back, elbow to knee",
+    "dandayamana-marjaryasana>dandayamana-bharmanasana": "Reach long again",
+    "dandayamana-bharmanasana>bharmanasana": "Hand and knee down",
+    "dandayamana-bharmanasana>balasana": "Hand and knee down, hips back to the heels",
+    "ashta-chandrasana>parivrtta-ashta-chandrasana": "Palms together, twist towards the front leg",
+    "parivrtta-ashta-chandrasana>parivrtta-parsvakonasana": "Lower hand down, open the top arm to the sky",
+    "parivrtta-parsvakonasana>ashta-chandrasana": "Unwind, rise into High Lunge",
+    "eka-pada-adho-mukha-svanasana>vrischika-svanasana": "Bend the knee, open the hip",
+    "vrischika-svanasana>camatkarasana": "Flip over: foot down behind you, heart to the sky",
+    "camatkarasana>adho-mukha-svanasana": "Flip back to Down Dog",
+    "vasisthasana>adho-mukha-svanasana": "Hand down, back to Down Dog",
+    "parivrtta-ashta-chandrasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "parivrtta-parsvakonasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "ashta-chandrasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
     "apanasana>supta-matsyendrasana": "Feet down, let the knees fall to the {side}",
     "parivrtta-anjaneyasana>uttanasana": "Step the back foot forward, fold",
     "utthita-tadasana>utkata-konasana": "Turn the toes out, bend the knees, sit low",
@@ -92,6 +107,43 @@
     "trikonasana": "Straighten the front leg, reach forward, then down", "parsvottanasana": "Hips face the {side} leg, hinge forward",
     "vrksasana": "Weight into the {other} foot, lift the {side} foot", "phalakasana": "Plank", "chaturanga": "Lower halfway, elbows in",
     "urdhva-mukha-svanasana": "Roll over the toes, chest forward", "adho-mukha-svanasana": "Hips up and back to Down Dog", "bhujangasana": "Lower down, lift the chest",
+    "dandayamana-bharmanasana": "From hands and knees, {side} arm forward, {other} leg back", "dandayamana-marjaryasana": "Round the back, elbow to knee",
+    "parivrtta-ashta-chandrasana": "High lunge, palms together, twist towards the front leg", "parivrtta-parsvakonasana": "Lower hand down, open the top arm to the sky",
+    "vrischika-svanasana": "Three-legged dog, bend the knee, open the hip", "camatkarasana": "Flip over the bottom hand, hips high",
+    "baddha-virabhadrasana": "Hands clasped behind, fold inside the front knee",
+    "parivrtta-trikonasana": "Hips square, lower hand down, turn the chest open",
+    "urdhva-prasarita-eka-padasana": "Fold over the standing leg, lift the other leg",
+    "parivrtta-ardha-chandrasana": "Lower hand down, lift the back leg, turn the chest",
+    "svarga-dvijasana": "Bind around the front leg, step in, rise slowly",
+    "baddha-parsvakonasana": "Wrap the lower arm under the thigh, bind behind",
+    "prasarita-padottanasana": "Feet wide, hands to the hips, fold forward",
+    "padangusthasana": "Fold forward, hold the big toes",
+    "vajrasana": "Kneel and sit back on the heels",
+    "virasana": "Kneel, feet wide, sit between the heels",
+    "bharadvajasana": "Legs to one side, twist the other way",
+    "marichyasana-3": "One leg long, the other knee up, twist towards it",
+    "upavistha-konasana": "Legs wide, walk the hands forward",
+    "parivrtta-janu-sirsasana": "One leg long, side bend over it, top arm over the ear",
+    "agnistambhasana": "Stack the shins, feet flexed",
+    "mandukasana": "Knees wide, forearms down, hips back",
+    "parsva-balasana": "From hands and knees, slide the {side} arm under",
+    "parighasana": "Kneel, {side} leg out to the side, lean over it",
+    "jathara-parivartanasana": "Lie on the back, arms wide, legs fall to the {side}",
+    "supta-baddha-konasana": "Lie back, soles together, knees open",
+    "supta-kapotasana": "Lie on the back, {side} ankle over the other knee",
+    "anantasana": "Lie on your side, head in the hand, lift the top leg",
+    "ardha-bhekasana": "On the belly, one forearm down, bend the {side} knee, hold the foot",
+    "ashtanga-namaskara": "Knees down, lower chest and chin",
+    "ardha-purvottanasana": "Sit, feet down, hands behind, lift the hips",
+    "purvottanasana": "Legs long, hands behind, lift the hips",
+    "makara-adho-mukha-svanasana": "Forearms down, step back into a long line",
+    "parsva-bakasana": "Squat, twist, knees onto one arm, lean forward",
+    "eka-pada-galavasana": "Shin across the arms, lean forward, lift the back leg",
+    "astavakrasana": "Leg over the arm, cross the ankles, lean forward",
+    "tittibhasana": "Shoulders behind the knees, press up, straighten the legs",
+    "kapotasana": "From Camel, lower the forearms to the floor",
+    "eka-pada-urdhva-dhanurasana": "From Wheel, lift the {side} leg",
+    "pashasana": "Squat, feet together, twist and wrap",
     "salabhasana": "Lie on the belly, lift chest and legs", "bharmanasana": "Come onto hands and knees", "marjaryasana": "Round the back", "bitilasana": "Belly down, chest forward",
     "anjaneyasana": "Step the {side} foot forward, back knee down", "ardha-hanumanasana": "Hips back over the knee, straighten the front leg",
     "balasana": "Hips back to the heels, rest", "bakasana": "Squat, hands down, knees onto the upper arms", "sukhasana": "Sit cross-legged",
@@ -118,8 +170,11 @@
 
   function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   const FOCUS_TAGS = { hamstrings: ["hamstrings"], back: ["back"], hips: ["hips", "hipflex"], balance: ["balance"], core: ["core"] };
-  const DEEP = new Set(["ustrasana", "dhanurasana", "urdhva-dhanurasana"]);
-  const NEUTRAL = new Set(["balasana", "apanasana", "supta-matsyendrasana", "ardha-matsyendrasana", "adho-mukha-svanasana", "bharmanasana"]);
+  const DEEP = new Set(["ustrasana", "dhanurasana", "urdhva-dhanurasana", "kapotasana", "eka-pada-urdhva-dhanurasana", "ardha-bhekasana"]);
+  const NEUTRAL = new Set(["balasana", "apanasana", "supta-matsyendrasana", "ardha-matsyendrasana", "adho-mukha-svanasana", "bharmanasana", "jathara-parivartanasana", "bharadvajasana"]);
+  // variations: a pose with var: X can take X's place inside any flow (same start and end on the mat)
+  const VARS = {};
+  LIB.forEach(p => { if (p.var) (VARS[p.var] = VARS[p.var] || []).push(p.id); });
   const FLOOR = new Set(["kneel", "prone", "supine", "seat"]);
   const blockPoses = b => (b.steps || b.round || []).map(s => s[0]);
 
@@ -166,7 +221,7 @@
     const hist = (opt.history || []).slice(-4);
     const W = [1, 0.6, 0.35, 0.2];
     const recency = id => hist.slice().reverse().reduce((a, h, i) => a + ((h.peak === id || h.warmup === id || h.sun === id || (h.modules || []).includes(id)) ? W[i] : 0), 0);
-    const loved = new Set(hist.flatMap(h => h.loved || []));
+    const loved = new Set(hist.flatMap(h => h.loved || []).concat(opt.loved || []));
     const hardPoses = new Set(hist.flatMap(h => h.hard || []));
     const R = rng(opt.seed * 31 + 7);
     const overlap = (a, b) => a.filter(x => b.includes(x)).length;
@@ -187,8 +242,10 @@
 
     // 3. rank modules: prepare the peak, match the focus, avoid recent ones, keep variety
     const scoreMod = m => overlap(m.prepares, peak.needs) * 3 + overlap(m.prepares, ftags) * 2 - recency(m.id) * 5 + R() * 2.5
+      + (m.prepares.includes("twist") && m.kind === "standing" ? 2.5 : 0) // turning, not only straight lines
       + blockPoses(m).filter(id => loved.has(id)).length * 0.5 - blockPoses(m).filter(id => hardPoses.has(id) && !opt.focus.includes("hamstrings")).length * 0.3;
-    const pool = B.MODULES.filter(m => m.int <= cap && usable(m) && !blockPoses(m).includes(peak.pose));
+    const steady = cap >= 2 && !opt.gentle && usable(B.MODULES.find(m => m.id === "s-revlunge"));
+    const pool = B.MODULES.filter(m => m.int <= cap && usable(m) && !blockPoses(m).includes(peak.pose) && !(steady && m.id === "s-twist")); // knee-down twist only for beginners
     const ranked = kind => pool.filter(m => kind.includes(m.kind)).map(m => [scoreMod(m), m]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
     function takeDiverse(list, n, already) {
       const chosen = [], used = new Set(already.flatMap(blockPoses));
@@ -232,12 +289,27 @@
 
     function build(K) {
       const R2 = rng(opt.seed * 131 + 3);
+      // a held pose may become one of its variations: liked ones often, others now and then; the same choice all class long
+      const RV = rng(opt.seed * 53 + 17), varPick = {};
+      const variant = s => {
+        if (!VARS[s.id] || s.breath || s.peak || s.challenge || typeof s.hold !== "number" || s.hold < 2) return s;
+        if (!(s.id in varPick)) {
+          const ok = VARS[s.id].filter(v => me(v) !== "new");
+          const fav = ok.filter(v => loved.has(v));
+          const r = RV();
+          varPick[s.id] = fav.length && r < 0.75 ? fav[Math.floor(RV() * fav.length)] : ok.length && r > (fav.length ? 0.92 : 0.88) ? ok[Math.floor(RV() * ok.length)] : null;
+        }
+        const v = varPick[s.id];
+        return v ? Object.assign({}, s, { id: v, side: BY[v].sides === 2 ? s.side : null }) : s;
+      };
       const raw = [];
       let state = "seat", section = "";
       // adaptations: opt.swap replaces a pose with a gentler one everywhere (or drops it with null), e.g. Up Dog → Cobra
       const push = (steps, extra) => steps.forEach(s => {
         const sw = opt.swap || {};
         if (Object.prototype.hasOwnProperty.call(sw, s.id)) { if (!sw[s.id]) return; s = Object.assign({}, s, { id: sw[s.id], side: BY[sw[s.id]].sides === 2 ? s.side : null }); }
+        s = variant(s);
+        if (BY[s.id].sides === 2 && !s.side) { ["right", "left"].forEach(side => raw.push(Object.assign({ section }, s, { side }, extra || {}))); return; } // a one-sided variation of a centred pose: both sides
         raw.push(Object.assign({ section }, s, extra || {}));
       });
       const go = to => push(expand(connector(state, to), {}, R2));
@@ -247,6 +319,7 @@
 
       section = "Arrival"; push([{ id: "sukhasana", hold: opt.minutes >= 45 ? 12 : 8 }]);
       section = "Warm-up"; place(warm);
+      if (steady) raw.forEach(s => { if (s.section !== "Warm-up") return; if (s.id === "anjaneyasana") s.id = "ashta-chandrasana"; else if (s.id === "parivrtta-anjaneyasana") s.id = "parivrtta-ashta-chandrasana"; }); // back knee up
 
       section = sun.name.includes("Moon") ? "Moon Salutation" : "Sun Salutations";
       const sunStart = raw.length;
@@ -256,6 +329,7 @@
       for (let r = 0; r < K.rounds; r++) {
         const lead = r % 2 === 0 ? "right" : "left";
         let round = expand(sun.round, { lead }, R2);
+        if (cap >= 2 && !opt.gentle && me("ashta-chandrasana") !== "new") round = round.map(s => s.id === "anjaneyasana" ? Object.assign({}, s, { id: "ashta-chandrasana" }) : s); // back knee up
         if (r > 0 && round[0].id === "tadasana") round = round.slice(1);
         if (r === 0) round.forEach(s => { if (s.id === "adho-mukha-svanasana" && s.hold) s.hold = 5; });
         if (accCrow && r === K.rounds - 1 && sun.id !== "sun-moon") {
@@ -322,7 +396,9 @@
         const before = raw.length; place(m);
         if (yinish) raw.slice(before).forEach(s => { const y = BY[s.id].yin; if (y && s.hold) s.secs = Math.min(y, opt.minutes === 30 ? 2 : 4) * 60; });
       });
-      if (opt.minutes > 30 && !finish.some(m => m.id === "u-twist") && !used.includes("u-twist")) place(B.MODULES.find(m => m.id === "u-twist"));
+      const hasTwist = () => raw.some(s => BY[s.id] && BY[s.id].cat === "twist");
+      const uTwist = B.MODULES.find(m => m.id === "u-twist");
+      if ((opt.minutes > 30 || !hasTwist()) && !finish.some(m => m.id === "u-twist") && !used.includes("u-twist") && usable(uTwist)) place(uTwist); // the spine turns in every class
       go("supine");
 
       section = "Savasana";

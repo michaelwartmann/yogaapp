@@ -66,12 +66,12 @@
 
   // Level = skill: which poses, which adaptations, how much intensity.
   const LEVELS = [
-    { n: 1, name: "First steps", de: "Erste Schritte", maxLvl: 1, energy: "low", swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" },
-      text: "New to yoga or back after a long break: basic poses, gentle versions, no Chaturanga.",
-      textDe: "Neu im Yoga oder zurück nach langer Pause: Grundhaltungen, sanfte Varianten, kein Chaturanga." },
-    { n: 2, name: "Foundation", de: "Fundament", maxLvl: 1, energy: "low", swap: { chaturanga: null },
-      text: "Knows the basics: simple flows, Chaturanga still left out.",
-      textDe: "Kennt die Grundlagen: einfache Flows, Chaturanga noch ausgelassen." },
+    { n: 1, name: "First steps", de: "Erste Schritte", maxLvl: 1, energy: "low", swap: { chaturanga: "ashtanga-namaskara", "urdhva-mukha-svanasana": "bhujangasana" },
+      text: "New to yoga or back after a long break: basic poses, gentle versions, Knees-Chest-Chin instead of Chaturanga.",
+      textDe: "Neu im Yoga oder zurück nach langer Pause: Grundhaltungen, sanfte Varianten, Knie-Brust-Kinn statt Chaturanga." },
+    { n: 2, name: "Foundation", de: "Fundament", maxLvl: 1, energy: "low", swap: { chaturanga: "ashtanga-namaskara" },
+      text: "Knows the basics: simple flows, Knees-Chest-Chin instead of Chaturanga.",
+      textDe: "Kennt die Grundlagen: einfache Flows, Knie-Brust-Kinn statt Chaturanga." },
     { n: 3, name: "Steady", de: "Sicher", maxLvl: 2, energy: "medium", swap: {},
       text: "Practises regularly: full vinyasa, intermediate poses, a peak with preparation.",
       textDe: "Übt regelmäßig: volle Vinyasa, mittlere Haltungen, ein Höhepunkt mit Vorbereitung." },
@@ -105,12 +105,12 @@
 
   // Things to take care of today. avoid = left out entirely; swap = replaced (null = dropped) inside flows.
   const CARE = [
-    { id: "wrists", en: "Wrists", de: "Handgelenke", avoid: ["bakasana", "vasisthasana", "adho-mukha-vrksasana", "urdhva-dhanurasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" } },
-    { id: "knees", en: "Knees", de: "Knie", avoid: ["malasana", "padmasana", "gomukhasana", "skandasana", "eka-pada-rajakapotasana", "hanumanasana"], swap: {} },
-    { id: "back", en: "Lower back", de: "Unterer Rücken", avoid: ["urdhva-dhanurasana", "dhanurasana", "ustrasana", "paripurna-navasana", "halasana", "hanumanasana"], swap: {} },
-    { id: "neck", en: "Neck", de: "Nacken", avoid: ["sirsasana", "salamba-sarvangasana", "halasana", "matsyasana", "ustrasana"], swap: {} },
-    { id: "shoulders", en: "Shoulders", de: "Schultern", avoid: ["pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "gomukhasana", "vasisthasana", "bakasana"], swap: { chaturanga: null } },
-    { id: "pregnant", en: "Pregnant", de: "Schwanger", avoid: ["salabhasana", "salamba-bhujangasana", "dhanurasana", "parivrtta-utkatasana", "ardha-matsyendrasana", "parivrtta-anjaneyasana", "paripurna-navasana", "sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "ustrasana", "bakasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": null, bhujangasana: null } },
+    { id: "wrists", en: "Wrists", de: "Handgelenke", avoid: ["parsva-bakasana", "eka-pada-galavasana", "astavakrasana", "tittibhasana", "eka-pada-urdhva-dhanurasana", "purvottanasana", "bakasana", "vasisthasana", "adho-mukha-vrksasana", "urdhva-dhanurasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" } },
+    { id: "knees", en: "Knees", de: "Knie", avoid: ["virasana", "agnistambhasana", "mandukasana", "pashasana", "kapotasana", "eka-pada-galavasana", "vajrasana", "malasana", "padmasana", "gomukhasana", "skandasana", "eka-pada-rajakapotasana", "hanumanasana"], swap: {} },
+    { id: "back", en: "Lower back", de: "Unterer Rücken", avoid: ["kapotasana", "eka-pada-urdhva-dhanurasana", "ardha-bhekasana", "urdhva-dhanurasana", "dhanurasana", "ustrasana", "paripurna-navasana", "halasana", "hanumanasana"], swap: {} },
+    { id: "neck", en: "Neck", de: "Nacken", avoid: ["kapotasana", "sirsasana", "salamba-sarvangasana", "halasana", "matsyasana", "ustrasana"], swap: {} },
+    { id: "shoulders", en: "Shoulders", de: "Schultern", avoid: ["parsva-bakasana", "eka-pada-galavasana", "astavakrasana", "tittibhasana", "kapotasana", "eka-pada-urdhva-dhanurasana", "baddha-parsvakonasana", "svarga-dvijasana", "pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "gomukhasana", "vasisthasana", "bakasana"], swap: { chaturanga: null } },
+    { id: "pregnant", en: "Pregnant", de: "Schwanger", avoid: ["parivrtta-trikonasana", "marichyasana-3", "jathara-parivartanasana", "pashasana", "parsva-bakasana", "eka-pada-galavasana", "astavakrasana", "tittibhasana", "kapotasana", "eka-pada-urdhva-dhanurasana", "ardha-bhekasana", "parivrtta-ardha-chandrasana", "parivrtta-ashta-chandrasana", "parivrtta-parsvakonasana", "camatkarasana", "ashtanga-namaskara", "salabhasana", "salamba-bhujangasana", "dhanurasana", "parivrtta-utkatasana", "ardha-matsyendrasana", "parivrtta-anjaneyasana", "paripurna-navasana", "sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "ustrasana", "bakasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": null, bhujangasana: null } },
     { id: "pressure", en: "High blood pressure or glaucoma", de: "Bluthochdruck oder Glaukom", avoid: ["sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana"], swap: {} },
   ];
   const CARE_BY = Object.fromEntries(CARE.map(c => [c.id, c]));
@@ -188,7 +188,7 @@
       minutes, energy, style: th.style || T.style, cycle: T.cycle + (th.cycle || 0), pace: T.pace * lenF + (th.pace || 0) + (nat.pace || 0),
       focus: [...new Set(th.focus.concat(th.tags || [], nat.focus))], peaks: th.peaks, naturePeaks: nat.peaks, extraOffers: nat.challenge || 0, extraCore: nat.extraCore || 0, nature: nat.id,
       me, swap, challenges: today.challenges || {},
-      history: today.history || [], seed: today.seed || 1,
+      history: today.history || [], seed: today.seed || 1, loved: st.likes || [],
     };
   }
 
