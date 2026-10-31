@@ -328,7 +328,7 @@
   };
 
   const SECTIONS_DE = {
-    "Arrival": "Ankommen", "Warm-up": "Aufwärmen", "Sun Salutations": "Sonnengrüße", "Moon Salutation": "Mondgruß", "Standing": "Im Stehen",
+    "Arrival": "Ankommen", "Warm-up": "Aufwärmen", "Lunges": "Ausfallschritte", "Sun Salutations": "Sonnengrüße", "Moon Salutation": "Mondgruß", "Standing": "Im Stehen",
     "Balance": "Gleichgewicht", "Core": "Rumpf", "Backbends": "Rückbeugen", "Hips": "Hüften", "Cool-down": "Ausklang", "Savasana": "Savasana",
   };
   const TAGS_DE = { hamstrings: "Beinrückseite", hips: "Hüften", hipflex: "Hüftbeuger", back: "Rücken", shoulders: "Schultern", core: "Rumpf",
