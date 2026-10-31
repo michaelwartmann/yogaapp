@@ -212,6 +212,24 @@ body.is-live { overflow: hidden; }
 /* library */
 .lib-tools { display: flex; flex-direction: column; gap: 10px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+/* discover: one pose at a time, swipe right for more of it, left for never */
+.dstack { position: relative; display: grid; place-items: center; min-height: 0; touch-action: none; }
+.dcard { width: min(420px, 100%); background: var(--surface); border-radius: 26px; padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08); user-select: none; -webkit-user-select: none; cursor: grab; touch-action: none; transition: transform .28s ease, opacity .28s ease; position: relative; }
+.dcard.drag { transition: none; cursor: grabbing; }
+.dcard svg { width: 100%; height: auto; max-height: 36dvh; aspect-ratio: 260 / 230; pointer-events: none; }
+.dcard .s { font-family: var(--font-display); font-weight: 500; font-size: 1.6rem; line-height: 1.1; }
+.dcard .e { font-weight: 700; }
+.dcard .meta { font-size: .86rem; color: var(--muted); }
+.dcard .stamp { position: absolute; top: 22px; padding: 4px 12px; border: 3px solid; border-radius: 10px; font-weight: 800; font-size: 1.1rem; opacity: 0; transform: rotate(-12deg); letter-spacing: .04em; }
+.dcard .stamp.yes { left: 18px; color: var(--good); border-color: var(--good); }
+.dcard .stamp.no { right: 18px; color: var(--hard); border-color: var(--hard); transform: rotate(12deg); }
+.dbtns { display: flex; justify-content: center; gap: 12px; align-items: center; }
+.dbtns .round { width: 64px; height: 64px; border-radius: 50%; font-size: 1.5rem; padding: 0; display: grid; place-items: center; border: 1px solid var(--line); background: var(--surface); }
+.dbtns .round.no { color: var(--hard); } .dbtns .round.yes { color: var(--good); }
+.dbtns .round.later { width: 48px; height: 48px; font-size: 1.1rem; color: var(--muted); }
+.dlabels { display: flex; justify-content: center; gap: 22px; font-size: .78rem; color: var(--muted); }
+.pcard .fav { color: var(--good); font-weight: 700; }
 .pcard { background: var(--surface); border-radius: 18px; padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .pcard svg { width: 100%; height: auto; aspect-ratio: 260 / 230; }
 .pcard .s { font-family: var(--font-display); font-weight: 500; font-size: 1.02rem; line-height: 1.2; }
@@ -360,7 +378,7 @@ body.is-live .langbar { display: none; }
     <div class="field"><span class="label">Sound</span><div class="seg" data-key="sound"><button type="button" data-v="bowls">Bowls</button><button type="button" data-v="off">Silent</button></div>
       <label class="row muted" for="vol" style="font-size:.88rem">Volume <input type="range" id="vol" min="0" max="100" step="5"> <button class="btn quiet" id="testSound" type="button">Listen</button></label>
     </div>
-    <div class="row"><button class="btn primary big" id="buildBtn" type="button">Build practice</button><button class="btn big" id="surpriseBtn" type="button" hidden>Surprise me</button><button class="btn" id="libBtn" type="button">Pose library</button></div>
+    <div class="row"><button class="btn primary big" id="buildBtn" type="button">Build practice</button><button class="btn big" id="surpriseBtn" type="button" hidden>Surprise me</button><button class="btn" id="libBtn" type="button">Pose library</button><button class="btn" id="dsBtn" type="button">♡ Discover poses</button></div>
     <div class="field"><span class="label">Short on time?</span>
       <div class="row"><button class="btn" id="gtBtn" type="button">Fundamental · 10 min</button><span class="muted" style="font-size:.88rem">Every part of the body once: the shortest complete practice.</span></div>
     </div>
@@ -459,6 +477,20 @@ body.is-live .langbar { display: none; }
   </div>
 </section>
 
+<section class="screen" id="discover" hidden>
+  <div class="row" style="justify-content:space-between">
+    <h2 style="font-size:1.45rem">Discover poses</h2>
+    <button class="btn" id="dsDone" type="button">Done</button>
+  </div>
+  <p class="muted" id="dsIntro" style="font-size:.9rem"></p>
+  <div class="dstack" id="dStack"></div>
+  <div id="dControls" style="display:flex;flex-direction:column;gap:6px">
+    <div class="dbtns"><button class="round no" id="dNo" type="button" aria-label="Not for me">✕</button><button class="round later" id="dLater" type="button" aria-label="Later">↻</button><button class="round yes" id="dYes" type="button" aria-label="I like it">♡</button></div>
+    <div class="dlabels"><span>Not for me</span><span>Later</span><span>I like it</span></div>
+    <div class="row" style="justify-content:center"><button class="linkbtn" id="dUndo" type="button">Undo</button></div>
+  </div>
+</section>
+
 <section class="screen" id="library" hidden>
   <div class="row" style="justify-content:space-between">
     <h2 style="font-size:1.8rem">Pose library</h2>
@@ -467,7 +499,7 @@ body.is-live .langbar { display: none; }
   <p class="muted" id="libIntro"></p>
   <div class="lib-tools">
     <div class="seg" id="fLevel"><button type="button" data-v="all" aria-pressed="true">All levels</button><button type="button" data-v="1">Basic</button><button type="button" data-v="2">Intermediate</button><button type="button" data-v="3">Advanced</button></div>
-    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="mine">In my practices</button><button type="button" data-v="out">Left out</button></div>
+    <div class="seg" id="fMe"><button type="button" data-v="all" aria-pressed="true">All</button><button type="button" data-v="mine">In my practices</button><button type="button" data-v="fav">♡ Liked</button><button type="button" data-v="out">Left out</button></div>
   </div>
   <div class="grid" id="libGrid"></div>
 </section>
@@ -1023,6 +1055,143 @@ body.is-live .langbar { display: none; }
     { id: "parivrtta-anjaneyasana", me: "easy", sa: "Parivrtta Anjaneyasana", en: "Lunge Twist", de: "Gedrehter Ausfallschritt", cat: "twist", sides: 2, focus: ["back", "hips"], lvl: 1, hold: 5,
       prop: "Back knee down on a towel", cue: "Hands to heart, elbow outside the front knee",
       p: { t: 58, bend: -4, h: 66, aN: [-48, 112], aF: [-50, 110], lN: [0, -65, 0], lF: [240, 180, 180] } },
+    // added 31 Oct: more turning and three-dimensional movement (Michael's feedback after a 30-minute class)
+    { id: "dandayamana-bharmanasana", me: "ok", sa: "Dandayamana Bharmanasana", en: "Bird Dog", de: "Vogel-Hund", cat: "core", sides: 2, focus: ["core", "balance", "back"], lvl: 1, hold: 3,
+      cue: "Opposite arm and leg long, hips level",
+      p: { t: 8, h: -10, aN: [14, 14], aF: [-91, -91], lN: [-92, 180, 180], lF: [176, 176, 180] } },
+    { id: "dandayamana-marjaryasana", me: "ok", sa: "Dandayamana Marjaryasana", en: "Knee to Nose", de: "Knie zur Nase", cat: "core", sides: 2, focus: ["core", "back"], lvl: 1, hold: 1,
+      cue: "Round the back, elbow and knee meet under the belly",
+      p: { t: 16, bend: -24, h: -70, aN: [-120, -30], aF: [-91, -91], lN: [-92, 180, 180], lF: [-10, -120, -90] } },
+    { id: "parivrtta-ashta-chandrasana", me: "ok", sa: "Parivrtta Ashta Chandrasana", en: "Revolved High Lunge", de: "Gedrehter hoher Ausfallschritt", cat: "twist", sides: 2, focus: ["back", "legs", "hips"], lvl: 2, hold: 4,
+      cue: "Back knee lifted, palms together, twist from the chest",
+      p: { t: 55, bend: -4, h: 64, aN: [-48, 112], aF: [-50, 110], lN: [-8, -90, 0], lF: [206, 206, -70] } },
+    { id: "parivrtta-parsvakonasana", me: "ok", sa: "Parivrtta Parsvakonasana", en: "Revolved Side Angle", de: "Gedrehter Seitwinkel", cat: "twist", sides: 2, focus: ["back", "legs", "shoulders"], lvl: 2, hold: 4,
+      cue: "Lower hand down, open the top arm to the sky",
+      prop: "Books under the lower hand",
+      p: { t: 40, bend: -2, h: 75, aN: [-85, -88], aF: [92, 94], lN: [-12, -90, 0], lF: [208, 208, -70] } },
+    { id: "vrischika-svanasana", me: "ok", sa: "Vrischika Svanasana", en: "Scorpion Dog", de: "Skorpion-Hund", cat: "hip opener", sides: 2, focus: ["hips", "shoulders", "back"], lvl: 2, hold: 2,
+      cue: "Bend the lifted knee, open the hip, let the foot drift over",
+      p: { t: -40, h: -65, aN: [-46, -46], aF: [-48, -48], lN: [118, 30, 20], lF: [-117, -117, -6] } },
+    { id: "camatkarasana", me: "ok", sa: "Camatkarasana", en: "Wild Thing", de: "Wild Thing", cat: "backbend", sides: 2, focus: ["back", "shoulders", "hips"], lvl: 2, hold: 3,
+      cue: "Flip over the bottom hand, hips high, heart to the sky",
+      p: { t: 196, bend: 20, h: 215, aN: [-90, -90], aF: [140, 160], lN: [-45, -105, 0], lF: [-30, -58, -10] } },
+    // added 31 Oct: the wider library (comparison with the standard asana lists); var = the pose it can stand in for inside a flow
+    { id: "baddha-virabhadrasana", me: "ok", sa: "Baddha Virabhadrasana", en: "Humble Warrior", de: "Demütiger Krieger", cat: "standing", sides: 2, focus: ["shoulders", "hips", "legs"], lvl: 2, hold: 4, var: "virabhadrasana-1",
+      cue: "Hands clasped behind, fold inside the front knee, arms to the sky",
+      p: { t: -62, bend: -6, h: -80, aN: [105, 112], aF: [103, 110], lN: [-14, -90, 0], lF: [215, 215, 2] } },
+    { id: "parivrtta-trikonasana", me: "ok", sa: "Parivrtta Trikonasana", en: "Revolved Triangle", de: "Gedrehtes Dreieck", cat: "twist", sides: 2, focus: ["hamstrings", "back", "balance"], lvl: 2, hold: 4, var: "parsvottanasana",
+      prop: "Books under the lower hand",
+      cue: "Hips square, lower hand to the floor or books, top arm up",
+      p: { t: -15, bend: -4, h: -5, aN: [-92, -92], aF: [88, 88], lN: [-70, -70, 0], lF: [250, 250, 20] } },
+    { id: "urdhva-prasarita-eka-padasana", me: "ok", sa: "Urdhva Prasarita Eka Padasana", en: "Standing Splits", de: "Stehender Spagat", cat: "balance", sides: 2, focus: ["hamstrings", "balance"], lvl: 2, hold: 4, var: "virabhadrasana-3",
+      prop: "Books under the hands",
+      cue: "Fold over the standing leg, lift the other leg high",
+      p: { t: -82, bend: -10, h: -95, aN: [-96, -96], aF: [-98, -98], lN: [-90, -90, 0], lF: [105, 105, 115] } },
+    { id: "parivrtta-ardha-chandrasana", me: "ok", sa: "Parivrtta Ardha Chandrasana", en: "Revolved Half Moon", de: "Gedrehter Halbmond", cat: "balance", sides: 2, focus: ["balance", "back", "hamstrings"], lvl: 3, hold: 4, var: "ardha-chandrasana",
+      prop: "Books under the lower hand",
+      cue: "Hips level, turn the chest, top arm up",
+      p: { t: 0, h: 12, aN: [-90, -90], aF: [90, 90], lN: [-90, -90, 0], lF: [180, 180, 180] } },
+    { id: "svarga-dvijasana", me: "ok", sa: "Svarga Dvijasana", en: "Bird of Paradise", de: "Paradiesvogel", cat: "balance", sides: 2, focus: ["balance", "hamstrings", "shoulders"], lvl: 3, hold: 4, var: "utthita-hasta-padangusthasana",
+      prop: "Belt to close the bind",
+      cue: "Bound arms hold the leg, rise slowly, extend the leg",
+      p: { t: 86, h: 88, aN: [-40, 30], aF: [200, -60], lN: [-90, -90, 0], lF: [30, 70, 80] } },
+    { id: "baddha-parsvakonasana", me: "ok", sa: "Baddha Parsvakonasana", en: "Bound Side Angle", de: "Gebundener Seitwinkel", cat: "standing", sides: 2, focus: ["shoulders", "hips", "legs"], lvl: 3, hold: 4, var: "utthita-parsvakonasana",
+      prop: "Belt to close the bind",
+      cue: "Wrap the lower arm under the thigh, reach for the top hand",
+      p: { view: "front", t: 24, h: 32, aN: [-120, -20], aF: [200, -70], lN: [-22, -90, 0], lF: [222, 222, 180] } },
+    { id: "prasarita-padottanasana", me: "ok", sa: "Prasarita Padottanasana", en: "Wide-Legged Forward Fold", de: "Weite Vorwärtsbeuge im Stehen", cat: "forward fold", sides: 1, focus: ["hamstrings", "hips"], lvl: 1, hold: 6,
+      prop: "Books under the hands",
+      cue: "Feet wide and parallel, fold from the hips, crown to the floor",
+      p: { view: "front", t: -90, h: -90, aN: [-92, -92], aF: [-88, -88], lN: [-62, -62, 0], lF: [242, 242, 180] } },
+    { id: "padangusthasana", me: "ok", sa: "Padangusthasana", en: "Big Toe Pose", de: "Große-Zehen-Haltung", cat: "forward fold", sides: 1, focus: ["hamstrings"], lvl: 1, hold: 5, var: "uttanasana",
+      cue: "Hold the big toes, knees soft, lengthen on the in-breath",
+      p: { t: -62, bend: -16, h: -92, aN: [-86, -88], aF: [-88, -90], lN: [-91, -90, 0], lF: [-92, -90, 0] } },
+    { id: "vajrasana", me: "ok", sa: "Vajrasana", en: "Thunderbolt", de: "Fersensitz", cat: "seated", sides: 1, focus: ["posture"], lvl: 1, hold: 8, var: "sukhasana",
+      prop: "Cushion between heels and bottom",
+      cue: "Sit on the heels, spine tall, hands on the thighs",
+      p: { t: 90, h: 90, aN: [-70, -10], aF: [-72, -12], lN: [0, 180, 180], lF: [1, 181, 180] } },
+    { id: "virasana", me: "ok", sa: "Virasana", en: "Hero", de: "Heldensitz", cat: "seated", sides: 1, focus: ["hips", "posture"], lvl: 1, hold: 8, var: "sukhasana",
+      prop: "Books or a cushion under the bottom",
+      cue: "Sit between the heels, on books if the knees ask for it",
+      p: { t: 90, h: 90, aN: [-85, -60], aF: [-87, -62], lN: [2, 182, 180], lF: [3, 183, 180] } },
+    { id: "bharadvajasana", me: "ok", sa: "Bharadvajasana", en: "Bharadvaja's Twist", de: "Drehsitz nach Bharadvaja", cat: "twist", sides: 2, focus: ["back"], lvl: 1, hold: 5, var: "ardha-matsyendrasana",
+      cue: "Legs folded to one side, twist the other way, grow tall",
+      p: { view: "front", t: 90, h: 62, aN: [-55, -95], aF: [-140, -100], lN: [-8, 188, 180], lF: [-12, 192, 180] } },
+    { id: "marichyasana-3", me: "ok", sa: "Marichyasana III", en: "Marichi's Twist", de: "Drehsitz nach Marichi", cat: "twist", sides: 2, focus: ["back", "hips"], lvl: 2, hold: 5, var: "ardha-matsyendrasana",
+      cue: "One leg long, the other knee up, elbow outside the knee",
+      p: { t: 90, h: 100, aN: [20, 95], aF: [-110, -95], lN: [0, 0, 80], lF: [68, -95, 0] } },
+    { id: "upavistha-konasana", me: "ok", sa: "Upavistha Konasana", en: "Wide-Angle Seated Fold", de: "Gegrätschte Vorwärtsbeuge", cat: "forward fold", sides: 1, focus: ["hamstrings", "hips"], lvl: 1, hold: 8, var: "paschimottanasana",
+      prop: "Sit on a folded blanket",
+      cue: "Legs wide, toes up, walk the hands forward with a long back",
+      p: { view: "front", t: 80, bend: -6, h: 70, aN: [-70, -60], aF: [-110, -120], lN: [-8, -8, 80], lF: [188, 188, 100] } },
+    { id: "parivrtta-janu-sirsasana", me: "ok", sa: "Parivrtta Janu Sirsasana", en: "Revolved Head-to-Knee", de: "Gedrehte Kopf-zum-Knie-Haltung", cat: "forward fold", sides: 2, focus: ["hamstrings", "side body"], lvl: 2, hold: 5, var: "janu-sirsasana",
+      cue: "Side bend over the long leg, top arm over the ear, chest turns up",
+      p: { view: "front", t: 34, h: 44, aN: [-12, -8], aF: [30, 0], lN: [-6, -6, 80], lF: [186, -6, 0] } },
+    { id: "agnistambhasana", me: "ok", sa: "Agnistambhasana", en: "Fire Log", de: "Feuerholz", cat: "hip opener", sides: 2, focus: ["hips"], lvl: 2, hold: 6, var: "baddha-konasana",
+      prop: "Cushion under the top knee",
+      cue: "Shins stacked, feet flexed, fold forward only if the knees are happy",
+      p: { view: "front", t: 90, h: 90, aN: [-60, -20], aF: [240, 200], lN: [-4, 184, 180], lF: [-8, 188, 182] } },
+    { id: "mandukasana", me: "ok", sa: "Mandukasana", en: "Frog", de: "Frosch", cat: "hip opener", sides: 1, focus: ["hips"], lvl: 2, hold: 6, var: "uttana-shishosana",
+      prop: "Cushions under the knees",
+      cue: "Knees wide, ankles in line with the knees, forearms down",
+      p: { t: -6, h: -5, aN: [-95, 0], aF: [-96, 1], lN: [-90, 180, 180], lF: [-91, 180, 180] } },
+    { id: "parsva-balasana", me: "ok", sa: "Parsva Balasana", en: "Thread the Needle", de: "Nadelöhr", cat: "twist", sides: 2, focus: ["shoulders", "back"], lvl: 1, hold: 5, var: "uttana-shishosana",
+      cue: "Slide one arm under, shoulder and ear down, the other arm reaches up",
+      p: { t: -35, bend: -6, h: -30, aN: [185, 185], aF: [60, 40], lN: [-90, 180, 180], lF: [-91, 180, 180] } },
+    { id: "parighasana", me: "ok", sa: "Parighasana", en: "Gate", de: "Tor", cat: "kneeling", sides: 2, focus: ["side body", "hamstrings"], lvl: 1, hold: 4, var: "uttana-shishosana",
+      prop: "Folded towel under the knee",
+      cue: "Kneel, one leg out to the side, lean over it, top arm over the ear",
+      p: { view: "front", t: 55, h: 50, aN: [-55, -55], aF: [40, 20], lN: [-28, -28, -10], lF: [-90, 200, 180] } },
+    { id: "jathara-parivartanasana", me: "ok", sa: "Jathara Parivartanasana", en: "Revolved Abdomen", de: "Bauchdrehung", cat: "twist", sides: 2, focus: ["back", "core"], lvl: 2, hold: 5, var: "supta-matsyendrasana",
+      cue: "Arms wide, legs together fall to one side, shoulders stay down",
+      p: { t: 180, h: 175, aN: [-90, 180], aF: [178, 180], lN: [30, 30, 110], lF: [28, 28, 108] } },
+    { id: "supta-baddha-konasana", me: "ok", sa: "Supta Baddha Konasana", en: "Reclined Bound Angle", de: "Liegender Schmetterling", cat: "restorative", sides: 1, focus: ["hips", "rest"], lvl: 1, hold: 10, var: "ananda-balasana",
+      prop: "Cushions under the knees",
+      cue: "Soles together, knees open, arms wide, let go",
+      p: { t: 180, h: 178, aN: [130, 165], aF: [128, 163], lN: [45, -45, -20], lF: [44, -46, -20] } },
+    { id: "supta-kapotasana", me: "ok", sa: "Supta Kapotasana", en: "Figure Four", de: "Liegende Taube", cat: "hip opener", sides: 2, focus: ["hips"], lvl: 1, hold: 6, var: "supta-padangusthasana",
+      cue: "Ankle over the knee, draw the legs in, head stays down",
+      p: { t: 180, h: 172, aN: [60, 50], aF: [58, 48], lN: [70, 0, 80], lF: [30, 100, 90] } },
+    { id: "anantasana", me: "ok", sa: "Anantasana", en: "Side-Reclining Leg Lift", de: "Vishnus Ruhelager", cat: "balance", sides: 2, focus: ["hamstrings", "balance", "hips"], lvl: 2, hold: 4, var: "supta-padangusthasana",
+      prop: "Belt around the lifted foot",
+      cue: "Lie on your side, head in the hand, lift the top leg",
+      p: { view: "front", t: 180, h: 155, aN: [100, 70], aF: [80, 82], lN: [0, 0, 80], lF: [80, 80, 90] } },
+    { id: "ardha-bhekasana", me: "ok", sa: "Ardha Bhekasana", en: "Half Frog", de: "Halber Frosch", cat: "backbend", sides: 2, focus: ["back", "hips"], lvl: 2, hold: 4, var: "dhanurasana",
+      cue: "On one forearm, press the foot down beside the hip",
+      p: { t: 18, bend: 10, h: 30, aN: [-92, 0], aF: [175, 110], lN: [178, 178, 180], lF: [176, 55, 80] } },
+    { id: "ashtanga-namaskara", me: "ok", sa: "Ashtanga Namaskara", en: "Knees-Chest-Chin", de: "Knie-Brust-Kinn", cat: "core", sides: 1, focus: ["arms", "chest"], lvl: 1, hold: 1,
+      cue: "Knees, chest and chin down, hips up, elbows in",
+      p: { t: -22, bend: 14, h: 5, aN: [150, -90], aF: [148, -92], lN: [-115, 180, 180], lF: [-116, 180, 180] } },
+    { id: "ardha-purvottanasana", me: "ok", sa: "Ardha Purvottanasana", en: "Reverse Table", de: "Umgekehrter Tisch", cat: "core", sides: 1, focus: ["core", "chest", "shoulders"], lvl: 1, hold: 4,
+      cue: "Hands behind, fingers forward, lift the hips level with the knees",
+      p: { t: 180, h: 150, aN: [-90, -90], aF: [-92, -92], lN: [0, -90, 0], lF: [1, -91, 0] } },
+    { id: "purvottanasana", me: "ok", sa: "Purvottanasana", en: "Reverse Plank", de: "Umgekehrtes Brett", cat: "core", sides: 1, focus: ["core", "chest", "shoulders"], lvl: 2, hold: 4, var: "ardha-purvottanasana",
+      cue: "Legs long, press the feet down, lift the hips, chest open",
+      p: { t: 168, h: 205, aN: [-90, -90], aF: [-92, -92], lN: [-12, -12, -60], lF: [-13, -13, -60] } },
+    { id: "makara-adho-mukha-svanasana", me: "ok", sa: "Makara Adho Mukha Svanasana", en: "Forearm Plank", de: "Unterarmstütz", cat: "core", sides: 1, focus: ["core", "shoulders"], lvl: 1, hold: 5, var: "phalakasana",
+      cue: "Elbows under the shoulders, one long line, belly firm",
+      p: { t: 14, h: 14, aN: [-90, 0], aF: [-91, 1], lN: [194, 194, -74], lF: [194, 194, -74] } },
+    { id: "parsva-bakasana", me: "ok", sa: "Parsva Bakasana", en: "Side Crow", de: "Seitliche Krähe", cat: "arm balance", sides: 1, focus: ["core", "arms"], lvl: 3, hold: 3, var: "bakasana",
+      cue: "Twist deep, knees stacked on one arm, lean forward",
+      p: { t: -30, bend: -12, h: -12, aN: [-104, -80], aF: [-106, -82], lN: [-5, 172, 190], lF: [-7, 170, 188] } },
+    { id: "eka-pada-galavasana", me: "ok", sa: "Eka Pada Galavasana", en: "Flying Pigeon", de: "Fliegende Taube", cat: "arm balance", sides: 2, focus: ["arms", "hips", "core"], lvl: 3, hold: 3, var: "bakasana",
+      cue: "Shin across the arms, lean forward, float the back leg",
+      p: { t: -28, bend: -10, h: -8, aN: [-104, -80], aF: [-106, -82], lN: [-20, 10, 0], lF: [158, 158, 170] } },
+    { id: "astavakrasana", me: "ok", sa: "Astavakrasana", en: "Eight-Angle", de: "Achtwinkelhaltung", cat: "arm balance", sides: 2, focus: ["arms", "core"], lvl: 3, hold: 3, var: "bakasana",
+      cue: "Leg over the arm, cross the ankles, lean forward and extend",
+      p: { t: 28, h: 20, aN: [-100, -60], aF: [-102, -62], lN: [-12, -12, 0], lF: [-14, -14, 0] } },
+    { id: "tittibhasana", me: "ok", sa: "Tittibhasana", en: "Firefly", de: "Glühwürmchen", cat: "arm balance", sides: 1, focus: ["arms", "hamstrings", "core"], lvl: 3, hold: 3, var: "bakasana",
+      cue: "Shoulders behind the knees, press up, straighten the legs",
+      p: { view: "front", t: 72, h: 78, aN: [-92, -92], aF: [-88, -88], lN: [18, 18, 40], lF: [162, 162, 140] } },
+    { id: "kapotasana", me: "ok", sa: "Kapotasana", en: "Kneeling Pigeon", de: "Kniende Taube", cat: "backbend", sides: 1, focus: ["back", "chest"], lvl: 3, hold: 3, var: "ustrasana",
+      cue: "From Camel, forearms to the floor, head toward the feet",
+      p: { t: 140, bend: 32, h: 235, aN: [-110, -30], aF: [-112, -32], lN: [-78, 180, 180], lF: [-79, 180, 180] } },
+    { id: "eka-pada-urdhva-dhanurasana", me: "ok", sa: "Eka Pada Urdhva Dhanurasana", en: "One-Legged Wheel", de: "Einbeiniges Rad", cat: "backbend", sides: 2, focus: ["back", "chest", "legs"], lvl: 3, hold: 3, var: "urdhva-dhanurasana",
+      cue: "From Wheel, shift the weight, lift one leg to the sky",
+      p: { t: 198, bend: 26, h: 255, aN: [-80, -86], aF: [-82, -88], lN: [-52, -100, 0], lF: [75, 75, 90] } },
+    { id: "pashasana", me: "ok", sa: "Pashasana", en: "Noose", de: "Schlinge", cat: "twist", sides: 2, focus: ["back", "hips"], lvl: 3, hold: 4, var: "malasana",
+      cue: "Squat, feet together, twist, wrap the arms around the knees",
+      p: { t: 62, h: 68, aN: [-40, 120], aF: [-42, 118], lN: [28, -112, 0], lF: [27, -113, 0] } },
   ];
   const SUN_A = ["tadasana", "urdhva-hastasana", "uttanasana", "ardha-uttanasana", "phalakasana", "chaturanga",
     "urdhva-mukha-svanasana", "adho-mukha-svanasana", "ardha-uttanasana", "uttanasana", "urdhva-hastasana", "tadasana"];
@@ -1409,6 +1578,12 @@ body.is-live .langbar { display: none; }
     { id: "wu-standing", name: "Standing warm-up", from: "stand", to: "stand", int: 2, works: ["sidebody", "legs", "hips"],
       steps: [["tadasana", 3], ["indudalasana", 3, { side: "right" }], ["indudalasana", 3, { side: "left" }], ["utthita-tadasana", "in"], ["utkata-konasana", "out"], ["utthita-tadasana", "in"], ["utkata-konasana", "out"], ["utthita-tadasana", "in"], ["utkata-konasana", 4],
         ["tadasana", 1], ["utkatasana", "in"], ["uttanasana", "out"], ["utkatasana", "in"], ["uttanasana", 4], ["tadasana", 2]] },
+    { id: "wu-birddog", name: "Cat, Cow and Bird Dog", from: "kneel", to: "dog", int: 1, works: ["back", "core", "balance", "wrists"],
+      steps: [["bharmanasana", 1], ["bitilasana", "in"], ["marjaryasana", "out"], ["bitilasana", "in"], ["marjaryasana", "out"], ["bitilasana", "in"], ["marjaryasana", "out"],
+        ["bharmanasana", 1], ["dandayamana-bharmanasana", "in", { side: "right" }], ["dandayamana-marjaryasana", "out", { side: "right" }], ["dandayamana-bharmanasana", "in", { side: "right" }], ["dandayamana-marjaryasana", "out", { side: "right" }],
+        ["dandayamana-bharmanasana", "in", { side: "right" }], ["dandayamana-marjaryasana", "out", { side: "right" }], ["dandayamana-bharmanasana", 3, { side: "right" }], ["bharmanasana", 1],
+        ["dandayamana-bharmanasana", "in", { side: "left" }], ["dandayamana-marjaryasana", "out", { side: "left" }], ["dandayamana-bharmanasana", "in", { side: "left" }], ["dandayamana-marjaryasana", "out", { side: "left" }],
+        ["dandayamana-bharmanasana", "in", { side: "left" }], ["dandayamana-marjaryasana", "out", { side: "left" }], ["dandayamana-bharmanasana", 3, { side: "left" }], ["balasana", 2], ["adho-mukha-svanasana", 5]] },
     { id: "wu-lunge", name: "Lunge warm-up", from: "kneel", to: "dog", int: 1, works: ["hipflex", "twist", "back"],
       steps: [["bharmanasana", 1], ["bitilasana", "in"], ["marjaryasana", "out"], ["bitilasana", "in"], ["marjaryasana", "out"], ["adho-mukha-svanasana", 4],
         ["anjaneyasana", 3, { side: "right" }], ["parivrtta-anjaneyasana", 3, { side: "right" }], ["adho-mukha-svanasana", 2],
@@ -1448,13 +1623,20 @@ body.is-live .langbar { display: none; }
       steps: [["anjaneyasana", 2], ["utthan-pristhasana", 5], ["ardha-hanumanasana", 4]] },
     { id: "s-balance", kind: "standing", name: "Balance flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 3, prepares: ["balance", "hamstrings", "core", "legs"],
       steps: [["ashta-chandrasana", 2], ["virabhadrasana-3", 4], ["ardha-chandrasana", 4], ["parsvottanasana", 3]] },
-    { id: "s-twist", kind: "standing", name: "Lunge twist flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["twist", "hipflex", "back"],
+    { id: "s-twist", kind: "standing", name: "Lunge twist flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 1, prepares: ["twist", "hipflex", "back"],
       steps: [["ashta-chandrasana", 3], ["parivrtta-anjaneyasana", 4], ["anjaneyasana", 3]] },
+    { id: "s-revlunge", kind: "standing", name: "Revolved lunge flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["twist", "legs", "hipflex", "shoulders"],
+      steps: [["ashta-chandrasana", 2], ["parivrtta-ashta-chandrasana", 4], ["parivrtta-parsvakonasana", 3], ["ashta-chandrasana", 1]] },
+    { id: "s-dogplay", kind: "standing", name: "Three-legged dog, scorpion and wild thing", from: "dog", to: "dog", sided: true, between: "none", int: 2, prepares: ["twist", "back", "shoulders", "hips", "core"],
+      steps: [["eka-pada-adho-mukha-svanasana", "in"], ["vrischika-svanasana", 2], ["camatkarasana", 3], ["adho-mukha-svanasana", 1],
+        ["phalakasana", "in", { opt: 0.6 }], ["vasisthasana", 3, { opt: 0.6 }], ["adho-mukha-svanasana", 2]] },
     { id: "s-highlunge", kind: "standing", name: "High lunge flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["legs", "hipflex", "sidebody"],
       steps: [["eka-pada-adho-mukha-svanasana", 1, { opt: 0.7 }], ["ashta-chandrasana", 3], ["virabhadrasana-2", 3], ["viparita-virabhadrasana", 2], ["utthita-parsvakonasana", 3]] },
     { id: "s-pyramid", kind: "standing", name: "Pyramid flow", from: "dog", to: "dog", sided: true, between: "vinyasa", int: 2, prepares: ["hamstrings", "balance"],
       steps: [["virabhadrasana-1", 2], ["parsvottanasana", 5], ["virabhadrasana-3", 3]] },
     // standing, from Mountain to Mountain
+    { id: "s-wideleg", kind: "standing", name: "Wide-legged fold", from: "stand", to: "stand", sided: false, int: 1, prepares: ["hamstrings", "hips"],
+      steps: [["utthita-tadasana", 1], ["prasarita-padottanasana", 6], ["utthita-tadasana", 1], ["tadasana", 1]] },
     { id: "s-goddess", kind: "standing", name: "Goddess flow", from: "stand", to: "stand", sided: false, int: 2, prepares: ["hips", "legs", "hamstrings"],
       steps: [["utthita-tadasana", 2], ["utkata-konasana", 4], ["skandasana", 3, { side: "right" }], ["skandasana", 3, { side: "left" }], ["utkata-konasana", 3], ["utthita-tadasana", 1], ["tadasana", 1]] },
     { id: "s-chairtwist", kind: "standing", name: "Chair and twist", from: "stand", to: "stand", sided: false, int: 2, prepares: ["twist", "legs", "core"],
@@ -1470,6 +1652,8 @@ body.is-live .langbar { display: none; }
     { id: "c-sideplank", kind: "core", name: "Side plank", from: "dog", to: "dog", sided: true, between: "none", int: 2, prepares: ["core", "shoulders", "wrists"], steps: [["phalakasana", 1], ["vasisthasana", 4], ["adho-mukha-svanasana", 1]] },
     { id: "c-plankdog", kind: "core", name: "Plank and dog waves", from: "dog", to: "dog", sided: false, int: 2, prepares: ["core", "wrists", "shoulders"],
       steps: [["phalakasana", "in"], ["adho-mukha-svanasana", "out"], ["phalakasana", "in"], ["adho-mukha-svanasana", "out"], ["phalakasana", "in"], ["adho-mukha-svanasana", "out"], ["phalakasana", 4], ["adho-mukha-svanasana", 2]] },
+    { id: "c-reverse", kind: "core", name: "Reverse table", from: "seat", to: "seat", sided: false, int: 1, prepares: ["core", "shoulders"],
+      steps: [["dandasana", 1], ["ardha-purvottanasana", 4], ["dandasana", 1], ["ardha-purvottanasana", 4], ["dandasana", 1]] },
     { id: "c-dolphin", kind: "core", name: "Dolphin", from: "dog", to: "kneel", sided: false, int: 2, prepares: ["shoulders", "core"], steps: [["ardha-pincha-mayurasana", 5], ["balasana", 2], ["ardha-pincha-mayurasana", 4], ["balasana", 3]] },
     // floor backbends
     { id: "p-locust", kind: "back", name: "Locust", from: "prone", to: "kneel", sided: false, int: 1, prepares: ["back", "shoulders"], steps: [["salabhasana", 4], ["balasana", 2], ["salabhasana", 4], ["balasana", 2]] },
@@ -1576,6 +1760,21 @@ body.is-live .langbar { display: none; }
     "ashta-chandrasana>parivrtta-anjaneyasana": "Back knee down, hands to heart, twist",
     "parivrtta-anjaneyasana>anjaneyasana": "Unwind, arms up",
     "parivrtta-anjaneyasana>phalakasana": "Hands down, step back to Plank",
+    "bharmanasana>dandayamana-bharmanasana": "{side} arm forward, {other} leg back",
+    "dandayamana-bharmanasana>dandayamana-marjaryasana": "Round the back, elbow to knee",
+    "dandayamana-marjaryasana>dandayamana-bharmanasana": "Reach long again",
+    "dandayamana-bharmanasana>bharmanasana": "Hand and knee down",
+    "dandayamana-bharmanasana>balasana": "Hand and knee down, hips back to the heels",
+    "ashta-chandrasana>parivrtta-ashta-chandrasana": "Palms together, twist towards the front leg",
+    "parivrtta-ashta-chandrasana>parivrtta-parsvakonasana": "Lower hand down, open the top arm to the sky",
+    "parivrtta-parsvakonasana>ashta-chandrasana": "Unwind, rise into High Lunge",
+    "eka-pada-adho-mukha-svanasana>vrischika-svanasana": "Bend the knee, open the hip",
+    "vrischika-svanasana>camatkarasana": "Flip over: foot down behind you, heart to the sky",
+    "camatkarasana>adho-mukha-svanasana": "Flip back to Down Dog",
+    "vasisthasana>adho-mukha-svanasana": "Hand down, back to Down Dog",
+    "parivrtta-ashta-chandrasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "parivrtta-parsvakonasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
+    "ashta-chandrasana>adho-mukha-svanasana": "Hands down, step back to Down Dog",
     "apanasana>supta-matsyendrasana": "Feet down, let the knees fall to the {side}",
     "parivrtta-anjaneyasana>uttanasana": "Step the back foot forward, fold",
     "utthita-tadasana>utkata-konasana": "Turn the toes out, bend the knees, sit low",
@@ -1643,6 +1842,43 @@ body.is-live .langbar { display: none; }
     "trikonasana": "Straighten the front leg, reach forward, then down", "parsvottanasana": "Hips face the {side} leg, hinge forward",
     "vrksasana": "Weight into the {other} foot, lift the {side} foot", "phalakasana": "Plank", "chaturanga": "Lower halfway, elbows in",
     "urdhva-mukha-svanasana": "Roll over the toes, chest forward", "adho-mukha-svanasana": "Hips up and back to Down Dog", "bhujangasana": "Lower down, lift the chest",
+    "dandayamana-bharmanasana": "From hands and knees, {side} arm forward, {other} leg back", "dandayamana-marjaryasana": "Round the back, elbow to knee",
+    "parivrtta-ashta-chandrasana": "High lunge, palms together, twist towards the front leg", "parivrtta-parsvakonasana": "Lower hand down, open the top arm to the sky",
+    "vrischika-svanasana": "Three-legged dog, bend the knee, open the hip", "camatkarasana": "Flip over the bottom hand, hips high",
+    "baddha-virabhadrasana": "Hands clasped behind, fold inside the front knee",
+    "parivrtta-trikonasana": "Hips square, lower hand down, turn the chest open",
+    "urdhva-prasarita-eka-padasana": "Fold over the standing leg, lift the other leg",
+    "parivrtta-ardha-chandrasana": "Lower hand down, lift the back leg, turn the chest",
+    "svarga-dvijasana": "Bind around the front leg, step in, rise slowly",
+    "baddha-parsvakonasana": "Wrap the lower arm under the thigh, bind behind",
+    "prasarita-padottanasana": "Feet wide, hands to the hips, fold forward",
+    "padangusthasana": "Fold forward, hold the big toes",
+    "vajrasana": "Kneel and sit back on the heels",
+    "virasana": "Kneel, feet wide, sit between the heels",
+    "bharadvajasana": "Legs to one side, twist the other way",
+    "marichyasana-3": "One leg long, the other knee up, twist towards it",
+    "upavistha-konasana": "Legs wide, walk the hands forward",
+    "parivrtta-janu-sirsasana": "One leg long, side bend over it, top arm over the ear",
+    "agnistambhasana": "Stack the shins, feet flexed",
+    "mandukasana": "Knees wide, forearms down, hips back",
+    "parsva-balasana": "From hands and knees, slide the {side} arm under",
+    "parighasana": "Kneel, {side} leg out to the side, lean over it",
+    "jathara-parivartanasana": "Lie on the back, arms wide, legs fall to the {side}",
+    "supta-baddha-konasana": "Lie back, soles together, knees open",
+    "supta-kapotasana": "Lie on the back, {side} ankle over the other knee",
+    "anantasana": "Lie on your side, head in the hand, lift the top leg",
+    "ardha-bhekasana": "On the belly, one forearm down, bend the {side} knee, hold the foot",
+    "ashtanga-namaskara": "Knees down, lower chest and chin",
+    "ardha-purvottanasana": "Sit, feet down, hands behind, lift the hips",
+    "purvottanasana": "Legs long, hands behind, lift the hips",
+    "makara-adho-mukha-svanasana": "Forearms down, step back into a long line",
+    "parsva-bakasana": "Squat, twist, knees onto one arm, lean forward",
+    "eka-pada-galavasana": "Shin across the arms, lean forward, lift the back leg",
+    "astavakrasana": "Leg over the arm, cross the ankles, lean forward",
+    "tittibhasana": "Shoulders behind the knees, press up, straighten the legs",
+    "kapotasana": "From Camel, lower the forearms to the floor",
+    "eka-pada-urdhva-dhanurasana": "From Wheel, lift the {side} leg",
+    "pashasana": "Squat, feet together, twist and wrap",
     "salabhasana": "Lie on the belly, lift chest and legs", "bharmanasana": "Come onto hands and knees", "marjaryasana": "Round the back", "bitilasana": "Belly down, chest forward",
     "anjaneyasana": "Step the {side} foot forward, back knee down", "ardha-hanumanasana": "Hips back over the knee, straighten the front leg",
     "balasana": "Hips back to the heels, rest", "bakasana": "Squat, hands down, knees onto the upper arms", "sukhasana": "Sit cross-legged",
@@ -1669,8 +1905,11 @@ body.is-live .langbar { display: none; }
 
   function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   const FOCUS_TAGS = { hamstrings: ["hamstrings"], back: ["back"], hips: ["hips", "hipflex"], balance: ["balance"], core: ["core"] };
-  const DEEP = new Set(["ustrasana", "dhanurasana", "urdhva-dhanurasana"]);
-  const NEUTRAL = new Set(["balasana", "apanasana", "supta-matsyendrasana", "ardha-matsyendrasana", "adho-mukha-svanasana", "bharmanasana"]);
+  const DEEP = new Set(["ustrasana", "dhanurasana", "urdhva-dhanurasana", "kapotasana", "eka-pada-urdhva-dhanurasana", "ardha-bhekasana"]);
+  const NEUTRAL = new Set(["balasana", "apanasana", "supta-matsyendrasana", "ardha-matsyendrasana", "adho-mukha-svanasana", "bharmanasana", "jathara-parivartanasana", "bharadvajasana"]);
+  // variations: a pose with var: X can take X's place inside any flow (same start and end on the mat)
+  const VARS = {};
+  LIB.forEach(p => { if (p.var) (VARS[p.var] = VARS[p.var] || []).push(p.id); });
   const FLOOR = new Set(["kneel", "prone", "supine", "seat"]);
   const blockPoses = b => (b.steps || b.round || []).map(s => s[0]);
 
@@ -1717,7 +1956,7 @@ body.is-live .langbar { display: none; }
     const hist = (opt.history || []).slice(-4);
     const W = [1, 0.6, 0.35, 0.2];
     const recency = id => hist.slice().reverse().reduce((a, h, i) => a + ((h.peak === id || h.warmup === id || h.sun === id || (h.modules || []).includes(id)) ? W[i] : 0), 0);
-    const loved = new Set(hist.flatMap(h => h.loved || []));
+    const loved = new Set(hist.flatMap(h => h.loved || []).concat(opt.loved || []));
     const hardPoses = new Set(hist.flatMap(h => h.hard || []));
     const R = rng(opt.seed * 31 + 7);
     const overlap = (a, b) => a.filter(x => b.includes(x)).length;
@@ -1738,8 +1977,10 @@ body.is-live .langbar { display: none; }
 
     // 3. rank modules: prepare the peak, match the focus, avoid recent ones, keep variety
     const scoreMod = m => overlap(m.prepares, peak.needs) * 3 + overlap(m.prepares, ftags) * 2 - recency(m.id) * 5 + R() * 2.5
+      + (m.prepares.includes("twist") && m.kind === "standing" ? 2.5 : 0) // turning, not only straight lines
       + blockPoses(m).filter(id => loved.has(id)).length * 0.5 - blockPoses(m).filter(id => hardPoses.has(id) && !opt.focus.includes("hamstrings")).length * 0.3;
-    const pool = B.MODULES.filter(m => m.int <= cap && usable(m) && !blockPoses(m).includes(peak.pose));
+    const steady = cap >= 2 && !opt.gentle && usable(B.MODULES.find(m => m.id === "s-revlunge"));
+    const pool = B.MODULES.filter(m => m.int <= cap && usable(m) && !blockPoses(m).includes(peak.pose) && !(steady && m.id === "s-twist")); // knee-down twist only for beginners
     const ranked = kind => pool.filter(m => kind.includes(m.kind)).map(m => [scoreMod(m), m]).sort((a, b) => b[0] - a[0]).map(x => x[1]);
     function takeDiverse(list, n, already) {
       const chosen = [], used = new Set(already.flatMap(blockPoses));
@@ -1783,12 +2024,27 @@ body.is-live .langbar { display: none; }
 
     function build(K) {
       const R2 = rng(opt.seed * 131 + 3);
+      // a held pose may become one of its variations: liked ones often, others now and then; the same choice all class long
+      const RV = rng(opt.seed * 53 + 17), varPick = {};
+      const variant = s => {
+        if (!VARS[s.id] || s.breath || s.peak || s.challenge || typeof s.hold !== "number" || s.hold < 2) return s;
+        if (!(s.id in varPick)) {
+          const ok = VARS[s.id].filter(v => me(v) !== "new");
+          const fav = ok.filter(v => loved.has(v));
+          const r = RV();
+          varPick[s.id] = fav.length && r < 0.75 ? fav[Math.floor(RV() * fav.length)] : ok.length && r > (fav.length ? 0.92 : 0.88) ? ok[Math.floor(RV() * ok.length)] : null;
+        }
+        const v = varPick[s.id];
+        return v ? Object.assign({}, s, { id: v, side: BY[v].sides === 2 ? s.side : null }) : s;
+      };
       const raw = [];
       let state = "seat", section = "";
       // adaptations: opt.swap replaces a pose with a gentler one everywhere (or drops it with null), e.g. Up Dog → Cobra
       const push = (steps, extra) => steps.forEach(s => {
         const sw = opt.swap || {};
         if (Object.prototype.hasOwnProperty.call(sw, s.id)) { if (!sw[s.id]) return; s = Object.assign({}, s, { id: sw[s.id], side: BY[sw[s.id]].sides === 2 ? s.side : null }); }
+        s = variant(s);
+        if (BY[s.id].sides === 2 && !s.side) { ["right", "left"].forEach(side => raw.push(Object.assign({ section }, s, { side }, extra || {}))); return; } // a one-sided variation of a centred pose: both sides
         raw.push(Object.assign({ section }, s, extra || {}));
       });
       const go = to => push(expand(connector(state, to), {}, R2));
@@ -1798,6 +2054,7 @@ body.is-live .langbar { display: none; }
 
       section = "Arrival"; push([{ id: "sukhasana", hold: opt.minutes >= 45 ? 12 : 8 }]);
       section = "Warm-up"; place(warm);
+      if (steady) raw.forEach(s => { if (s.section !== "Warm-up") return; if (s.id === "anjaneyasana") s.id = "ashta-chandrasana"; else if (s.id === "parivrtta-anjaneyasana") s.id = "parivrtta-ashta-chandrasana"; }); // back knee up
 
       section = sun.name.includes("Moon") ? "Moon Salutation" : "Sun Salutations";
       const sunStart = raw.length;
@@ -1807,6 +2064,7 @@ body.is-live .langbar { display: none; }
       for (let r = 0; r < K.rounds; r++) {
         const lead = r % 2 === 0 ? "right" : "left";
         let round = expand(sun.round, { lead }, R2);
+        if (cap >= 2 && !opt.gentle && me("ashta-chandrasana") !== "new") round = round.map(s => s.id === "anjaneyasana" ? Object.assign({}, s, { id: "ashta-chandrasana" }) : s); // back knee up
         if (r > 0 && round[0].id === "tadasana") round = round.slice(1);
         if (r === 0) round.forEach(s => { if (s.id === "adho-mukha-svanasana" && s.hold) s.hold = 5; });
         if (accCrow && r === K.rounds - 1 && sun.id !== "sun-moon") {
@@ -1873,7 +2131,9 @@ body.is-live .langbar { display: none; }
         const before = raw.length; place(m);
         if (yinish) raw.slice(before).forEach(s => { const y = BY[s.id].yin; if (y && s.hold) s.secs = Math.min(y, opt.minutes === 30 ? 2 : 4) * 60; });
       });
-      if (opt.minutes > 30 && !finish.some(m => m.id === "u-twist") && !used.includes("u-twist")) place(B.MODULES.find(m => m.id === "u-twist"));
+      const hasTwist = () => raw.some(s => BY[s.id] && BY[s.id].cat === "twist");
+      const uTwist = B.MODULES.find(m => m.id === "u-twist");
+      if ((opt.minutes > 30 || !hasTwist()) && !finish.some(m => m.id === "u-twist") && !used.includes("u-twist") && usable(uTwist)) place(uTwist); // the spine turns in every class
       go("supine");
 
       section = "Savasana";
@@ -2150,12 +2410,12 @@ body.is-live .langbar { display: none; }
 
   // Level = skill: which poses, which adaptations, how much intensity.
   const LEVELS = [
-    { n: 1, name: "First steps", de: "Erste Schritte", maxLvl: 1, energy: "low", swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" },
-      text: "New to yoga or back after a long break: basic poses, gentle versions, no Chaturanga.",
-      textDe: "Neu im Yoga oder zurück nach langer Pause: Grundhaltungen, sanfte Varianten, kein Chaturanga." },
-    { n: 2, name: "Foundation", de: "Fundament", maxLvl: 1, energy: "low", swap: { chaturanga: null },
-      text: "Knows the basics: simple flows, Chaturanga still left out.",
-      textDe: "Kennt die Grundlagen: einfache Flows, Chaturanga noch ausgelassen." },
+    { n: 1, name: "First steps", de: "Erste Schritte", maxLvl: 1, energy: "low", swap: { chaturanga: "ashtanga-namaskara", "urdhva-mukha-svanasana": "bhujangasana" },
+      text: "New to yoga or back after a long break: basic poses, gentle versions, Knees-Chest-Chin instead of Chaturanga.",
+      textDe: "Neu im Yoga oder zurück nach langer Pause: Grundhaltungen, sanfte Varianten, Knie-Brust-Kinn statt Chaturanga." },
+    { n: 2, name: "Foundation", de: "Fundament", maxLvl: 1, energy: "low", swap: { chaturanga: "ashtanga-namaskara" },
+      text: "Knows the basics: simple flows, Knees-Chest-Chin instead of Chaturanga.",
+      textDe: "Kennt die Grundlagen: einfache Flows, Knie-Brust-Kinn statt Chaturanga." },
     { n: 3, name: "Steady", de: "Sicher", maxLvl: 2, energy: "medium", swap: {},
       text: "Practises regularly: full vinyasa, intermediate poses, a peak with preparation.",
       textDe: "Übt regelmäßig: volle Vinyasa, mittlere Haltungen, ein Höhepunkt mit Vorbereitung." },
@@ -2189,12 +2449,12 @@ body.is-live .langbar { display: none; }
 
   // Things to take care of today. avoid = left out entirely; swap = replaced (null = dropped) inside flows.
   const CARE = [
-    { id: "wrists", en: "Wrists", de: "Handgelenke", avoid: ["bakasana", "vasisthasana", "adho-mukha-vrksasana", "urdhva-dhanurasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" } },
-    { id: "knees", en: "Knees", de: "Knie", avoid: ["malasana", "padmasana", "gomukhasana", "skandasana", "eka-pada-rajakapotasana", "hanumanasana"], swap: {} },
-    { id: "back", en: "Lower back", de: "Unterer Rücken", avoid: ["urdhva-dhanurasana", "dhanurasana", "ustrasana", "paripurna-navasana", "halasana", "hanumanasana"], swap: {} },
-    { id: "neck", en: "Neck", de: "Nacken", avoid: ["sirsasana", "salamba-sarvangasana", "halasana", "matsyasana", "ustrasana"], swap: {} },
-    { id: "shoulders", en: "Shoulders", de: "Schultern", avoid: ["pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "gomukhasana", "vasisthasana", "bakasana"], swap: { chaturanga: null } },
-    { id: "pregnant", en: "Pregnant", de: "Schwanger", avoid: ["salabhasana", "salamba-bhujangasana", "dhanurasana", "parivrtta-utkatasana", "ardha-matsyendrasana", "parivrtta-anjaneyasana", "paripurna-navasana", "sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "ustrasana", "bakasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": null, bhujangasana: null } },
+    { id: "wrists", en: "Wrists", de: "Handgelenke", avoid: ["parsva-bakasana", "eka-pada-galavasana", "astavakrasana", "tittibhasana", "eka-pada-urdhva-dhanurasana", "purvottanasana", "bakasana", "vasisthasana", "adho-mukha-vrksasana", "urdhva-dhanurasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": "bhujangasana" } },
+    { id: "knees", en: "Knees", de: "Knie", avoid: ["virasana", "agnistambhasana", "mandukasana", "pashasana", "kapotasana", "eka-pada-galavasana", "vajrasana", "malasana", "padmasana", "gomukhasana", "skandasana", "eka-pada-rajakapotasana", "hanumanasana"], swap: {} },
+    { id: "back", en: "Lower back", de: "Unterer Rücken", avoid: ["kapotasana", "eka-pada-urdhva-dhanurasana", "ardha-bhekasana", "urdhva-dhanurasana", "dhanurasana", "ustrasana", "paripurna-navasana", "halasana", "hanumanasana"], swap: {} },
+    { id: "neck", en: "Neck", de: "Nacken", avoid: ["kapotasana", "sirsasana", "salamba-sarvangasana", "halasana", "matsyasana", "ustrasana"], swap: {} },
+    { id: "shoulders", en: "Shoulders", de: "Schultern", avoid: ["parsva-bakasana", "eka-pada-galavasana", "astavakrasana", "tittibhasana", "kapotasana", "eka-pada-urdhva-dhanurasana", "baddha-parsvakonasana", "svarga-dvijasana", "pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "gomukhasana", "vasisthasana", "bakasana"], swap: { chaturanga: null } },
+    { id: "pregnant", en: "Pregnant", de: "Schwanger", avoid: ["parivrtta-trikonasana", "marichyasana-3", "jathara-parivartanasana", "pashasana", "parsva-bakasana", "eka-pada-galavasana", "astavakrasana", "tittibhasana", "kapotasana", "eka-pada-urdhva-dhanurasana", "ardha-bhekasana", "parivrtta-ardha-chandrasana", "parivrtta-ashta-chandrasana", "parivrtta-parsvakonasana", "camatkarasana", "ashtanga-namaskara", "salabhasana", "salamba-bhujangasana", "dhanurasana", "parivrtta-utkatasana", "ardha-matsyendrasana", "parivrtta-anjaneyasana", "paripurna-navasana", "sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana", "urdhva-dhanurasana", "ustrasana", "bakasana"], swap: { chaturanga: null, "urdhva-mukha-svanasana": null, bhujangasana: null } },
     { id: "pressure", en: "High blood pressure or glaucoma", de: "Bluthochdruck oder Glaukom", avoid: ["sirsasana", "salamba-sarvangasana", "halasana", "pincha-mayurasana", "adho-mukha-vrksasana"], swap: {} },
   ];
   const CARE_BY = Object.fromEntries(CARE.map(c => [c.id, c]));
@@ -2272,7 +2532,7 @@ body.is-live .langbar { display: none; }
       minutes, energy, style: th.style || T.style, cycle: T.cycle + (th.cycle || 0), pace: T.pace * lenF + (th.pace || 0) + (nat.pace || 0),
       focus: [...new Set(th.focus.concat(th.tags || [], nat.focus))], peaks: th.peaks, naturePeaks: nat.peaks, extraOffers: nat.challenge || 0, extraCore: nat.extraCore || 0, nature: nat.id,
       me, swap, challenges: today.challenges || {},
-      history: today.history || [], seed: today.seed || 1,
+      history: today.history || [], seed: today.seed || 1, loved: st.likes || [],
     };
   }
 
@@ -2533,6 +2793,56 @@ body.is-live .langbar { display: none; }
     "Toes out, bend the knees, sit low": "Zehen nach außen, Knie beugen, tief setzen",
     "Sit into the {side} leg, other leg long": "Ins {S:rechte} Bein setzen, anderes Bein lang",
     "Hands to heart, elbow outside the {side} knee": "Hände vor die Brust, Ellbogen außen ans {S:rechte} Knie",
+    "Hands clasped behind, fold inside the front knee": "Hände hinten verschränken, innen am vorderen Knie vorbeugen",
+    "Hips square, lower hand down, turn the chest open": "Hüfte gerade, untere Hand ab, Brust aufdrehen",
+    "Fold over the standing leg, lift the other leg": "Über das Standbein beugen, das andere Bein heben",
+    "Lower hand down, lift the back leg, turn the chest": "Untere Hand ab, hinteres Bein heben, Brust aufdrehen",
+    "Bind around the front leg, step in, rise slowly": "Um das vordere Bein binden, heransteigen, langsam aufrichten",
+    "Wrap the lower arm under the thigh, bind behind": "Unteren Arm unter dem Oberschenkel durch, hinten binden",
+    "Feet wide, hands to the hips, fold forward": "Füße weit, Hände an die Hüfte, vorbeugen",
+    "Fold forward, hold the big toes": "Vorbeugen, die großen Zehen greifen",
+    "Kneel and sit back on the heels": "Knien und auf die Fersen setzen",
+    "Kneel, feet wide, sit between the heels": "Knien, Füße weit, zwischen die Fersen setzen",
+    "Legs to one side, twist the other way": "Beine zu einer Seite, zur anderen Seite drehen",
+    "One leg long, the other knee up, twist towards it": "Ein Bein lang, das andere Knie hoch, dorthin drehen",
+    "Legs wide, walk the hands forward": "Beine weit, Hände nach vorn wandern",
+    "One leg long, side bend over it, top arm over the ear": "Ein Bein lang, seitlich darüber neigen, oberer Arm über das Ohr",
+    "Stack the shins, feet flexed": "Schienbeine übereinander, Füße angezogen",
+    "Knees wide, forearms down, hips back": "Knie weit, Unterarme ab, Hüfte zurück",
+    "From hands and knees, slide the {side} arm under": "Aus dem Vierfüßlerstand den {S:rechten} Arm unten durchschieben",
+    "Kneel, {side} leg out to the side, lean over it": "Knien, {S:rechtes} Bein zur Seite strecken, darüber neigen",
+    "Lie on the back, arms wide, legs fall to the {side}": "Auf den Rücken legen, Arme weit, Beine nach {S:rechts} sinken lassen",
+    "Lie back, soles together, knees open": "Zurücklegen, Fußsohlen zusammen, Knie öffnen",
+    "Lie on the back, {side} ankle over the other knee": "Auf den Rücken legen, {S:rechtes} Fußgelenk über das andere Knie",
+    "Lie on your side, head in the hand, lift the top leg": "Auf die Seite legen, Kopf in die Hand, oberes Bein heben",
+    "On the belly, one forearm down, bend the {side} knee, hold the foot": "Auf dem Bauch, ein Unterarm ab, {S:rechtes} Knie beugen, Fuß greifen",
+    "Knees down, lower chest and chin": "Knie ab, Brust und Kinn absenken",
+    "Sit, feet down, hands behind, lift the hips": "Sitzen, Füße auf den Boden, Hände hinter dir, Hüfte heben",
+    "Legs long, hands behind, lift the hips": "Beine lang, Hände hinter dir, Hüfte heben",
+    "Forearms down, step back into a long line": "Unterarme ab, in eine lange Linie zurücksteigen",
+    "Squat, twist, knees onto one arm, lean forward": "Hocke, drehen, Knie auf einen Arm, nach vorn lehnen",
+    "Shin across the arms, lean forward, lift the back leg": "Schienbein über die Arme, nach vorn lehnen, hinteres Bein heben",
+    "Leg over the arm, cross the ankles, lean forward": "Bein über den Arm, Fußgelenke kreuzen, nach vorn lehnen",
+    "Shoulders behind the knees, press up, straighten the legs": "Schultern hinter die Knie, hochdrücken, Beine strecken",
+    "From Camel, lower the forearms to the floor": "Aus dem Kamel die Unterarme zum Boden senken",
+    "From Wheel, lift the {side} leg": "Aus dem Rad das {S:rechte} Bein heben",
+    "Squat, feet together, twist and wrap": "Hocke, Füße zusammen, drehen und umwickeln",
+    "{side} arm forward, {other} leg back": "{S:Rechten} Arm nach vorn, {O:rechtes} Bein nach hinten",
+    "Round the back, elbow to knee": "Rücken runden, Ellbogen zum Knie",
+    "Reach long again": "Wieder lang strecken",
+    "Hand and knee down": "Hand und Knie ab",
+    "Hand and knee down, hips back to the heels": "Hand und Knie ab, Hüfte zu den Fersen",
+    "Palms together, twist towards the front leg": "Handflächen zusammen, zum vorderen Bein drehen",
+    "Lower hand down, open the top arm to the sky": "Untere Hand ab, den oberen Arm zum Himmel öffnen",
+    "Unwind, rise into High Lunge": "Lösen, in den hohen Ausfallschritt aufrichten",
+    "Bend the knee, open the hip": "Knie beugen, Hüfte öffnen",
+    "Flip over: foot down behind you, heart to the sky": "Umdrehen: Fuß hinter dir absetzen, Herz zum Himmel",
+    "Flip back to Down Dog": "Zurück in den Hund drehen",
+    "Hand down, back to Down Dog": "Hand ab, zurück in den Hund",
+    "From hands and knees, {side} arm forward, {other} leg back": "Aus dem Vierfüßlerstand {S:rechten} Arm nach vorn, {O:rechtes} Bein nach hinten",
+    "High lunge, palms together, twist towards the front leg": "Hoher Ausfallschritt, Handflächen zusammen, zum vorderen Bein drehen",
+    "Three-legged dog, bend the knee, open the hip": "Dreibeiniger Hund, Knie beugen, Hüfte öffnen",
+    "Flip over the bottom hand, hips high": "Über die untere Hand umdrehen, Hüfte hoch",
   };
 
   const CUES_DE = {
@@ -2609,6 +2919,48 @@ body.is-live .langbar { display: none; }
     "parivrtta-anjaneyasana": "Hände vor die Brust, Ellbogen außen am vorderen Knie",
   };
 
+  Object.assign(CUES_DE, {
+    "baddha-virabhadrasana": "Hände hinten verschränkt, innen am vorderen Knie vorbeugen, Arme zum Himmel",
+    "parivrtta-trikonasana": "Hüfte gerade, untere Hand zu Boden oder Büchern, oberer Arm nach oben",
+    "urdhva-prasarita-eka-padasana": "Über das Standbein beugen, das andere Bein hoch heben",
+    "parivrtta-ardha-chandrasana": "Hüfte waagerecht, Brust aufdrehen, oberer Arm nach oben",
+    "svarga-dvijasana": "Gebundene Arme halten das Bein, langsam aufrichten, Bein strecken",
+    "baddha-parsvakonasana": "Unteren Arm unter dem Oberschenkel durch, zur oberen Hand greifen",
+    "prasarita-padottanasana": "Füße weit und parallel, aus der Hüfte beugen, Scheitel Richtung Boden",
+    "padangusthasana": "Große Zehen greifen, Knie weich, einatmend lang werden",
+    "vajrasana": "Auf den Fersen sitzen, Wirbelsäule aufrecht, Hände auf den Oberschenkeln",
+    "virasana": "Zwischen den Fersen sitzen, auf Büchern, wenn die Knie es wollen",
+    "bharadvajasana": "Beine zu einer Seite gefaltet, zur anderen Seite drehen, lang werden",
+    "marichyasana-3": "Ein Bein lang, das andere Knie hoch, Ellbogen außen am Knie",
+    "upavistha-konasana": "Beine weit, Zehen nach oben, Hände mit langem Rücken nach vorn wandern",
+    "parivrtta-janu-sirsasana": "Seitbeuge über das lange Bein, oberer Arm über das Ohr, Brust dreht nach oben",
+    "agnistambhasana": "Schienbeine übereinander, Füße angezogen, nur vorbeugen, wenn die Knie es mögen",
+    "mandukasana": "Knie weit, Fußgelenke auf Höhe der Knie, Unterarme ab",
+    "parsva-balasana": "Einen Arm unten durchschieben, Schulter und Ohr ab, der andere Arm streckt sich nach oben",
+    "parighasana": "Knien, ein Bein zur Seite gestreckt, darüber neigen, oberer Arm über das Ohr",
+    "jathara-parivartanasana": "Arme weit, Beine zusammen zu einer Seite sinken lassen, Schultern bleiben unten",
+    "supta-baddha-konasana": "Fußsohlen zusammen, Knie offen, Arme weit, loslassen",
+    "supta-kapotasana": "Fußgelenk über das Knie, Beine heranziehen, Kopf bleibt am Boden",
+    "anantasana": "Auf der Seite liegen, Kopf in der Hand, oberes Bein heben",
+    "ardha-bhekasana": "Auf einem Unterarm, den Fuß neben die Hüfte drücken",
+    "ashtanga-namaskara": "Knie, Brust und Kinn ab, Hüfte hoch, Ellbogen nah am Körper",
+    "ardha-purvottanasana": "Hände hinter dir, Finger nach vorn, Hüfte auf Kniehöhe heben",
+    "purvottanasana": "Beine lang, Füße in den Boden drücken, Hüfte heben, Brust offen",
+    "makara-adho-mukha-svanasana": "Ellbogen unter den Schultern, eine lange Linie, Bauch fest",
+    "parsva-bakasana": "Tief drehen, Knie übereinander auf einem Arm, nach vorn lehnen",
+    "eka-pada-galavasana": "Schienbein über den Armen, nach vorn lehnen, das hintere Bein schweben lassen",
+    "astavakrasana": "Bein über den Arm, Fußgelenke kreuzen, nach vorn lehnen und strecken",
+    "tittibhasana": "Schultern hinter die Knie, hochdrücken, Beine strecken",
+    "kapotasana": "Aus dem Kamel die Unterarme zu Boden, Kopf Richtung Füße",
+    "eka-pada-urdhva-dhanurasana": "Aus dem Rad Gewicht verlagern, ein Bein zum Himmel heben",
+    "pashasana": "Hocke, Füße zusammen, drehen, Arme um die Knie legen",
+    "dandayamana-bharmanasana": "Gegenüberliegenden Arm und Bein lang, Hüfte waagerecht",
+    "dandayamana-marjaryasana": "Rücken runden, Ellbogen und Knie treffen sich unter dem Bauch",
+    "parivrtta-ashta-chandrasana": "Hinteres Knie gehoben, Handflächen zusammen, aus der Brust drehen",
+    "parivrtta-parsvakonasana": "Untere Hand ab, den oberen Arm zum Himmel öffnen",
+    "vrischika-svanasana": "Gehobenes Knie beugen, Hüfte öffnen, den Fuß hinübersinken lassen",
+    "camatkarasana": "Über die untere Hand umdrehen, Hüfte hoch, Herz zum Himmel",
+  });
   const PROPS_DE = {
     "Books under the lower hand": "Bücher unter die untere Hand",
     "Books under the hands": "Bücher unter die Hände",
@@ -2640,10 +2992,15 @@ body.is-live .langbar { display: none; }
     "A wall behind you while learning": "Beim Üben eine Wand hinter dir",
     "Hands on books, heel of the bent leg may lift": "Hände auf Bücher, Ferse des gebeugten Beins darf sich heben",
     "Back knee down on a towel": "Hinteres Knie auf ein Handtuch",
+    "Belt to close the bind": "Gurt, um die Bindung zu schließen",
+    "Cushion between heels and bottom": "Kissen zwischen Fersen und Gesäß",
+    "Books or a cushion under the bottom": "Bücher oder ein Kissen unter das Gesäß",
+    "Cushion under the top knee": "Kissen unter das obere Knie",
+    "Folded towel under the knee": "Gefaltetes Handtuch unter das Knie",
   };
 
   const BLOCKS_DE = {
-    "wu-catcow": "Katze und Kuh", "wu-supine": "Aufwärmen im Liegen", "wu-standing": "Aufwärmen im Stehen", "wu-lunge": "Aufwärmen im Ausfallschritt",
+    "wu-catcow": "Katze und Kuh", "s-wideleg": "Weite Vorwärtsbeuge", "c-reverse": "Umgekehrter Tisch", "wu-birddog": "Katze, Kuh und Vogel-Hund", "s-revlunge": "Gedrehter Ausfallschritt-Flow", "s-dogplay": "Dreibeiniger Hund, Skorpion und Wild Thing", "wu-supine": "Aufwärmen im Liegen", "wu-standing": "Aufwärmen im Stehen", "wu-lunge": "Aufwärmen im Ausfallschritt",
     "sun-a": "Sonnengruß A", "sun-b": "Sonnengruß B", "sun-classic": "Klassischer Sonnengruß", "sun-moon": "Mondgruß",
     "s-warriors": "Kriegerfolge", "s-sideangle": "Seitwinkel-Folge", "s-lunge-ham": "Ausfallschritt und halber Spagat", "s-lizard": "Eidechsen-Folge",
     "s-balance": "Gleichgewichtsfolge", "s-twist": "Drehung im Ausfallschritt", "s-highlunge": "Hoher Ausfallschritt", "s-pyramid": "Pyramiden-Folge",
@@ -2829,7 +3186,7 @@ body.is-live .langbar { display: none; }
   $("vol").addEventListener("input", () => { S.volume = Number($("vol").value); saveS(); Sound.setVolume(); });
   document.querySelectorAll(".heroCat").forEach(el => { el.innerHTML = fig(BY["sukhasana"].p, false, "cat"); });
 
-  const SCREENS = ["welcome", "pick", "assess", "reveal", "build", "preview", "live", "done", "library"];
+  const SCREENS = ["welcome", "pick", "assess", "reveal", "build", "preview", "live", "done", "library", "discover"];
   function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); document.body.classList.toggle("is-live", id === "live"); try { window.scrollTo(0, 0); } catch (e) {} }
 
   // ---------- profile: animal, level (age), tempo; remembered on this device ----------
@@ -3549,17 +3906,103 @@ Answer with JSON only, no prose, in exactly this shape:
     const inMine = p => p.lvl <= L.maxLvl && !skip.has(p.id);
     $("libIntro").textContent = ST ? tr(`${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.`,
       `${POSES.length} Haltungen. Auf deiner Stufe (${L.de}) nutzen die Stunden Haltungen bis „${LEVEL[L.maxLvl]}“. Tippe auf „Weglassen“ bei allem, was nie in einer Stunde vorkommen soll.`) : tr(`${POSES.length} poses.`, `${POSES.length} Haltungen.`);
-    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : skip.has(p.id))));
+    const likes = new Set((ST && ST.likes) || []);
+    const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : fMe === "fav" ? likes.has(p.id) : skip.has(p.id))));
     $("libGrid").innerHTML = list.map(p => `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
-        <span class="s">${p.sa}</span><span class="e">${pn(p)}</span><span class="d">${pn2(p)}</span>
+        <span class="s">${p.sa}${likes.has(p.id) ? ` <span class="fav">♡</span>` : ""}</span><span class="e">${pn(p)}</span><span class="d">${pn2(p)}</span>
         <span class="lvl">${[1, 2, 3].map(k => `<i class="${k <= p.lvl ? "on" : ""}"></i>`).join("")} ${LEVEL[p.lvl]}</span>
         ${ST && !P.KEEP.has(p.id) ? `<div class="mine" data-id="${p.id}"><button type="button" data-v="toggle" aria-pressed="${skip.has(p.id)}">${skip.has(p.id) ? tr("Left out · undo", "Ausgelassen · rückgängig") : tr("Leave out", "Weglassen")}</button></div>` : ""}</div>`).join("") || `<p class="muted">${tr("No poses match these filters.", "Keine Haltungen passen zu diesen Filtern.")}</p>`;
   }
   $("libGrid").addEventListener("click", e => {
     const b = e.target.closest(".mine button"); if (!b || !ST) return;
     const id = b.parentElement.dataset.id; const sk = new Set(ST.skip || []);
-    sk.has(id) ? sk.delete(id) : sk.add(id); ST.skip = [...sk]; saveST(); renderLibrary();
+    sk.has(id) ? sk.delete(id) : sk.add(id); ST.skip = [...sk]; if (sk.has(id)) ST.likes = (ST.likes || []).filter(x => x !== id); saveST(); renderLibrary();
   });
+
+  // ---------- discover: swipe through the library, like (more of it) or not for me (never included) ----------
+  let DQ = [], DHIST = [], dCur = null;
+  function dQueue() {
+    const L = P.LEVELS[ST.level - 1], done = new Set((ST.likes || []).concat(ST.skip || [], ST.passed || []));
+    const R = (() => { let x = (ST.level * 977 + (ST.count || 0) * 31 + 7) % 2147483647; return () => (x = x * 16807 % 2147483647) / 2147483647; })();
+    const rest = POSES.filter(p => !done.has(p.id) && p.id !== "savasana").map(p => [(p.lvl > L.maxLvl ? 1 : 0) + R() * 0.9, p.id]);
+    return rest.sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  }
+  function openDiscover() {
+    if (!ST) return;
+    GUIDE = mine(); DQ = dQueue(); DHIST = []; show("discover"); paintDiscover();
+  }
+  function dCounts() { return { likes: (ST.likes || []).length, no: (ST.skip || []).length }; }
+  function paintDiscover() {
+    const c = dCounts(), left = DQ.length;
+    $("dsIntro").textContent = tr(`Swipe right if you like a pose: it comes up more often. Left: never in a class. Up or ↻: decide later. ${left} to go · ${c.likes} ♡ · ${c.no} ✕`,
+      `Nach rechts wischen, wenn dir eine Haltung gefällt: Sie kommt öfter vor. Nach links: nie in einer Stunde. Nach oben oder ↻: später entscheiden. Noch ${left} · ${c.likes} ♡ · ${c.no} ✕`);
+    $("dUndo").hidden = !DHIST.length;
+    dCur = DQ[0] || null;
+    if (!dCur) {
+      $("dControls").hidden = true;
+      $("dStack").innerHTML = `<div class="dcard" style="cursor:default;text-align:center;gap:10px"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY["savasana"].p)}</svg>
+        <b style="font-size:1.2rem">${tr("All poses seen.", "Alle Haltungen gesehen.")}</b><span class="muted">${tr(`${c.likes} you like, ${c.no} not for you. Your likes now show up in your classes; change anything in the pose library.`, `${c.likes} magst du, ${c.no} sind nichts für dich. Deine Lieblinge kommen jetzt in deinen Stunden vor; ändern kannst du alles in der Haltungen-Übersicht.`)}</span>
+        <div class="row" style="justify-content:center"><button class="btn" id="dToLib" type="button">${tr("Pose library", "Haltungen")}</button><button class="btn quiet" id="dAgain" type="button">${tr("Go through the undecided again", "Die unentschiedenen noch mal")}</button></div></div>`;
+      $("dToLib").onclick = () => { fMe = "fav"; document.querySelectorAll("#fMe button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === "fav"))); renderLibrary(); show("library"); };
+      $("dAgain").onclick = () => { ST.passed = []; saveST(); DQ = dQueue(); paintDiscover(); };
+      return;
+    }
+    $("dControls").hidden = false;
+    const p = BY[dCur], L = P.LEVELS[ST.level - 1];
+    const lvlNote = p.lvl > L.maxLvl ? tr(`Not at your level yet: comes with "${LEVEL[p.lvl].toLowerCase()}".`, `Noch nicht auf deiner Stufe: kommt mit „${LEVEL[p.lvl]}“.`) : "";
+    const v = p.var && BY[p.var] ? tr(`Can take the place of ${BY[p.var].en} in a flow.`, `Kann im Flow für ${BY[p.var].de} einspringen.`) : "";
+    $("dStack").innerHTML = `<div class="dcard" id="dCard" role="group" aria-label="${pn(p)}">
+      <span class="stamp yes">♡</span><span class="stamp no">✕</span>
+      <svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
+      <span class="s">${p.sa}</span><span class="e">${pn(p)} <span class="muted" style="font-weight:400">· ${pn2(p)}</span></span>
+      <span class="meta">${[1, 2, 3].map(k => k <= p.lvl ? "●" : "○").join("")} ${LEVEL[p.lvl]}${p.sides === 2 ? tr(" · both sides", " · beide Seiten") : ""}</span>
+      <span class="muted" style="font-size:.92rem">${cueOf(p)}</span>
+      ${v || lvlNote ? `<span class="meta">${[v, lvlNote].filter(Boolean).join(" ")}</span>` : ""}
+    </div>`;
+    dragSetup($("dCard"));
+  }
+  function decide(kind) {
+    if (!dCur) return;
+    const id = dCur;
+    if (kind === "no" && P.KEEP.has(id)) { $("dsIntro").textContent = tr(`${pn(BY[id])} holds every class together, so it stays.`, `${pn(BY[id])} hält jede Stunde zusammen und bleibt deshalb.`); kind = "later"; }
+    DHIST.push({ id, kind });
+    DQ.shift();
+    if (kind === "yes") ST.likes = [...new Set((ST.likes || []).concat(id))];
+    else if (kind === "no") ST.skip = [...new Set((ST.skip || []).concat(id))];
+    else ST.passed = [...new Set((ST.passed || []).concat(id))];
+    saveST();
+    const card = $("dCard");
+    if (card) { card.style.transform = kind === "yes" ? "translateX(130%) rotate(18deg)" : kind === "no" ? "translateX(-130%) rotate(-18deg)" : "translateY(-120%)"; card.style.opacity = "0"; setTimeout(paintDiscover, 230); }
+    else paintDiscover();
+  }
+  function undo() {
+    const h = DHIST.pop(); if (!h) return;
+    ST.likes = (ST.likes || []).filter(x => x !== h.id); ST.skip = (ST.skip || []).filter(x => x !== h.id); ST.passed = (ST.passed || []).filter(x => x !== h.id); saveST();
+    DQ.unshift(h.id); paintDiscover();
+  }
+  function dragSetup(card) {
+    let x0 = 0, y0 = 0, dx = 0, dy = 0, on = false;
+    const yes = card.querySelector(".stamp.yes"), no = card.querySelector(".stamp.no");
+    card.addEventListener("pointerdown", e => { on = true; x0 = e.clientX; y0 = e.clientY; dx = dy = 0; card.classList.add("drag"); try { card.setPointerCapture(e.pointerId); } catch (er) {} });
+    card.addEventListener("pointermove", e => {
+      if (!on) return; dx = e.clientX - x0; dy = e.clientY - y0;
+      card.style.transform = `translate(${dx}px, ${Math.min(0, dy)}px) rotate(${dx / 18}deg)`;
+      yes.style.opacity = Math.max(0, Math.min(1, dx / 90)); no.style.opacity = Math.max(0, Math.min(1, -dx / 90));
+    });
+    const end = () => {
+      if (!on) return; on = false; card.classList.remove("drag");
+      if (dx > 90) decide("yes"); else if (dx < -90) decide("no"); else if (dy < -90) decide("later");
+      else { card.style.transform = ""; yes.style.opacity = 0; no.style.opacity = 0; }
+    };
+    card.addEventListener("pointerup", end); card.addEventListener("pointercancel", end);
+  }
+  $("dsBtn").addEventListener("click", openDiscover);
+  $("dsDone").addEventListener("click", () => showToday());
+  $("dYes").addEventListener("click", () => decide("yes"));
+  $("dNo").addEventListener("click", () => decide("no"));
+  $("dLater").addEventListener("click", () => decide("later"));
+  $("dUndo").addEventListener("click", undo);
+  document.addEventListener("keydown", e => { if ($("discover").hidden) return; if (e.key === "ArrowRight") decide("yes"); if (e.key === "ArrowLeft") decide("no"); if (e.key === "ArrowUp") decide("later"); });
 
   // ---------- language switch: static texts are swapped in place, the current screen is drawn again ----------
   const UI_DE = {
@@ -3592,7 +4035,8 @@ Answer with JSON only, no prose, in exactly this shape:
     "Save and see my animal": "Speichern und mein Tier sehen", "Back to start": "Zurück zum Start", "Next time you are": "Nächstes Mal bist du",
     "Done": "Fertig", "All levels": "Alle Stufen", "Basic": "Einfach", "Intermediate": "Mittel", "Advanced": "Fortgeschritten",
     "All": "Alle", "In my practices": "In meinen Stunden", "Left out": "Ausgelassen",
-    "Short on time?": "Wenig Zeit?", "Transitions": "Übergänge", "Slow": "Langsam", "Slow transitions": "Langsame Übergänge",
+    "Short on time?": "Wenig Zeit?", "Discover poses": "Haltungen entdecken", "♡ Discover poses": "♡ Haltungen entdecken", "Not for me": "Nicht für mich",
+    "Later": "Später", "I like it": "Mag ich", "Undo": "Rückgängig", "♡ Liked": "♡ Lieblinge", "Transitions": "Übergänge", "Slow": "Langsam", "Slow transitions": "Langsame Übergänge",
     "Slow: time to get into every pose before the breaths are counted.": "Langsam: Zeit, in jede Haltung zu kommen, bevor die Atemzüge gezählt werden.", "Ready": "Bereit", "Step by step": "Schritt für Schritt", "First time: step by step": "Zum ersten Mal: Schritt für Schritt", "Start": "Starten", "Save": "Speichern",
     "Every part of the body once. The same practice for everyone, no animal needed.": "Jeder Teil des Körpers einmal. Für alle gleich, ohne Tier.", "Fundamental · 10 min": "Grundton · 10 min",
     "Every part of the body once: the shortest complete practice.": "Jeder Teil des Körpers einmal: die kürzeste vollständige Praxis.",
@@ -3600,7 +4044,7 @@ Answer with JSON only, no prose, in exactly this shape:
   const ATTR_DE = {
     "e.g. calm young heron · ruhiger junger Reiher": "z. B. ruhiger junger Reiher · calm young heron",
     "What felt good, what was missing, what to change": "Was tat gut, was hat gefehlt, was soll anders werden",
-    "Change this pose": "Diese Haltung ändern", "Current pose": "Aktuelle Haltung",
+    "Change this pose": "Diese Haltung ändern", "Current pose": "Aktuelle Haltung", "Not for me": "Nicht für mich", "Later": "Später", "I like it": "Mag ich",
   };
   const TEXTS = [], ATTRS = [];
   (function collect() {
@@ -3624,6 +4068,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (cur === "preview" && plan && $("thinking").hidden) renderPreview();
     if (cur === "done" && session) { paintDoneMeta(); paintFb(); paintNext(); }
     if (cur === "library") renderLibrary();
+    if (cur === "discover") paintDiscover();
     if (!$("sheet").hidden && sheetId) openSheet(sheetId);
     setPaused(paused); paintFsBtn();
   }
