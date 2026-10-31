@@ -6,7 +6,7 @@ steady balance, all-rounder, gentle start), and they pick one of three animals f
 **lively young bear** / **munterer junger Bär**, holds everything: the animal is the nature (a bear's practice leans
 towards mobility), its age is the level (baby → young → grown → wise → ancient), the first word is the pace
 (calm → lively → swift). Each day they pick a theme and a length, can swap or leave out poses, practise with the cat
-guiding live, and give two answers of feedback. No accounts: the phone remembers, and the code works anywhere.
+guiding live (in the shape of their own animal; all 18 animals can do every pose), and give two answers of feedback. No accounts: the phone remembers, and the code works anywhere.
 A fixed 10-minute **Grundton** (Fundamental) moves every part of the body once, for days with little time.
 The app speaks English and German (EN/DE switch at the top; it starts in the phone's language).
 
@@ -51,7 +51,7 @@ On your own web address the screen-on lock and full screen work best (HTTPS, top
 | `src/i18n.js` | German for transition hints, cues, props, block and section names |
 | `src/profile.js` | Natures (6 × 3 animals, EN/DE), ages, paces, levels, themes, care areas, assessment and nature scoring, feedback rules, profile → composer settings |
 | `src/player.template.html` | Page layout, styles and app logic |
-| `src/pose-engine.js` | Draws a figure (stick, bean or cat) from joint angles and interpolates between poses |
+| `src/pose-engine.js` | Draws a figure from joint angles and interpolates between poses; animal kits dress the same skeleton as any of the 18 animals |
 | `src/poses.js` | 71 poses: names in three languages, level, personal difficulty, cues, props, angles |
 | `src/blocks.js` | Building blocks: warm-ups, salutations, flow modules, peak themes, connectors |
 | `src/composer.js` | Composes a class around a peak, with memory, timing fit and a rules check |
