@@ -196,6 +196,8 @@ body.is-live { overflow: hidden; }
 .animals button { border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 10px 8px; text-align: center; }
 .animals button b { display: block; font-family: var(--font-display); font-size: 1.02rem; }
 .animals button small { color: var(--muted); }
+.animals button svg { display: block; width: 100%; max-width: 110px; height: auto; aspect-ratio: 260 / 230; margin: 0 auto 2px; }
+.revealfig { width: 150px; height: auto; aspect-ratio: 260 / 230; align-self: center; }
 .animals button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .q { display: flex; flex-direction: column; gap: 8px; }
 .q .ask { font-weight: 700; }
@@ -280,6 +282,7 @@ body.is-live .langbar { display: none; }
 
 <section class="screen" id="reveal" hidden>
   <div class="codecard">
+    <svg class="revealfig" id="rFig" viewBox="0 0 260 230" aria-hidden="true"></svg>
     <span class="label">You are</span>
     <span class="phrase" id="rPhrase"></span><span class="phrase-de" id="rPhraseDe"></span>
     <span class="story" id="rStory"></span>
@@ -423,8 +426,10 @@ body.is-live .langbar { display: none; }
   const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES, I = window.YogaI18n;
   const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
   const $ = id => document.getElementById(id);
-  const CAT = { style: "cat" };
-  const fig = (pose, mirror) => mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, CAT)}</g>` : E.svgInner(pose, CAT);
+  // the guide: your own animal does the practice; the cat leads the Grundton and everything before you have an animal
+  let GUIDE = "cat";
+  const fig = (pose, mirror, animal) => { const o = { style: "cat", animal: animal || GUIDE }; return mirror ? `<g transform="translate(260 0) scale(-1 1)">${E.svgInner(pose, o)}</g>` : E.svgInner(pose, o); };
+  const mine = () => (ST && P.ANIMAL[ST.animal] ? ST.animal : "cat");
   const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   // ---------- language ----------
   let LANG = "en";
@@ -469,7 +474,7 @@ body.is-live .langbar { display: none; }
   paintSeg();
   $("vol").value = S.volume;
   $("vol").addEventListener("input", () => { S.volume = Number($("vol").value); saveS(); Sound.setVolume(); });
-  document.querySelectorAll(".heroCat").forEach(el => { el.innerHTML = fig(BY["sukhasana"].p); });
+  document.querySelectorAll(".heroCat").forEach(el => { el.innerHTML = fig(BY["sukhasana"].p, false, "cat"); });
 
   const SCREENS = ["welcome", "pick", "assess", "reveal", "build", "preview", "live", "done", "library"];
   function show(id) { SCREENS.forEach(s => $(s).hidden = s !== id); document.body.classList.toggle("is-live", id === "live"); try { window.scrollTo(0, 0); } catch (e) {} }
@@ -544,7 +549,7 @@ body.is-live .langbar { display: none; }
 
   // ---------- nature and animal ----------
   let pickAnimal = null, NAT_ORDER = P.NATURES.map(n => n.id), PENDING = null, KEEP_LT = null, ASSESS_MODE = "full";
-  const animalBtns = n => n.animals.map(([id, en, de]) => `<button type="button" data-id="${id}" aria-pressed="${pickAnimal === id}"><b>${DE() ? de : en}</b><small>${DE() ? en : de}</small></button>`).join("");
+  const animalBtns = n => n.animals.map(([id, en, de]) => `<button type="button" data-id="${id}" aria-pressed="${pickAnimal === id}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY["sukhasana"].p, false, id)}</svg><b>${DE() ? de : en}</b><small>${DE() ? en : de}</small></button>`).join("");
   function renderPick() {
     const n = P.NATURE[NAT_ORDER[0]];
     $("pickLabel").textContent = tr("Your nature", "Deine Natur");
@@ -567,6 +572,7 @@ body.is-live .langbar { display: none; }
   function paintReveal() {
     const n = natureOfAnimal(ST.animal), A = P.ANIMAL[ST.animal], L = P.LEVELS[ST.level - 1];
     paintPhrase("rPhrase", "rPhraseDe", ST);
+    $("rFig").innerHTML = fig(BY["sukhasana"].p, false, ST.animal);
     $("rStory").textContent = REVEAL_CHANGED ? tr(`New animal: your nature is now ${n.short}.`, `Neues Tier: deine Natur ist jetzt ${n.shortDe}.`) : "";
     $("rExplain").textContent = tr(`${A.en}: ${n.short}. "${P.AGES[ST.level - 1].en}" is your level (${ST.level} of 5: ${L.name.toLowerCase()}), "${P.TEMPOS[ST.tempo - 1].en}" is your pace. Your ${A.en.toLowerCase()} grows up as you practise.`,
       `${A.de}: ${n.shortDe}. „${P.AGES[ST.level - 1].de}“ ist deine Stufe (${ST.level} von 5: ${L.de}), „${P.TEMPOS[ST.tempo - 1].de}“ ist dein Tempo. ${A.g === "f" ? "Deine" : "Dein"} ${A.de} wird älter, während du übst.`);
@@ -603,7 +609,7 @@ body.is-live .langbar { display: none; }
       const opts = (DE() ? q.optsDe : q.opts).map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
         const on = q.multi ? (ANS[q.k] || []).includes(v) : String(ANS[q.k]) === v;
         return `<button type="button" data-v="${v}" aria-pressed="${on}">${t}</button>`; }).join("");
-      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p)}</svg><span class="ask">${tr(q.ask, q.askDe)}</span></div>` : `<span class="ask">${tr(q.ask, q.askDe)}</span>`;
+      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p, false, "cat")}</svg><span class="ask">${tr(q.ask, q.askDe)}</span></div>` : `<span class="ask">${tr(q.ask, q.askDe)}</span>`;
       return `<div class="q">${head}<div class="seg" data-q="${q.k}" data-multi="${q.multi ? 1 : ""}">${opts}</div></div>`;
     }).join("");
   }
@@ -635,6 +641,7 @@ body.is-live .langbar { display: none; }
     paintToday(); show("build");
   }
   function paintToday() {
+    GUIDE = mine(); $("build").querySelector(".heroCat").innerHTML = fig(BY["sukhasana"].p);
     paintPhrase("tPhrase", "tPhraseDe", ST); $("tNature").textContent = natureLine(ST);
     $("recheck").hidden = !((ST.count || 0) - (ST.checked || 0) >= 10);
     renderThemes(); renderCare();
@@ -731,7 +738,7 @@ body.is-live .langbar { display: none; }
     CYCLE = o.cycle; return o;
   }
   function buildPlan() {
-    source = "composer";
+    source = "composer"; GUIDE = mine();
     const o = todayOpts();
     plan = G.generate(o); plan.opts = o;
     renderPreview(); show("preview");
@@ -740,7 +747,7 @@ body.is-live .langbar { display: none; }
   let GT_SKIP = [];
   let GT_CARE = [];
   function buildFundamental() {
-    source = "fundamental"; THEME_NOW = "fundamental";
+    source = "fundamental"; THEME_NOW = "fundamental"; GUIDE = "cat";
     const o = P.options({ animal: null, level: 5, tempo: 2, skip: ST ? ST.skip : [] }, { theme: "flow", minutes: 10, care: GT_CARE, seed, history: [] });
     o.cycle = 6; o.skip = GT_SKIP; CYCLE = o.cycle;
     plan = G.fundamental(o); plan.opts = o;
@@ -782,6 +789,7 @@ Answer with JSON only, no prose, in exactly this shape:
   }
   async function surprise() {
     if (!sampleFn) return;
+    GUIDE = mine();
     show("preview");
     $("thinking").hidden = false; $("thinkingTxt").textContent = tr("Claude is composing your class…", "Claude stellt deine Stunde zusammen…");
     $("sections").innerHTML = ""; $("topCards").innerHTML = ""; $("sumTitle").textContent = tr("Surprise me", "Überrasch mich"); $("sumMeta").textContent = ""; $("sumWhy").textContent = "";
@@ -1095,7 +1103,7 @@ Answer with JSON only, no prose, in exactly this shape:
 
   // ---------- library ----------
   let fLevel = "all", fMe = "all";
-  $("libBtn").addEventListener("click", () => { renderLibrary(); show("library"); });
+  $("libBtn").addEventListener("click", () => { GUIDE = mine(); renderLibrary(); show("library"); });
   $("libBack").addEventListener("click", () => showToday());
   function segFilter(el, set) { el.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; set(b.dataset.v); el.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); renderLibrary(); }); }
   segFilter($("fLevel"), v => fLevel = v); segFilter($("fMe"), v => fMe = v);
