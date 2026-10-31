@@ -7,6 +7,7 @@ steady balance, all-rounder, gentle start), and they pick one of three animals f
 towards mobility), its age is the level (baby → young → grown → wise → ancient), the first word is the pace
 (calm → lively → swift). Each day they pick a theme and a length, can swap or leave out poses, practise with the cat
 guiding live, and give two answers of feedback. No accounts: the phone remembers, and the code works anywhere.
+A fixed 10-minute **Grundton** (Fundamental) moves every part of the body once, for days with little time.
 The app speaks English and German (EN/DE switch at the top; it starts in the phone's language).
 
 ## Run it

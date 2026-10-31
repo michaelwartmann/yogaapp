@@ -1107,6 +1107,9 @@ button { cursor: pointer; }
     "parsvottanasana>virabhadrasana-1": "Bend the front knee, rise up",
     "ashta-chandrasana>parivrtta-anjaneyasana": "Back knee down, hands to heart, twist",
     "parivrtta-anjaneyasana>anjaneyasana": "Unwind, arms up",
+    "parivrtta-anjaneyasana>phalakasana": "Hands down, step back to Plank",
+    "apanasana>supta-matsyendrasana": "Feet down, let the knees fall to the {side}",
+    "parivrtta-anjaneyasana>uttanasana": "Step the back foot forward, fold",
     "utthita-tadasana>utkata-konasana": "Turn the toes out, bend the knees, sit low",
     "utkata-konasana>utthita-tadasana": "Straighten the legs, arms out",
     "utkata-konasana>skandasana": "Shift into the {side} leg, other leg long",
@@ -1569,7 +1572,41 @@ button { cursor: pointer; }
     return best;
   }
 
-  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, retime, TO, HOW };
+  // Grundton (fundamental): the shortest class that moves every part of the body once, in every direction it has.
+  // Spine forward, back, sideways and twisting both ways; hip flexors, hamstrings, outward hip; shoulders overhead;
+  // arms, wrists and core carrying weight; balance; a rest. About 10 minutes; the breath sets the length.
+  const TIP_EAGLE = { en: "Optional: eagle arms", de: "Optional: Adlerarme" };
+  const FUNDAMENTAL = [
+    ["Arrival", [["sukhasana", 8, null, { en: "Eyes closed, arrive", de: "Augen schließen, ankommen" }]]],
+    ["Warm-up", [["bharmanasana", 1], ...Array.from({ length: 5 }, () => [["bitilasana", "in"], ["marjaryasana", "out"]]).flat(), ["adho-mukha-svanasana", 5]]],
+    ["Lunges", [["anjaneyasana", 3, "right"], ["parivrtta-anjaneyasana", 3, "right"], ["phalakasana", 5], ["adho-mukha-svanasana", 2],
+      ["anjaneyasana", 3, "left"], ["parivrtta-anjaneyasana", 3, "left"], ["uttanasana", 2], ["tadasana", 2]]],
+    ["Standing", [["vrksasana", 5, "right", TIP_EAGLE], ["vrksasana", 5, "left", TIP_EAGLE], ["indudalasana", 3, "right"], ["indudalasana", 3, "left"]]],
+    ["Backbends", [["setu-bandha-sarvangasana", 5], ["setu-bandha-sarvangasana", 5]]],
+    ["Cool-down", [["apanasana", 4], ["supta-matsyendrasana", 5, "right"], ["supta-matsyendrasana", 5, "left"]]],
+    ["Savasana", [["savasana", 0]]],
+  ];
+  function fundamental(opt) {
+    opt = Object.assign({ cycle: 6, minutes: 10, seed: 1 }, opt || {}, { style: "vinyasa" });
+    // poses that are out for this person (care areas, "never include", left out today) are dropped on both sides
+    const out = id => id !== "savasana" && ((opt.me && opt.me[id] === "new") || (opt.swap && id in opt.swap && !opt.swap[id]) || (opt.skip || []).includes(id));
+    let raw = [];
+    FUNDAMENTAL.forEach(([section, list]) => list.forEach(([id, h, side, tip]) => { if (!out(id)) raw.push(typeof h === "string"
+      ? { id, breath: h, section } : { id, hold: h, side: side || null, section, tip }); }));
+    opt.me = {};
+    const plan = finalize(raw, opt, 1);
+    // exact holds, the same on both sides (finalize adds a little random variation for the composed classes)
+    if (plan.steps.length === raw.length) plan.steps.forEach((s, i) => { if (!s.breath && raw[i].hold) { s.breaths = raw[i].hold; s.secs = Math.round(raw[i].hold * opt.cycle); } if (raw[i].tip) s.tip = raw[i].tip; });
+    plan.totalSecs = plan.steps.reduce((a, s) => a + s.secs, 0);
+    const sav = plan.steps.find(s => s.id === "savasana");
+    const before = plan.totalSecs - sav.secs;
+    sav.secs = Math.max(150, Math.min(180, Math.round((opt.minutes * 60 - before) / 30) * 30));
+    plan.totalSecs = before + sav.secs;
+    return Object.assign(plan, { offers: [], meta: { peak: null, source: "fundamental", modules: [] }, checks: validate(plan.steps, opt),
+      why: "Arrive sitting, then every part of the body once: the spine in all six directions, hips, hamstrings, shoulders, arms, core and balance; a twist lying down, then rest." });
+  }
+
+  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, retime, fundamental, TO, HOW };
   if (typeof module !== "undefined") module.exports = root.YogaComposer;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>

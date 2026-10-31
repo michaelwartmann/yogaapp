@@ -225,6 +225,9 @@ button.chip:hover { box-shadow: inset 0 0 0 1.5px var(--muted); }
 .sheet .head { display: flex; gap: 12px; align-items: center; }
 .sheet .head svg { width: 84px; flex: none; height: auto; aspect-ratio: 260 / 230; }
 .sheet .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+#done.gt .animal-only, #done:not(.gt) .gt-only { display: none; }
+.gtcard { background: var(--surface); border-radius: 22px; padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+.gtcard .t { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 220px; }
 .langbar { max-width: 1040px; margin: 0 auto 2px; display: flex; justify-content: flex-end; }
 .langbar .seg button { padding: 4px 12px; font-size: .82rem; letter-spacing: .04em; }
 body.is-live .langbar { display: none; }
@@ -240,6 +243,10 @@ body.is-live .langbar { display: none; }
       <h1 id="wTitle">Mat Cat Yoga</h1>
       <p class="muted" id="wSub">A yoga practice that fits you, guided on your phone.</p>
     </div>
+  </div>
+  <div class="gtcard">
+    <div class="t"><b>Fundamental · 10 min</b><span class="muted" style="font-size:.88rem">Every part of the body once. The same practice for everyone, no animal needed.</span></div>
+    <button class="btn primary" id="gtWelcome" type="button">Start</button>
   </div>
   <div id="wKnown" hidden style="display:flex;flex-direction:column;gap:14px">
     <div class="codecard"><span class="label">Welcome back</span><span class="phrase" id="wPhrase"></span><span class="phrase-de" id="wPhraseDe"></span><span class="muted" id="wNature"></span></div>
@@ -318,6 +325,9 @@ body.is-live .langbar { display: none; }
       <label class="row muted" for="vol" style="font-size:.88rem">Volume <input type="range" id="vol" min="0" max="100" step="5"> <button class="btn quiet" id="testSound" type="button">Listen</button></label>
     </div>
     <div class="row"><button class="btn primary big" id="buildBtn" type="button">Build practice</button><button class="btn big" id="surpriseBtn" type="button" hidden>Surprise me</button><button class="btn" id="libBtn" type="button">Pose library</button></div>
+    <div class="field"><span class="label">Short on time?</span>
+      <div class="row"><button class="btn" id="gtBtn" type="button">Fundamental · 10 min</button><span class="muted" style="font-size:.88rem">Every part of the body once: the shortest complete practice.</span></div>
+    </div>
     <p class="muted" id="surpriseNote" style="font-size:.88rem" hidden>Surprise me asks Claude to write a class just for you. It takes about half a minute and uses your Claude account.</p>
   </div>
 </section>
@@ -394,11 +404,11 @@ body.is-live .langbar { display: none; }
   <h2 style="font-size:2.1rem">Namaste</h2>
   <p class="muted" id="doneMeta"></p>
   <div class="fb">
-    <div class="field"><span class="label">The poses were</span><div class="seg" id="fbPoses"><button type="button" data-v="too easy">Too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too hard">Too hard</button></div></div>
-    <div class="field"><span class="label">The pace was</span><div class="seg" id="fbPace"><button type="button" data-v="too slow">Too slow</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too fast">Too fast</button></div></div>
+    <div class="field animal-only"><span class="label">The poses were</span><div class="seg" id="fbPoses"><button type="button" data-v="too easy">Too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too hard">Too hard</button></div></div>
+    <div class="field animal-only"><span class="label">The pace was</span><div class="seg" id="fbPace"><button type="button" data-v="too slow">Too slow</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too fast">Too fast</button></div></div>
     <div class="field"><span class="label">Poses · tap once for loved, twice for hard</span><div class="marks" id="fbMarks"></div></div>
     <div class="field"><label class="label" for="fbNote">Notes</label><textarea id="fbNote" placeholder="What felt good, what was missing, what to change"></textarea></div>
-    <div class="row"><button class="btn primary big" id="fbSave" type="button">Save and see my animal</button><button class="btn quiet" id="againBtn" type="button">Back to start</button></div>
+    <div class="row"><button class="btn primary big" id="fbSave" type="button"><span class="animal-only">Save and see my animal</span><span class="gt-only">Save</span></button><button class="btn quiet" id="againBtn" type="button">Back to start</button></div>
     <div class="codecard" id="nextCard" hidden><span class="label">Next time you are</span><span class="phrase" id="nPhrase"></span><span class="phrase-de" id="nPhraseDe"></span><span class="story" id="nStory"></span></div>
     <p class="status" id="fbStatus" aria-live="polite"></p>
   </div>
@@ -1380,6 +1390,9 @@ body.is-live .langbar { display: none; }
     "parsvottanasana>virabhadrasana-1": "Bend the front knee, rise up",
     "ashta-chandrasana>parivrtta-anjaneyasana": "Back knee down, hands to heart, twist",
     "parivrtta-anjaneyasana>anjaneyasana": "Unwind, arms up",
+    "parivrtta-anjaneyasana>phalakasana": "Hands down, step back to Plank",
+    "apanasana>supta-matsyendrasana": "Feet down, let the knees fall to the {side}",
+    "parivrtta-anjaneyasana>uttanasana": "Step the back foot forward, fold",
     "utthita-tadasana>utkata-konasana": "Turn the toes out, bend the knees, sit low",
     "utkata-konasana>utthita-tadasana": "Straighten the legs, arms out",
     "utkata-konasana>skandasana": "Shift into the {side} leg, other leg long",
@@ -1842,7 +1855,41 @@ body.is-live .langbar { display: none; }
     return best;
   }
 
-  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, retime, TO, HOW };
+  // Grundton (fundamental): the shortest class that moves every part of the body once, in every direction it has.
+  // Spine forward, back, sideways and twisting both ways; hip flexors, hamstrings, outward hip; shoulders overhead;
+  // arms, wrists and core carrying weight; balance; a rest. About 10 minutes; the breath sets the length.
+  const TIP_EAGLE = { en: "Optional: eagle arms", de: "Optional: Adlerarme" };
+  const FUNDAMENTAL = [
+    ["Arrival", [["sukhasana", 8, null, { en: "Eyes closed, arrive", de: "Augen schließen, ankommen" }]]],
+    ["Warm-up", [["bharmanasana", 1], ...Array.from({ length: 5 }, () => [["bitilasana", "in"], ["marjaryasana", "out"]]).flat(), ["adho-mukha-svanasana", 5]]],
+    ["Lunges", [["anjaneyasana", 3, "right"], ["parivrtta-anjaneyasana", 3, "right"], ["phalakasana", 5], ["adho-mukha-svanasana", 2],
+      ["anjaneyasana", 3, "left"], ["parivrtta-anjaneyasana", 3, "left"], ["uttanasana", 2], ["tadasana", 2]]],
+    ["Standing", [["vrksasana", 5, "right", TIP_EAGLE], ["vrksasana", 5, "left", TIP_EAGLE], ["indudalasana", 3, "right"], ["indudalasana", 3, "left"]]],
+    ["Backbends", [["setu-bandha-sarvangasana", 5], ["setu-bandha-sarvangasana", 5]]],
+    ["Cool-down", [["apanasana", 4], ["supta-matsyendrasana", 5, "right"], ["supta-matsyendrasana", 5, "left"]]],
+    ["Savasana", [["savasana", 0]]],
+  ];
+  function fundamental(opt) {
+    opt = Object.assign({ cycle: 6, minutes: 10, seed: 1 }, opt || {}, { style: "vinyasa" });
+    // poses that are out for this person (care areas, "never include", left out today) are dropped on both sides
+    const out = id => id !== "savasana" && ((opt.me && opt.me[id] === "new") || (opt.swap && id in opt.swap && !opt.swap[id]) || (opt.skip || []).includes(id));
+    let raw = [];
+    FUNDAMENTAL.forEach(([section, list]) => list.forEach(([id, h, side, tip]) => { if (!out(id)) raw.push(typeof h === "string"
+      ? { id, breath: h, section } : { id, hold: h, side: side || null, section, tip }); }));
+    opt.me = {};
+    const plan = finalize(raw, opt, 1);
+    // exact holds, the same on both sides (finalize adds a little random variation for the composed classes)
+    if (plan.steps.length === raw.length) plan.steps.forEach((s, i) => { if (!s.breath && raw[i].hold) { s.breaths = raw[i].hold; s.secs = Math.round(raw[i].hold * opt.cycle); } if (raw[i].tip) s.tip = raw[i].tip; });
+    plan.totalSecs = plan.steps.reduce((a, s) => a + s.secs, 0);
+    const sav = plan.steps.find(s => s.id === "savasana");
+    const before = plan.totalSecs - sav.secs;
+    sav.secs = Math.max(150, Math.min(180, Math.round((opt.minutes * 60 - before) / 30) * 30));
+    plan.totalSecs = before + sav.secs;
+    return Object.assign(plan, { offers: [], meta: { peak: null, source: "fundamental", modules: [] }, checks: validate(plan.steps, opt),
+      why: "Arrive sitting, then every part of the body once: the spine in all six directions, hips, hamstrings, shoulders, arms, core and balance; a twist lying down, then rest." });
+  }
+
+  root.YogaComposer = { generate, validate, repair, fromSpec, finalize, retime, fundamental, TO, HOW };
   if (typeof module !== "undefined") module.exports = root.YogaComposer;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
@@ -2424,7 +2471,7 @@ body.is-live .langbar { display: none; }
   };
 
   const SECTIONS_DE = {
-    "Arrival": "Ankommen", "Warm-up": "Aufwärmen", "Sun Salutations": "Sonnengrüße", "Moon Salutation": "Mondgruß", "Standing": "Im Stehen",
+    "Arrival": "Ankommen", "Warm-up": "Aufwärmen", "Lunges": "Ausfallschritte", "Sun Salutations": "Sonnengrüße", "Moon Salutation": "Mondgruß", "Standing": "Im Stehen",
     "Balance": "Gleichgewicht", "Core": "Rumpf", "Backbends": "Rückbeugen", "Hips": "Hüften", "Cool-down": "Ausklang", "Savasana": "Savasana",
   };
   const TAGS_DE = { hamstrings: "Beinrückseite", hips: "Hüften", hipflex: "Hüftbeuger", back: "Rücken", shoulders: "Schultern", core: "Rumpf",
@@ -2484,7 +2531,7 @@ body.is-live .langbar { display: none; }
   const LEVEL_EN = { 1: "Basic", 2: "Intermediate", 3: "Advanced" }, LEVEL_DE = { 1: "Einfach", 2: "Mittel", 3: "Fortgeschritten" };
   const LEVEL = new Proxy({}, { get: (o, k) => (DE() ? LEVEL_DE : LEVEL_EN)[k] });
   const breathWord = b => b === "in" ? tr("inhale", "einatmen") : tr("exhale", "ausatmen");
-  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs >= 90 ? mmss(st.secs) + " min" : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`);
+  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs >= 90 ? mmss(st.secs) + " min" : (st.breaths === 1 ? tr("1 breath", "1 Atemzug") : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`));
   const cueOf = p => (DE() && I.CUES_DE[p.id]) || p.cue || "";
   const propTxt = t => (DE() && I.PROPS_DE[t]) || t;
   const howTxt = st => st.howT ? I.hint(st.howT, st.howSide, LANG) : st.how;
@@ -2779,9 +2826,21 @@ body.is-live .langbar { display: none; }
     plan = G.generate(o); plan.opts = o;
     renderPreview(); show("preview");
   }
+  // Grundton: the fixed short practice; the breath (pace) sets its exact length
+  let GT_SKIP = [];
+  let GT_CARE = [];
+  function buildFundamental() {
+    source = "fundamental"; THEME_NOW = "fundamental";
+    const o = P.options({ animal: null, level: 5, tempo: 2, skip: ST ? ST.skip : [] }, { theme: "flow", minutes: 10, care: GT_CARE, seed, history: [] });
+    o.cycle = 6; o.skip = GT_SKIP; CYCLE = o.cycle;
+    plan = G.fundamental(o); plan.opts = o;
+    renderPreview(); show("preview");
+  }
+  $("gtBtn").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = CARE_TODAY.slice(); buildFundamental(); });
+  $("gtWelcome").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = []; buildFundamental(); });
   $("buildBtn").addEventListener("click", () => { challenges = {}; seed = (Date.now() + Math.floor(Math.random() * 1e6)) % 1000000; buildPlan(); });
   $("shuffleBtn").addEventListener("click", () => { if (source === "claude") { surprise(); return; } seed = (seed * 7919 + 13) % 1000000; challenges = {}; buildPlan(); });
-  $("backBtn").addEventListener("click", () => showToday());
+  $("backBtn").addEventListener("click", () => ST ? showToday() : showWelcome(false));
   $("againBtn").addEventListener("click", () => showWelcome(!!ST));
 
   // ---------- surprise me: Claude writes a class, the same rules check and time it ----------
@@ -2838,7 +2897,7 @@ Answer with JSON only, no prose, in exactly this shape:
 
   function chip(st) {
     const p = BY[st.id];
-    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small></button>`;
+    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small>${st.tip ? `<small>${DE() ? st.tip.de : st.tip.en}</small>` : ""}</button>`;
   }
   function groupFlow(list) {
     const out = [];
@@ -2873,10 +2932,17 @@ Answer with JSON only, no prose, in exactly this shape:
       + `Aufwärmen: ${I.BLOCKS_DE[w.warm] || w.warm}, dann ${I.BLOCKS_DE[w.sun] || w.sun}.`;
   }
   function renderPreview() {
+    const gt = source === "fundamental";
+    $("shuffleBtn").hidden = gt;
+    if (gt) {
+      $("sumTitle").textContent = tr("Fundamental", "Grundton") + ` · ${Math.round(plan.totalSecs / 60)} min`;
+      $("sumWhy").textContent = tr(plan.why, "Im Sitzen ankommen, dann jeder Teil des Körpers einmal: die Wirbelsäule in alle sechs Richtungen, Hüften, Beinrückseite, Schultern, Arme, Rumpf und Gleichgewicht; eine Drehung im Liegen, dann Ruhe.");
+    } else
     $("sumTitle").textContent = (source === "claude" ? tr("By Claude · ", "Von Claude · ") : "") + `${thName(P.THEME[THEME_NOW])} · ${S.minutes} min` + (plan.meta && plan.meta.peakName ? ` · ${blockName(plan.meta.peak, plan.meta.peakName)}` : "");
-    $("sumWhy").textContent = whyTxt() + (plan.dropped && plan.dropped.length ? tr(` Skipped unknown poses: ${plan.dropped.join(", ")}.`, ` Unbekannte Haltungen übersprungen: ${plan.dropped.join(", ")}.`) : "");
+    if (!gt) $("sumWhy").textContent = whyTxt() + (plan.dropped && plan.dropped.length ? tr(` Skipped unknown poses: ${plan.dropped.join(", ")}.`, ` Unbekannte Haltungen übersprungen: ${plan.dropped.join(", ")}.`) : "");
     $("shuffleBtn").textContent = source === "claude" ? tr("Ask Claude again", "Claude noch mal fragen") : tr("Shuffle", "Neu mischen");
-    $("sumMeta").textContent = tr(`For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath`, `Für: ${phrase(ST, "de")} · ${P.LEVELS[ST.level - 1].de} · ${CYCLE} s Atem`)
+    if (gt) $("sumMeta").textContent = tr("The same for everyone · 6 s breath", "Für alle gleich · 6 s Atem") + (GT_CARE.length ? tr(` · taking care of ${GT_CARE.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${GT_CARE.map(id => P.CARE_BY[id].de).join(", ")}`) : "");
+    else $("sumMeta").textContent = tr(`For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath`, `Für: ${phrase(ST, "de")} · ${P.LEVELS[ST.level - 1].de} · ${CYCLE} s Atem`)
       + (CARE_TODAY.length ? tr(` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${CARE_TODAY.map(id => P.CARE_BY[id].de).join(", ")}`) : "");
     let top = "";
     plan.offers.forEach(o => {
@@ -2908,8 +2974,8 @@ Answer with JSON only, no prose, in exactly this shape:
   function openSheet(id) {
     sheetId = id; const p = BY[id], alt = swapFor(id), keep = P.KEEP.has(id);
     $("shFig").innerHTML = fig(p.p); $("shName").textContent = pn(p); $("shSub").textContent = `${p.sa} · ${pn2(p)}`;
-    $("shSwap").hidden = !alt; $("shSwap").textContent = alt ? tr(`Swap for ${alt.en}`, `Tauschen gegen ${alt.de}`) : "";
-    $("shOut").hidden = keep; $("shNever").hidden = keep;
+    $("shSwap").hidden = !alt || source === "fundamental"; $("shSwap").textContent = alt ? tr(`Swap for ${alt.en}`, `Tauschen gegen ${alt.de}`) : "";
+    $("shOut").hidden = keep; $("shNever").hidden = keep || !ST;
     $("shMsg").textContent = keep ? tr(`${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".`, `${p.de} hält die Stunde zusammen und bleibt deshalb. Wenn etwas wehtut, wähle es unter „Heute schonen“.`) : "";
     $("sheet").hidden = false; $("shCancel").focus();
   }
@@ -2927,9 +2993,10 @@ Answer with JSON only, no prose, in exactly this shape:
     const alt = swapFor(sheetId); if (!alt) return;
     applyEdit(plan.steps.map(s => s.id === sheetId ? Object.assign({}, s, { id: alt.id, side: alt.sides === 2 ? s.side : null, how: null }) : s));
   });
-  $("shOut").addEventListener("click", () => applyEdit(plan.steps.filter(s => s.id !== sheetId)));
+  $("shOut").addEventListener("click", () => { if (source === "fundamental") { GT_SKIP = GT_SKIP.concat(sheetId); closeSheet(); buildFundamental(); return; } applyEdit(plan.steps.filter(s => s.id !== sheetId)); });
   $("shNever").addEventListener("click", () => {
     ST.skip = [...new Set((ST.skip || []).concat(sheetId))]; saveST();
+    if (source === "fundamental") { closeSheet(); buildFundamental(); return; }
     applyEdit(plan.steps.filter(s => s.id !== sheetId));
   });
 
@@ -2987,7 +3054,7 @@ Answer with JSON only, no prose, in exactly this shape:
     else if (!st.breath && st.id === prev.id) Sound.bowl(523.3, .2, 2.5);
     $("lSect").textContent = source === "claude" ? st.section : secName(st.section);
     $("lSa").textContent = p.sa; $("lEn").textContent = pn(p); $("lDe").textContent = pn2(p);
-    $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p);
+    $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p) + (st.tip ? " · " + (DE() ? st.tip.de : st.tip.en) : "");
     $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? tr(sideTxt(st.side) + " side", st.side === "right" ? "Rechte Seite" : "Linke Seite") : "";
     const bw = $("lBreath");
     if (st.breath) { bw.dataset.b = st.breath; bw.textContent = breathWord(st.breath); } else { bw.dataset.b = ""; bw.textContent = ""; }
@@ -3058,7 +3125,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (complete) { Sound.bowl(174.6, 1, 9); setTimeout(() => Sound.bowl(174.6, .8, 9), 3500); setTimeout(() => Sound.bowl(174.6, .6, 10), 7000); }
     exitFS();
     const secs = Math.round((Date.now() - startedAt) / 1000);
-    session = { at: new Date().toISOString(), minutes: S.minutes, theme: THEME_NOW, level: ST.level, tempo: ST.tempo, care: CARE_TODAY, seed,
+    session = { at: new Date().toISOString(), minutes: source === "fundamental" ? Math.round(plan.totalSecs / 60) : S.minutes, theme: THEME_NOW, level: ST ? ST.level : null, tempo: ST ? ST.tempo : null, care: source === "fundamental" ? GT_CARE : CARE_TODAY, seed,
       plannedSecs: plan.totalSecs, actualSecs: secs, completed: !!complete, reachedStep: idx + 1, totalSteps: plan.steps.length,
       challenges: plan.offers.map(o => ({ id: o.id, accepted: challenges[o.id] === true })),
       poses: [...new Set(plan.steps.map(s => s.id))], source, meta: plan.meta || null };
@@ -3066,6 +3133,7 @@ Answer with JSON only, no prose, in exactly this shape:
     $("doneCat").innerHTML = fig(BY["savasana"].p);
     DONE_SECS = secs; DONE_COMPLETE = !!complete; paintDoneMeta();
     $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false; $("nextCard").hidden = true; NEXT_STORY = null;
+    $("done").classList.toggle("gt", source === "fundamental");
     paintFb();
     show("done");
   }
@@ -3088,6 +3156,16 @@ Answer with JSON only, no prose, in exactly this shape:
   $("fbPace").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; fb.pace = b.dataset.v; paintFb(); });
   $("fbMarks").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; const id = b.dataset.id; fb.marks[id] = fb.marks[id] === "love" ? "hard" : fb.marks[id] === "hard" ? undefined : "love"; paintFb(); });
   $("fbSave").addEventListener("click", async () => {
+    if (session.source === "fundamental") {
+      const rec = Object.assign({}, session, { feedback: { note: $("fbNote").value.trim(),
+        loved: Object.keys(fb.marks).filter(k => fb.marks[k] === "love"), hard: Object.keys(fb.marks).filter(k => fb.marks[k] === "hard") } });
+      const log = store.get("matcat-log", []); log.push(rec); store.set("matcat-log", log.slice(-60));
+      $("fbSave").disabled = true;
+      if (!db) { $("fbStatus").textContent = tr("Saved on this phone.", "Auf diesem Handy gespeichert."); return; }
+      try { await db.collection("practices").add(rec); $("fbStatus").textContent = tr("Saved.", "Gespeichert."); }
+      catch (e) { $("fbStatus").textContent = tr("Saved on this phone.", "Auf diesem Handy gespeichert."); }
+      return;
+    }
     const before = Object.assign({}, ST);
     const nx = P.next(ST, { poses: fb.poses, pace: fb.pace });
     ST = Object.assign(nx.state, { count: (ST.count || 0) + 1 }); saveST();
@@ -3159,6 +3237,9 @@ Answer with JSON only, no prose, in exactly this shape:
     "Save and see my animal": "Speichern und mein Tier sehen", "Back to start": "Zurück zum Start", "Next time you are": "Nächstes Mal bist du",
     "Done": "Fertig", "All levels": "Alle Stufen", "Basic": "Einfach", "Intermediate": "Mittel", "Advanced": "Fortgeschritten",
     "All": "Alle", "In my practices": "In meinen Stunden", "Left out": "Ausgelassen",
+    "Short on time?": "Wenig Zeit?", "Start": "Starten", "Save": "Speichern",
+    "Every part of the body once. The same practice for everyone, no animal needed.": "Jeder Teil des Körpers einmal. Für alle gleich, ohne Tier.", "Fundamental · 10 min": "Grundton · 10 min",
+    "Every part of the body once: the shortest complete practice.": "Jeder Teil des Körpers einmal: die kürzeste vollständige Praxis.",
   };
   const ATTR_DE = {
     "e.g. calm young heron · ruhiger junger Reiher": "z. B. ruhiger junger Reiher · calm young heron",
