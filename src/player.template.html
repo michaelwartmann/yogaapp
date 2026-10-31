@@ -141,6 +141,22 @@ body.is-live { overflow: hidden; }
 .controls .btn { padding: clamp(6px, 1.6dvh, 11px) clamp(10px, 2.6vw, 18px); white-space: nowrap; flex: 0 1 auto; min-width: 0; }
 #pauseBtn { min-width: 96px; }
 #live.quiet .controls, #live.quiet .topbar .btn { opacity: .12; }
+/* step by step: the panel explains the pose and waits for Ready */
+#live.learning .cue, #live.learning .breathbox, #live.learning .next, #live.learning .guide { display: none; }
+/* the breath line: a quiet companion under the cue */
+.guide { margin: 0; font-family: var(--font-display); font-size: clamp(0.92rem, min(2.1vw, 4.2dvh), 1.12rem); color: var(--accent); line-height: 1.3; min-height: 1.3em;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: opacity .8s; }
+.guide.fade { opacity: 0; }
+@media (max-height: 430px) { .guide { -webkit-line-clamp: 1; } }
+.dayline { font-family: var(--font-display); font-size: 1.1rem; color: var(--accent); max-width: 40ch; margin: 0; }
+.learn { display: flex; flex-direction: column; gap: clamp(4px, 1.2dvh, 10px); min-height: 0; flex: 1 1 auto; overflow: auto; }
+#live.learning .panel { justify-content: flex-start; align-self: stretch; }
+#live.learning #pauseBtn { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); }
+.learn ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 3px; font-size: clamp(0.88rem, min(2vw, 3.9dvh), 1rem); }
+.learn .feel { margin: 0; font-size: 0.9rem; }
+.learn .feel b, .learn .care b { font-weight: 700; }
+.learn .care { margin: 0; font-size: 0.86rem; color: var(--muted); }
+.basics { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
 @media (max-height: 430px) { .cue, .howline { -webkit-line-clamp: 1; } .de { display: none; } .wake span { display: none; } }
 @media (orientation: portrait) {
   .livegrid { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; align-items: stretch; }
@@ -232,7 +248,7 @@ body.is-live .langbar { display: none; }
   </div>
   <div class="gtcard">
     <div class="t"><b>Fundamental · 10 min</b><span class="muted" style="font-size:.88rem">Every part of the body once. The same practice for everyone, no animal needed.</span></div>
-    <button class="btn primary" id="gtWelcome" type="button">Start</button>
+    <div class="row"><button class="btn primary" id="gtWelcome" type="button">Start</button><button class="btn" id="gtLearn" type="button">First time: step by step</button></div>
   </div>
   <div id="wKnown" hidden style="display:flex;flex-direction:column;gap:14px">
     <div class="codecard"><span class="label">Welcome back</span><span class="phrase" id="wPhrase"></span><span class="phrase-de" id="wPhraseDe"></span><span class="muted" id="wNature"></span></div>
@@ -308,6 +324,7 @@ body.is-live .langbar { display: none; }
     <div class="field"><span class="label">What do you feel like?</span><div class="seg" id="themeSeg"></div><span class="muted" id="themeText" style="font-size:.88rem"></span></div>
     <div class="field"><span class="label">Time</span><div class="seg" data-key="minutes"><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button><button type="button" data-v="60">60 min</button></div></div>
     <div class="field"><span class="label">Take care today</span><div class="seg" id="careSeg"></div></div>
+    <div class="field"><span class="label">Transitions</span><div class="seg" data-key="trans"><button type="button" data-v="normal">Normal</button><button type="button" data-v="slow">Slow</button></div><span class="muted" style="font-size:.88rem">Slow: time to get into every pose before the breaths are counted.</span></div>
     <div class="field"><span class="label">Sound</span><div class="seg" data-key="sound"><button type="button" data-v="bowls">Bowls</button><button type="button" data-v="off">Silent</button></div>
       <label class="row muted" for="vol" style="font-size:.88rem">Volume <input type="range" id="vol" min="0" max="100" step="5"> <button class="btn quiet" id="testSound" type="button">Listen</button></label>
     </div>
@@ -337,6 +354,8 @@ body.is-live .langbar { display: none; }
   <div class="startbar">
     <button class="btn primary big" id="startBtn" type="button">Begin</button>
     <label class="row muted" for="fsStart" id="fsStartWrap" style="font-size:.9rem"><input type="checkbox" id="fsStart" checked> Full screen</label>
+    <label class="row muted" for="learnStart" id="learnWrap" style="font-size:.9rem" hidden><input type="checkbox" id="learnStart"> Step by step</label>
+    <label class="row muted" for="gentleStart" style="font-size:.9rem"><input type="checkbox" id="gentleStart"> Slow transitions</label>
     <button class="btn" id="shuffleBtn" type="button">Shuffle</button>
     <button class="btn quiet" id="backBtn" type="button">Settings</button>
   </div>
@@ -362,7 +381,13 @@ body.is-live .langbar { display: none; }
         <div class="en" id="lEn"></div>
         <div class="de" id="lDe"></div>
       </div>
+      <div class="learn" id="learn" hidden>
+        <ol id="learnHow"></ol>
+        <p class="feel" id="learnFeel"></p>
+        <p class="care" id="learnCare"></p>
+      </div>
       <p class="cue" id="lCue"></p>
+      <p class="guide" id="lGuide" aria-live="polite"></p>
       <div class="breathbox">
         <span class="breathword" id="lBreath"></span>
         <div class="dots" id="lDots"></div>
@@ -390,6 +415,7 @@ body.is-live .langbar { display: none; }
   <div class="catwrap"><svg id="doneCat" viewBox="0 0 260 230" aria-hidden="true"></svg></div>
   <h2 style="font-size:2.1rem">Namaste</h2>
   <p class="muted" id="doneMeta"></p>
+  <p class="dayline" id="doneDay"></p>
   <div class="fb">
     <div class="field animal-only"><span class="label">The poses were</span><div class="seg" id="fbPoses"><button type="button" data-v="too easy">Too easy</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too hard">Too hard</button></div></div>
     <div class="field animal-only"><span class="label">The pace was</span><div class="seg" id="fbPace"><button type="button" data-v="too slow">Too slow</button><button type="button" data-v="just right">Just right</button><button type="button" data-v="too fast">Too fast</button></div></div>
@@ -446,7 +472,7 @@ body.is-live .langbar { display: none; }
   const LEVEL_EN = { 1: "Basic", 2: "Intermediate", 3: "Advanced" }, LEVEL_DE = { 1: "Einfach", 2: "Mittel", 3: "Fortgeschritten" };
   const LEVEL = new Proxy({}, { get: (o, k) => (DE() ? LEVEL_DE : LEVEL_EN)[k] });
   const breathWord = b => b === "in" ? tr("inhale", "einatmen") : tr("exhale", "ausatmen");
-  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs >= 90 ? mmss(st.secs) + " min" : (st.breaths === 1 ? tr("1 breath", "1 Atemzug") : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`));
+  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs - (st.trans || 0) >= 90 ? mmss(st.secs - (st.trans || 0)) + " min" : (st.breaths === 1 ? tr("1 breath", "1 Atemzug") : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`));
   const cueOf = p => (DE() && I.CUES_DE[p.id]) || p.cue || "";
   const propTxt = t => (DE() && I.PROPS_DE[t]) || t;
   const howTxt = st => st.howT ? I.hint(st.howT, st.howSide, LANG) : st.how;
@@ -454,7 +480,7 @@ body.is-live .langbar { display: none; }
   const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
   // ---------- settings (this device) ----------
-  let S = Object.assign({ minutes: 30, theme: "chef", sound: "bowls", volume: 60 }, store.get("matcat-settings", {}));
+  let S = Object.assign({ minutes: 30, theme: "chef", sound: "bowls", volume: 60, trans: "normal" }, store.get("matcat-settings", {}));
   if (S.lang !== "en" && S.lang !== "de") { let nl = ""; try { nl = (navigator.languages && navigator.languages[0]) || navigator.language || ""; } catch (e) {} S.lang = /^de\b/i.test(nl) ? "de" : "en"; }
   LANG = S.lang;
   if (S.sound === "drone") S.sound = "bowls";
@@ -623,7 +649,8 @@ body.is-live .langbar { display: none; }
   $("assessBack").addEventListener("click", () => ST && ASSESS_MODE === "nature" && P.ANIMAL[ST.animal] ? showToday() : showWelcome(false));
   $("assessGo").addEventListener("click", () => {
     NAT_ORDER = P.natureOf(ANS);
-    if (ASSESS_MODE === "full") { const r = P.assess(ANS); PENDING = { level: r.level, tempo: r.tempo, care: ANS.care || [] }; }
+    if (ASSESS_MODE === "full") { const r = P.assess(ANS); PENDING = { level: r.level, tempo: r.tempo, care: ANS.care || [] };
+      S.trans = (ANS.age ?? 1) >= 3 || ((ANS.yoga ?? 0) === 0 && (ANS.age ?? 1) >= 2) ? "slow" : "normal"; saveS(); paintSeg(); } // 65+, or new to yoga and 50+
     else PENDING = KEEP_LT ? Object.assign({}, KEEP_LT) : (ST ? { level: ST.level, tempo: ST.tempo } : { level: 1, tempo: 2 });
     KEEP_LT = null;
     const inNature = id => P.NATURE[NAT_ORDER[0]].animals.some(a => a[0] === id);
@@ -735,6 +762,7 @@ body.is-live .langbar { display: none; }
   function todayOpts() {
     THEME_NOW = S.theme === "chef" ? chefTheme() : S.theme;
     const o = P.options(ST, { theme: THEME_NOW, minutes: S.minutes, care: CARE_TODAY, seed, challenges, history: history() });
+    o.gentle = S.trans === "slow";
     CYCLE = o.cycle; return o;
   }
   function buildPlan() {
@@ -749,12 +777,20 @@ body.is-live .langbar { display: none; }
   function buildFundamental() {
     source = "fundamental"; THEME_NOW = "fundamental"; GUIDE = "cat";
     const o = P.options({ animal: null, level: 5, tempo: 2, skip: ST ? ST.skip : [] }, { theme: "flow", minutes: 10, care: GT_CARE, seed, history: [] });
-    o.cycle = 6; o.skip = GT_SKIP; CYCLE = o.cycle;
+    o.cycle = 6; o.skip = GT_SKIP; o.gentle = S.trans === "slow"; CYCLE = o.cycle;
     plan = G.fundamental(o); plan.opts = o;
     renderPreview(); show("preview");
   }
-  $("gtBtn").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = CARE_TODAY.slice(); buildFundamental(); });
-  $("gtWelcome").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = []; buildFundamental(); });
+  $("gtBtn").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = CARE_TODAY.slice(); $("learnStart").checked = false; buildFundamental(); });
+  $("gtWelcome").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = []; $("learnStart").checked = false; buildFundamental(); });
+  $("gtLearn").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = []; $("learnStart").checked = true; buildFundamental(); });
+  $("learnStart").addEventListener("change", () => renderPreview());
+  $("gentleStart").addEventListener("change", () => {
+    S.trans = $("gentleStart").checked ? "slow" : "normal"; saveS(); paintSeg();
+    if (source === "fundamental") buildFundamental();
+    else if (source === "composer") buildPlan();
+    else { plan.opts.gentle = S.trans === "slow"; applyEdit(plan.steps); }
+  });
   $("buildBtn").addEventListener("click", () => { challenges = {}; seed = (Date.now() + Math.floor(Math.random() * 1e6)) % 1000000; buildPlan(); });
   $("shuffleBtn").addEventListener("click", () => { if (source === "claude") { surprise(); return; } seed = (seed * 7919 + 13) % 1000000; challenges = {}; buildPlan(); });
   $("backBtn").addEventListener("click", () => ST ? showToday() : showWelcome(false));
@@ -851,7 +887,7 @@ Answer with JSON only, no prose, in exactly this shape:
   }
   function renderPreview() {
     const gt = source === "fundamental";
-    $("shuffleBtn").hidden = gt;
+    $("shuffleBtn").hidden = gt; $("learnWrap").hidden = !gt; $("gentleStart").checked = S.trans === "slow";
     if (gt) {
       $("sumTitle").textContent = tr("Fundamental", "Grundton") + ` · ${Math.round(plan.totalSecs / 60)} min`;
       $("sumWhy").textContent = tr(plan.why, "Im Sitzen ankommen, dann jeder Teil des Körpers einmal: die Wirbelsäule in alle sechs Richtungen, Hüften, Beinrückseite, Schultern, Arme, Rumpf und Gleichgewicht; eine Drehung im Liegen, dann Ruhe.");
@@ -867,6 +903,7 @@ Answer with JSON only, no prose, in exactly this shape:
       const on = challenges[o.id] === true;
       top += `<div class="card"><span class="label">${tr("Challenge offer", "Herausforderung")}</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${pn(BY[o.id])} · <i>${BY[o.id].sa}</i></b><span class="muted">${(DE() && I.OFFERS_DE[o.id]) || o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">${tr("Add it", "Dazunehmen")}</button><button type="button" data-v="no" aria-pressed="${!on}">${tr("Not today", "Heute nicht")}</button></div></div></div></div>`;
     });
+    if (gt && $("learnStart").checked) top += `<div class="card"><span class="label">${tr("Before you start", "Bevor du anfängst")}</span><ul class="basics">${I.BASICS[LANG].map(t => `<li>${t}</li>`).join("")}</ul></div>`;
     if (plan.props.length) top += `<div class="card"><span class="label">${tr("Have ready", "Bereitlegen")}</span><ul class="props">${plan.props.map(p => `<li>${propTxt(p)}</li>`).join("")}</ul></div>`;
     $("topCards").innerHTML = top;
     $("topCards").querySelectorAll("[data-offer]").forEach(seg => seg.addEventListener("click", e => {
@@ -966,7 +1003,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (i >= plan.steps.length) { finish(true); return; }
     idx = Math.max(0, i);
     const st = plan.steps[idx], p = BY[st.id], prev = plan.steps[idx - 1];
-    left = st.secs; phaseT = 0;
+    left = st.secs; phaseT = 0; transShown = null;
     if (!prev || prev.section !== st.section) Sound.bowl(174.6, 1, 8);
     else if (!st.breath && st.breaths >= 3 && st.id !== prev.id) Sound.bowl(523.3, .3, 3);
     else if (!st.breath && st.id === prev.id) Sound.bowl(523.3, .2, 2.5);
@@ -982,24 +1019,93 @@ Answer with JSON only, no prose, in exactly this shape:
     else { $("nFig").innerHTML = ""; $("nName").textContent = tr("End of practice", "Ende der Praxis"); $("nHow").textContent = ""; }
     animateTo(p.p, st.side === "left");
     paint();
+    if (LEARNING) maybeLearn(st); else if (waiting) learnGo();
+  }
+  // step by step: stop before every new pose (and before the second side) until the person taps Ready
+  let LEARNING = false, LEARNED = new Set(), waiting = false;
+  function maybeLearn(st) {
+    const L = I.LEARN[st.id], key = st.id + (st.side ? ":" + st.side : "");
+    const seen = LEARNED.has(st.id), sideSeen = LEARNED.has(key);
+    if (!L || (seen && (!st.side || sideSeen))) { if (waiting) learnGo(); return; }
+    LEARNED.add(st.id); LEARNED.add(key); (L.with || []).forEach(id => LEARNED.add(id));
+    const t = L[LANG] || L.en;
+    if (seen) { // same pose, the other side
+      $("learnHow").innerHTML = `<li>${tr("The same pose on the other side.", "Dieselbe Haltung auf der anderen Seite.")}</li>`;
+      $("learnFeel").textContent = ""; $("learnCare").textContent = "";
+    } else {
+      if (L.title) $("lEn").textContent = L.title[LANG] || L.title.en;
+      $("learnHow").innerHTML = t.how.map(x => `<li>${x}</li>`).join("");
+      $("learnFeel").innerHTML = `<b>${tr("Feel", "Spüren")}:</b> ${t.feel}`;
+      $("learnCare").innerHTML = `<b>${tr("Easier", "Leichter")}:</b> ${t.care}`;
+    }
+    waiting = true; $("learn").hidden = false; $("live").classList.add("learning"); $("live").classList.remove("quiet"); clearTimeout(quietTimer);
+    $("pauseBtn").textContent = tr("Ready", "Bereit"); try { $("learn").scrollTop = 0; } catch (e) {}
+  }
+  function learnGo() {
+    waiting = false; $("learn").hidden = true; $("live").classList.remove("learning");
+    const st = plan.steps[idx]; if (st && st.trans && left > st.secs - st.trans) left = st.secs - st.trans; // they are already in the pose
+    phaseT = st && st.trans ? st.trans : 0; setPaused(paused); wake(); if (st) paint();
   }
   // breath level 0..1: flow steps rise on the inhale and fall on the exhale; holds follow the breath cycle
   function breathLevel(st) {
     const sm = x => 0.5 - 0.5 * Math.cos(Math.PI * Math.min(1, Math.max(0, x)));
+    if (inTrans(st)) return 0.5;
+    const phaseT = phaseHold(st);
     if (st.breath === "in") return sm(phaseT / st.secs);
     if (st.breath === "out") return 1 - sm(phaseT / st.secs);
     if (st.id === "savasana") return 0.35 + 0.1 * Math.sin(phaseT / 10 * 2 * Math.PI);
     const c = CYCLE, x = (phaseT % c) / c;
     return x < 0.5 ? sm(x * 2) : 1 - sm((x - 0.5) * 2);
   }
+  // slow transitions: the first st.trans seconds of a step are for getting into the pose; the breaths start after
+  const inTrans = st => !!st.trans && st.secs - left < st.trans;
+  const phaseHold = st => Math.max(0, phaseT - (st.trans || 0));
+  let transShown = null;
+  function paintTrans(st) {
+    const on = inTrans(st);
+    if (on === transShown) return;
+    if (transShown === true && !on) Sound.bowl(523.3, .22, 2.5); // breathing starts
+    transShown = on;
+    const p = BY[st.id], bw = $("lBreath");
+    if (on) { bw.dataset.b = ""; bw.textContent = tr("Come into the pose", "In die Haltung kommen"); $("lCue").textContent = howTxt(st) || cueOf(p); }
+    else {
+      $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p) + (st.tip ? " · " + (DE() ? st.tip.de : st.tip.en) : "");
+      if (st.breath) { bw.dataset.b = st.breath; bw.textContent = breathWord(st.breath); } else { bw.dataset.b = ""; bw.textContent = ""; }
+    }
+  }
+  // which breath line to show now
+  function guideFor(st) {
+    const B = I.BREATH, L = k => B[k][LANG] || B[k].en;
+    if (inTrans(st)) return L("trans");
+    const holdS = st.secs - (st.trans || 0), el = Math.max(0, st.secs - left - (st.trans || 0));
+    if (st.id === "savasana") { const lines = L("savasana"), span = Math.min(holdS * 0.6, 150); return el < span ? lines[Math.min(lines.length - 1, Math.floor(el / span * lines.length))] : ""; }
+    if (idx === 0 || (st.section === "Arrival" && st.id === "sukhasana")) {
+      const full = LEARNING || source === "fundamental" || !ST || (ST.count || 0) < 3;
+      const lines = L(full ? "lesson" : "arrival");
+      return lines[Math.min(lines.length - 1, Math.floor(el / Math.max(1, holdS) * lines.length))];
+    }
+    if (st.breath) return L("flow");
+    if (BY[st.id].cat === "balance" || BY[st.id].cat === "arm balance") return L("balance");
+    if (st.breaths >= 4 && idx % 3 === 0) { const d = L("during"); return d[Math.floor(idx / 3) % d.length]; }
+    return "";
+  }
+  let guideNow = null;
+  function paintGuide(st) {
+    const g = guideFor(st);
+    if (g === guideNow) return;
+    guideNow = g; const el = $("lGuide");
+    el.classList.add("fade"); setTimeout(() => { if (guideNow === g) { el.textContent = g; el.classList.remove("fade"); } }, 350);
+  }
   function paint() {
     const st = plan.steps[idx];
     const done = elapsedBefore(idx) + (st.secs - left);
     $("lBar").style.width = (100 * done / total).toFixed(2) + "%";
     $("lTime").textContent = tr(`${mmss(total - done)} left`, `noch ${mmss(total - done)}`);
-    $("lCount").textContent = !st.breath && (st.breaths > 12 || !st.breaths || st.secs >= 60) ? mmss(left) : "";
+    paintTrans(st); paintGuide(st);
+    const holdS = st.secs - (st.trans || 0), holdLeft = Math.min(left, holdS);
+    $("lCount").textContent = inTrans(st) ? mmss(st.trans - (st.secs - left)) : !st.breath && (st.breaths > 12 || !st.breaths || holdS >= 60) ? mmss(holdLeft) : "";
     const dots = $("lDots").children;
-    if (dots.length) { const lit = Math.min(dots.length, Math.floor((st.secs - left) / (st.secs / dots.length)) + 1); for (let k = 0; k < dots.length; k++) dots[k].classList.toggle("on", k < lit); }
+    if (dots.length) { const lit = inTrans(st) ? 0 : Math.min(dots.length, Math.floor((holdS - holdLeft) / (holdS / dots.length)) + 1); for (let k = 0; k < dots.length; k++) dots[k].classList.toggle("on", k < lit); }
     const lvl = breathLevel(st);
     $("ring").style.transform = `scale(${(0.8 + 0.2 * lvl).toFixed(3)})`;
     Sound.breathe(lvl);
@@ -1007,13 +1113,13 @@ Answer with JSON only, no prose, in exactly this shape:
   function loop(now) {
     if (!running) return;
     const dt = Math.min(0.5, (now - last) / 1000); last = now;
-    if (!paused) { left -= dt; phaseT += dt; if (left <= 0) enter(idx + 1); else paint(); }
+    if (!paused && !waiting) { left -= dt; phaseT += dt; if (left <= 0) enter(idx + 1); else paint(); }
     if (running) requestAnimationFrame(loop);
   }
   function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? tr("Resume", "Weiter") : tr("Pause", "Pause"); }
 
   // controls fade after a few quiet seconds; the first tap only brings them back
-  function wake() { $("live").classList.remove("quiet"); clearTimeout(quietTimer); quietTimer = setTimeout(() => { if (running && !paused) $("live").classList.add("quiet"); }, 4000); }
+  function wake() { $("live").classList.remove("quiet"); clearTimeout(quietTimer); quietTimer = setTimeout(() => { if (running && !paused && !waiting) $("live").classList.add("quiet"); }, 4000); }
   $("live").addEventListener("click", e => {
     if (running && !lock && video.paused) requestLock();
     if ($("live").classList.contains("quiet") && e.target.closest("button")) { e.preventDefault(); e.stopPropagation(); }
@@ -1024,22 +1130,26 @@ Answer with JSON only, no prose, in exactly this shape:
     Sound.resume();
     if ($("fsStart").checked) enterFS();
     total = plan.totalSecs; running = true; shown = null; startedAt = Date.now();
+    LEARNING = source === "fundamental" && $("learnStart").checked; LEARNED = new Set(); waiting = false; $("live").classList.remove("learning"); $("learn").hidden = true;
     setPaused(false); show("live"); requestLock(); Sound.startDrone(); wake();
     enter(0); last = performance.now(); requestAnimationFrame(loop);
   });
-  $("pauseBtn").addEventListener("click", () => { setPaused(!paused); wake(); });
+  $("pauseBtn").addEventListener("click", () => { if (waiting) { learnGo(); return; } setPaused(!paused); wake(); });
   $("skipBtn").addEventListener("click", () => enter(idx + 1));
   $("prevBtn").addEventListener("click", () => enter(Math.max(0, (plan.steps[idx].secs - left) < 2 ? idx - 1 : idx)));
   $("plusBtn").addEventListener("click", () => { left += 15; plan.steps[idx].secs += 15; total += 15; paint(); });
   $("endBtn").addEventListener("click", () => finish(false));
-  document.addEventListener("keydown", e => { if (!running) return; if (e.code === "Space") { e.preventDefault(); setPaused(!paused); } if (e.code === "ArrowRight") enter(idx + 1); if (e.code === "ArrowLeft") enter(Math.max(0, idx - 1)); });
+  document.addEventListener("keydown", e => { if (!running) return; if (e.code === "Space") { e.preventDefault(); if (waiting) { learnGo(); return; } setPaused(!paused); } if (e.code === "ArrowRight") enter(idx + 1); if (e.code === "ArrowLeft") enter(Math.max(0, idx - 1)); });
 
   // ---------- done + feedback ----------
   let session = null, fb = { poses: null, pace: null, marks: {} }, DONE_SECS = 0, DONE_COMPLETE = true, NEXT_STORY = null;
-  function paintDoneMeta() { $("doneMeta").textContent = tr(`${mmss(DONE_SECS)} on the mat${DONE_COMPLETE ? "" : " · ended early"}`, `${mmss(DONE_SECS)} auf der Matte${DONE_COMPLETE ? "" : " · früher beendet"}`); }
+  let DAYLINE = 0;
+  function paintDoneMeta() { const d = I.BREATH.everyday[LANG] || I.BREATH.everyday.en; $("doneDay").textContent = d[DAYLINE % d.length]; paintDoneMeta2(); }
+  function paintDoneMeta2() { $("doneMeta").textContent = tr(`${mmss(DONE_SECS)} on the mat${DONE_COMPLETE ? "" : " · ended early"}`, `${mmss(DONE_SECS)} auf der Matte${DONE_COMPLETE ? "" : " · früher beendet"}`); }
   function finish(complete) {
     if (!running) return;
     running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
+    waiting = false; $("learn").hidden = true; $("live").classList.remove("learning");
     if (complete) { Sound.bowl(174.6, 1, 9); setTimeout(() => Sound.bowl(174.6, .8, 9), 3500); setTimeout(() => Sound.bowl(174.6, .6, 10), 7000); }
     exitFS();
     const secs = Math.round((Date.now() - startedAt) / 1000);
@@ -1049,7 +1159,7 @@ Answer with JSON only, no prose, in exactly this shape:
       poses: [...new Set(plan.steps.map(s => s.id))], source, meta: plan.meta || null };
     fb = { poses: null, pace: null, marks: {} };
     $("doneCat").innerHTML = fig(BY["savasana"].p);
-    DONE_SECS = secs; DONE_COMPLETE = !!complete; paintDoneMeta();
+    DONE_SECS = secs; DONE_COMPLETE = !!complete; DAYLINE = Math.floor(Math.random() * 3); paintDoneMeta();
     $("fbNote").value = ""; $("fbStatus").textContent = ""; $("fbSave").disabled = false; $("nextCard").hidden = true; NEXT_STORY = null;
     $("done").classList.toggle("gt", source === "fundamental");
     paintFb();
@@ -1155,7 +1265,8 @@ Answer with JSON only, no prose, in exactly this shape:
     "Save and see my animal": "Speichern und mein Tier sehen", "Back to start": "Zurück zum Start", "Next time you are": "Nächstes Mal bist du",
     "Done": "Fertig", "All levels": "Alle Stufen", "Basic": "Einfach", "Intermediate": "Mittel", "Advanced": "Fortgeschritten",
     "All": "Alle", "In my practices": "In meinen Stunden", "Left out": "Ausgelassen",
-    "Short on time?": "Wenig Zeit?", "Start": "Starten", "Save": "Speichern",
+    "Short on time?": "Wenig Zeit?", "Transitions": "Übergänge", "Slow": "Langsam", "Slow transitions": "Langsame Übergänge",
+    "Slow: time to get into every pose before the breaths are counted.": "Langsam: Zeit, in jede Haltung zu kommen, bevor die Atemzüge gezählt werden.", "Ready": "Bereit", "Step by step": "Schritt für Schritt", "First time: step by step": "Zum ersten Mal: Schritt für Schritt", "Start": "Starten", "Save": "Speichern",
     "Every part of the body once. The same practice for everyone, no animal needed.": "Jeder Teil des Körpers einmal. Für alle gleich, ohne Tier.", "Fundamental · 10 min": "Grundton · 10 min",
     "Every part of the body once: the shortest complete practice.": "Jeder Teil des Körpers einmal: die kürzeste vollständige Praxis.",
   };

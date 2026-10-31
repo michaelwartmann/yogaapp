@@ -342,6 +342,83 @@
     "adho-mukha-vrksasana": "Handstand-Aufschwünge an der Wand nach den Gleichgewichtsübungen",
   };
 
+
+  // Step by step (first time): before each new pose, how to get in, what to feel, an easier way. EN and DE.
+  const LEARN = {
+    "sukhasana": { en: { how: ["Sit on the mat, on a folded blanket if your knees are higher than your hips.", "Cross your shins and let the knees drop.", "Hands on the knees, sit tall, shoulders soft."], feel: "A long spine and a quiet breath through the nose.", care: "Knees uncomfortable? Sit higher, or stretch the legs out." },
+      de: { how: ["Setz dich auf die Matte, auf eine gefaltete Decke, wenn die Knie höher als die Hüfte sind.", "Schienbeine kreuzen, Knie sinken lassen.", "Hände auf die Knie, aufrecht sitzen, Schultern weich."], feel: "Eine lange Wirbelsäule und ein ruhiger Atem durch die Nase.", care: "Knie unangenehm? Höher sitzen oder die Beine ausstrecken." } },
+    "bharmanasana": { en: { how: ["Come onto hands and knees.", "Hands under the shoulders, knees under the hips.", "Back flat like a table, look down."], feel: "Your weight spread evenly over hands and knees.", care: "Sore knees? Fold the mat or put a towel under them." },
+      de: { how: ["Auf Hände und Knie kommen.", "Hände unter den Schultern, Knie unter der Hüfte.", "Rücken flach wie ein Tisch, Blick nach unten."], feel: "Das Gewicht verteilt sich gleichmäßig auf Hände und Knie.", care: "Empfindliche Knie? Matte falten oder ein Handtuch unterlegen." } },
+    "bitilasana": { title: { en: "Cow and Cat", de: "Kuh und Katze" }, with: ["marjaryasana"],
+      en: { how: ["Breathe in: let the belly sink, lift the chest and the gaze (Cow).", "Breathe out: round the back, chin to the chest (Cat).", "Five slow rounds. The movement follows the breath."], feel: "The whole spine moving, from the tailbone to the head.", care: "Move slowly and only as far as feels good." },
+      de: { how: ["Einatmen: Bauch sinken lassen, Brust und Blick heben (Kuh).", "Ausatmen: Rücken runden, Kinn zur Brust (Katze).", "Fünf ruhige Runden. Die Bewegung folgt dem Atem."], feel: "Die ganze Wirbelsäule bewegt sich, vom Steißbein bis zum Kopf.", care: "Langsam bewegen und nur so weit, wie es sich gut anfühlt." } },
+    "adho-mukha-svanasana": { en: { how: ["From hands and knees, tuck the toes under.", "Lift the hips up and back: the body makes an upside-down V.", "The knees may stay bent; the heels don't need to reach the floor."], feel: "A stretch along the back of the legs and the back; the arms work.", care: "Wrists hurt? Spread the fingers and press the whole hand down. Need a rest? Knees down." },
+      de: { how: ["Aus dem Vierfüßlerstand die Zehen aufstellen.", "Hüfte nach oben und hinten schieben: Der Körper bildet ein umgedrehtes V.", "Die Knie dürfen gebeugt bleiben; die Fersen müssen nicht zum Boden."], feel: "Dehnung an der Rückseite der Beine und am Rücken; die Arme arbeiten.", care: "Handgelenke tun weh? Finger spreizen, die ganze Hand in den Boden drücken. Pause nötig? Knie ablegen." } },
+    "anjaneyasana": { en: { how: ["From Down Dog, step one foot forward between the hands (help it with a hand if needed).", "Lower the back knee to the mat.", "Bring the hips forward and lift the arms."], feel: "A stretch at the front of the back hip and thigh.", care: "The front knee stays above the ankle. Towel under the back knee." },
+      de: { how: ["Aus dem Hund einen Fuß zwischen die Hände setzen (wenn nötig mit der Hand nachhelfen).", "Das hintere Knie auf die Matte ablegen.", "Hüfte nach vorn schieben, Arme heben."], feel: "Dehnung vorn an der hinteren Hüfte und am Oberschenkel.", care: "Das vordere Knie bleibt über dem Fußgelenk. Handtuch unter das hintere Knie." } },
+    "parivrtta-anjaneyasana": { en: { how: ["Stay in the lunge, palms together at the chest.", "Turn towards the front leg, elbow outside the knee.", "Grow tall as you breathe in, turn a little more as you breathe out."], feel: "A turn through the middle and upper back.", care: "Turn from the chest; don't pull with the arm." },
+      de: { how: ["Im Ausfallschritt bleiben, Handflächen vor der Brust zusammen.", "Zum vorderen Bein drehen, Ellbogen außen ans Knie.", "Einatmend lang werden, ausatmend etwas weiter drehen."], feel: "Eine Drehung in der Mitte und im oberen Rücken.", care: "Aus der Brust drehen, nicht mit dem Arm ziehen." } },
+    "phalakasana": { en: { how: ["Hands under the shoulders, step back until the body is one straight line.", "Press the floor away, belly firm.", "Look at the floor a little in front of the hands."], feel: "Belly, arms and shoulders working together.", care: "Too hard? Knees down, keep the line from the knees to the head." },
+      de: { how: ["Hände unter den Schultern, zurücksteigen, bis der Körper eine gerade Linie ist.", "Den Boden wegdrücken, Bauch fest.", "Blick auf den Boden etwas vor den Händen."], feel: "Bauch, Arme und Schultern arbeiten zusammen.", care: "Zu schwer? Knie ablegen und die Linie von den Knien bis zum Kopf halten." } },
+    "uttanasana": { en: { how: ["Feet hip-width apart, fold forward from the hips.", "Bend the knees as much as you need.", "Let the head and arms hang heavy."], feel: "A stretch at the back of the legs; the back lets go.", care: "Come up slowly, rolling up, so you don't get dizzy." },
+      de: { how: ["Füße hüftbreit, aus der Hüfte nach vorn beugen.", "Knie so weit beugen, wie du brauchst.", "Kopf und Arme schwer hängen lassen."], feel: "Dehnung an der Rückseite der Beine; der Rücken lässt los.", care: "Langsam aufrollen, damit dir nicht schwindlig wird." } },
+    "tadasana": { en: { how: ["Feet hip-width apart and parallel.", "Weight even on both feet, knees soft.", "Arms by your sides, the crown of the head reaches up."], feel: "Standing tall and steady, the breath calm.", care: "Simple, but it is the base of every standing pose." },
+      de: { how: ["Füße hüftbreit und parallel.", "Gewicht gleichmäßig auf beiden Füßen, Knie weich.", "Arme seitlich am Körper, der Scheitel strebt nach oben."], feel: "Aufrecht und stabil stehen, der Atem ruhig.", care: "Einfach, aber die Grundlage jeder Haltung im Stehen." } },
+    "vrksasana": { en: { how: ["Shift your weight onto one foot.", "Place the other foot on the calf or the inner thigh, never on the knee.", "Hands together at the chest, look at one still point."], feel: "Balance: the standing foot and the belly work gently.", care: "Wobbling is normal. The toes may stay on the floor. A wall nearby helps." },
+      de: { how: ["Das Gewicht auf einen Fuß verlagern.", "Den anderen Fuß an die Wade oder die Innenseite des Oberschenkels legen, nie ans Knie.", "Hände vor der Brust zusammen, Blick auf einen festen Punkt."], feel: "Gleichgewicht: Standfuß und Bauch arbeiten sanft.", care: "Wackeln ist normal. Die Zehen dürfen am Boden bleiben. Eine Wand in der Nähe hilft." } },
+    "indudalasana": { en: { how: ["Stand tall, lift the arms, palms together overhead.", "Lean the upper body to one side; the hips stay in the middle.", "Both feet stay heavy on the floor."], feel: "A long stretch along the side of the body.", care: "Keep the chest open; don't tip forward." },
+      de: { how: ["Aufrecht stehen, Arme heben, Handflächen über dem Kopf zusammen.", "Den Oberkörper zur Seite neigen; die Hüfte bleibt in der Mitte.", "Beide Füße bleiben schwer am Boden."], feel: "Eine lange Dehnung an der Seite des Körpers.", care: "Brust offen halten, nicht nach vorn kippen." } },
+    "setu-bandha-sarvangasana": { en: { how: ["Lie on your back, knees bent, feet flat and hip-width apart near your bottom.", "Arms by your sides, palms down.", "Press into the feet and lift the hips."], feel: "Bottom and backs of the legs working, the front of the hips opening.", care: "Keep the head still, don't turn it. Knees point forward." },
+      de: { how: ["Auf den Rücken legen, Knie beugen, Füße hüftbreit nah am Gesäß aufstellen.", "Arme neben dem Körper, Handflächen nach unten.", "In die Füße drücken und die Hüfte heben."], feel: "Gesäß und Rückseite der Beine arbeiten, vorn öffnet sich die Hüfte.", care: "Kopf ruhig halten, nicht drehen. Die Knie zeigen nach vorn." } },
+    "apanasana": { en: { how: ["Lower the hips, draw both knees to the chest.", "Wrap the arms around the shins.", "Rock gently from side to side if it feels good."], feel: "The lower back relaxes after the backbend.", care: "Knees uncomfortable? Hold behind the thighs instead." },
+      de: { how: ["Hüfte ablegen, beide Knie zur Brust ziehen.", "Arme um die Schienbeine legen.", "Sanft hin und her schaukeln, wenn es guttut."], feel: "Der untere Rücken entspannt sich nach der Rückbeuge.", care: "Knie unangenehm? Stattdessen hinter die Oberschenkel greifen." } },
+    "supta-matsyendrasana": { en: { how: ["Feet on the floor, arms out to the sides.", "Let both knees sink to one side.", "Shoulders stay heavy; turn the head the other way if comfortable."], feel: "A gentle twist through the whole back.", care: "A cushion under the knees if they don't reach the floor." },
+      de: { how: ["Füße am Boden, Arme zur Seite ausbreiten.", "Beide Knie zu einer Seite sinken lassen.", "Die Schultern bleiben schwer; den Kopf zur anderen Seite drehen, wenn es angenehm ist."], feel: "Eine sanfte Drehung durch den ganzen Rücken.", care: "Ein Kissen unter die Knie, wenn sie den Boden nicht erreichen." } },
+    "savasana": { en: { how: ["Lie on your back, legs long and a little apart.", "Arms slightly away from the body, palms up.", "Close your eyes and let the body grow heavy. Nothing to do."], feel: "Everything quiet. This rest is part of the practice.", care: "A cushion under the knees if the lower back pulls. A bowl sounds at the end." },
+      de: { how: ["Auf den Rücken legen, Beine lang und leicht geöffnet.", "Arme etwas vom Körper weg, Handflächen nach oben.", "Augen schließen, den Körper schwer werden lassen. Nichts tun."], feel: "Alles ist still. Diese Ruhe gehört zur Praxis.", care: "Ein Kissen unter die Knie, wenn der untere Rücken zieht. Am Ende erklingt eine Klangschale." } },
+  };
+  const BASICS = {
+    en: ["Ujjayi breath: through the nose, with a soft ocean sound in the throat. Long and soft, but strong. The first minutes teach it, and the breath sets the pace.",
+      "Before each new pose the app stops and explains it. Get into the pose, then tap Ready: only then does the time run.",
+      "The dots count breaths. The circle grows as you breathe in and shrinks as you breathe out.",
+      "A stretch is a pull in the muscle, never pain in a joint. Ease off if it hurts or your breath gets stuck.",
+      "Hold until the stretch softens, then a breath or two more. +15 s and Skip work at any time."],
+    de: ["Ujjayi-Atem: durch die Nase, mit einem leisen Meeresrauschen in der Kehle. Lang und weich, aber kräftig. Die ersten Minuten bringen ihn dir bei, und der Atem gibt das Tempo vor.",
+      "Vor jeder neuen Haltung hält die App an und erklärt sie. Geh in die Haltung und tippe dann auf Bereit: Erst dann läuft die Zeit.",
+      "Die Punkte zählen die Atemzüge. Der Kreis wird beim Einatmen größer und beim Ausatmen kleiner.",
+      "Dehnen heißt Ziehen im Muskel, nie Schmerz im Gelenk. Nachlassen, wenn es wehtut oder der Atem stockt.",
+      "Halten, bis die Dehnung nachgibt, dann noch ein, zwei Atemzüge. +15 s und Überspringen gehen jederzeit."],
+  };
+
+  // The breath: taught at the start, a quiet companion during the practice, let go in Savasana, taken into the day.
+  const BREATH = {
+    lesson: { en: ["Close your eyes. Breathe in and out through the nose.",
+        "Breathe out as if fogging a mirror, “haaa”. Then close the mouth and keep that soft throat.",
+        "Listen: a quiet sound, like the sea in a shell. This is Ujjayi.",
+        "Let the in-breath grow long… and the out-breath just as long.",
+        "Soft, but strong and steady. Never forced.",
+        "Every movement today rides on this breath.",
+        "When thoughts come, let them pass and come back to the sound of the breath."],
+      de: ["Augen schließen. Durch die Nase ein- und ausatmen.",
+        "Ausatmen, als wolltest du einen Spiegel anhauchen, „haaa“. Dann den Mund schließen und die Kehle so weich lassen.",
+        "Lausche: ein leises Rauschen, wie das Meer in einer Muschel. Das ist Ujjayi.",
+        "Die Einatmung lang werden lassen … und die Ausatmung genauso lang.",
+        "Weich, aber kräftig und gleichmäßig. Nie erzwungen.",
+        "Jede Bewegung heute wird von diesem Atem getragen.",
+        "Kommen Gedanken, lass sie ziehen und kehre zum Klang des Atems zurück."] },
+    arrival: { en: ["Close your eyes. Breathe through the nose.", "Find the Ujjayi breath: a soft ocean sound in the throat.", "Long and soft, but strong. In and out the same length.", "Every movement rides on this breath."],
+      de: ["Augen schließen. Durch die Nase atmen.", "Finde den Ujjayi-Atem: ein leises Meeresrauschen in der Kehle.", "Lang und weich, aber kräftig. Ein und aus gleich lang.", "Jede Bewegung wird von diesem Atem getragen."] },
+    savasana: { en: ["Let go of the Ujjayi. Let the breath breathe itself.", "Let the body grow heavy and still.", "When thoughts come, notice them, and return to the breath."],
+      de: ["Lass das Ujjayi los. Der Atem atmet von selbst.", "Der Körper wird schwer und still.", "Kommen Gedanken, nimm sie wahr und kehre zum Atem zurück."] },
+    during: { en: ["Breath long and soft.", "Thoughts wandering? Back to the sound of the breath.", "Let the breath lead; the body follows.", "Strong and steady, never forced.", "Soften the face; keep the breath flowing."],
+      de: ["Atem lang und weich.", "Gedanken wandern? Zurück zum Klang des Atems.", "Der Atem führt, der Körper folgt.", "Kräftig und gleichmäßig, nie erzwungen.", "Gesicht weich, der Atem fließt weiter."] },
+    balance: { en: "Steady breath, steady balance.", de: "Ruhiger Atem, ruhiges Gleichgewicht." },
+    flow: { en: "The movement follows the breath. Move softly, with grace.", de: "Die Bewegung folgt dem Atem. Weich und anmutig bewegen." },
+    trans: { en: "Move slowly and softly into the pose; keep breathing.", de: "Langsam und weich in die Haltung; der Atem fließt weiter." },
+    everyday: { en: ["Today and every day: breathe quietly and deeply through the nose.", "Carry it into the day: move softly, in balance, with grace.", "When the day gets busy: three long breaths through the nose."],
+      de: ["Heute und jeden Tag: leise und tief durch die Nase atmen.", "Nimm es mit in den Tag: weich, im Gleichgewicht und anmutig bewegen.", "Wenn der Tag hektisch wird: drei lange Atemzüge durch die Nase."] },
+  };
+
   // Fill a hint template for one side, in either language.
   function flip(w) { return w.replace(/^([Rr])echt/, (m, r) => (r === "R" ? "Link" : "link")); }
   function hint(template, side, lang) {
@@ -361,6 +438,6 @@
     return SECTIONS_DE[name] || name;
   }
 
-  root.YogaI18n = { HINTS_DE, CUES_DE, PROPS_DE, BLOCKS_DE, SECTIONS_DE, TAGS_DE, TAGS_EN, OFFERS_DE, hint, section };
+  root.YogaI18n = { HINTS_DE, CUES_DE, PROPS_DE, BLOCKS_DE, SECTIONS_DE, TAGS_DE, TAGS_EN, OFFERS_DE, LEARN, BASICS, BREATH, hint, section };
   if (typeof module !== "undefined") module.exports = root.YogaI18n;
 })(typeof window !== "undefined" ? window : globalThis);
