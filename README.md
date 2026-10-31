@@ -7,7 +7,9 @@ steady balance, all-rounder, gentle start), and they pick one of three animals f
 towards mobility), its age is the level (baby → young → grown → wise → ancient), the first word is the pace
 (calm → lively → swift). Each day they pick a theme and a length, can swap or leave out poses, practise with the cat
 guiding live (in the shape of their own animal; all 18 animals can do every pose), and give two answers of feedback. No accounts: the phone remembers, and the code works anywhere.
-A fixed 10-minute **Grundton** (Fundamental) moves every part of the body once, for days with little time.
+A fixed 10-minute **Grundton** (Fundamental) moves every part of the body once, for days with little time. For complete beginners it runs **step by step**: before each new pose it explains how to get in, what to feel and an easier way, and waits for *Ready*.
+**Slow transitions** (for beginners and older practitioners, switched on by the assessment from 65, or for beginners from 50) give every pose time to get into it before the breaths are counted; classes still fit their length.
+**The breath** runs through every practice: Ujjayi is taught while arriving, a quiet breath line accompanies the poses, Savasana lets it go, and the end screen gives a line for the day.
 The app speaks English and German (EN/DE switch at the top; it starts in the phone's language).
 
 ## Run it
