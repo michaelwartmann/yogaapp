@@ -1,6 +1,6 @@
 // Mat Cat Yoga service worker: keeps the app on the phone so it opens without internet.
 // Pages: network first (so updates arrive), the saved copy when offline. Fonts: saved once, then served from the phone.
-const CACHE = "matcat-de445485ea";
+const CACHE = "matcat-619c1f1b49";
 const FILES = ["./", "./index.html", "./tree.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-64.png"];
 

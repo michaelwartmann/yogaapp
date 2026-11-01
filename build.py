@@ -14,7 +14,7 @@ def build_fragment():
     page = (SRC / "player.template.html").read_text(encoding="utf-8")
     for marker, file in [("ENGINE", "pose-engine.js"), ("POSES", "poses.js"), ("GENERATOR", "generator.js"),
                          ("BLOCKS", "blocks.js"), ("COMPOSER", "composer.js"), ("PROFILE", "profile.js"),
-                         ("I18N", "i18n.js")]:
+                         ("I18N", "i18n.js"), ("POSEIMG", "pose-images.js")]:
         page = page.replace(f"/*{marker}*/", (SRC / file).read_text(encoding="utf-8"))
     page = page.replace("__WEBM__", "data:video/webm;base64," + b64("keep-awake.webm"))
     page = page.replace("__MP4__", "data:video/mp4;base64," + b64("keep-awake.mp4"))
@@ -54,6 +54,8 @@ if ("serviceWorker" in navigator && (location.protocol === "https:" || location.
 """
 
 if __name__ == "__main__":
+    import subprocess
+    subprocess.run([sys.executable, str(ROOT / "make_images.py"), str(ROOT)], check=True)  # media/poses/*.webp → src/pose-images.js
     (ROOT / "tree.html").write_text(HEAD.replace("<title>Mat Cat Yoga</title>", "<title>Animal Tree · Mat Cat Yoga</title>") + build_tree() + "\n</body>\n</html>\n", encoding="utf-8")
     print("wrote tree.html")
     frag = build_fragment()

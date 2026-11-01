@@ -11,6 +11,7 @@ A fixed 10-minute **Grundton** (Fundamental) moves every part of the body once, 
 **Slow transitions** (for beginners and older practitioners, switched on by the assessment from 65, or for beginners from 50) give every pose time to get into it before the breaths are counted; classes still fit their length.
 **The breath** runs through every practice: Ujjayi is taught while arriving, a quiet breath line accompanies the poses, Savasana lets it go, and the end screen gives a line for the day.
 **Discover poses** shows the library one card at a time: swipe right for poses you like (they come up more often, also as variations inside flows), left for never.
+**Tricky poses** (binds, pretzels, arm balances) are explained: tap the *Next* card or the pose name to pause and see how to get in; the first times a tricky pose comes up, the app stops before it on its own; reference pictures from two angles where available.
 The app speaks English and German (EN/DE switch at the top; it starts in the phone's language).
 
 ## Run it
@@ -59,7 +60,7 @@ On your own web address the screen-on lock and full screen work best (HTTPS, top
 | `src/blocks.js` | Building blocks: warm-ups, salutations, flow modules, peak themes, connectors |
 | `src/composer.js` | Composes a class around a peak, with memory, timing fit and a rules check |
 | `src/generator.js` | Earlier generator, still used for its transition hints |
-| `media/` | Tiny silent videos used as a fallback to keep the screen on |
+| `media/` | Tiny silent videos used as a fallback to keep the screen on; `media/poses/<pose-id>.webp` reference pictures for tricky poses (packed into `src/pose-images.js` by `make_images.py`) |
 | `build.py` | Rebuilds `index.html`, `tree.html` and `sw.js` from `src/` |
 
 ## Rebuild after changes
