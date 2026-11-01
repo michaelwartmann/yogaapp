@@ -25,6 +25,7 @@
     "ashta-chandrasana>parivrtta-anjaneyasana": "Back knee down, hands to heart, twist",
     "parivrtta-anjaneyasana>anjaneyasana": "Unwind, arms up",
     "parivrtta-anjaneyasana>phalakasana": "Hands down, step back to Plank",
+    "savasana>sukhasana": "Bend the knees, roll onto the right side, slowly press up to sit",
     "bharmanasana>dandayamana-bharmanasana": "{side} arm forward, {other} leg back",
     "dandayamana-bharmanasana>dandayamana-marjaryasana": "Round the back, elbow to knee",
     "dandayamana-marjaryasana>dandayamana-bharmanasana": "Reach long again",
@@ -459,10 +460,18 @@
     });
     // slow transitions: every held pose starts with time to get into it (flows move one whole breath per movement)
     if (opt.gentle) steps.forEach((s, i) => { if (s.breath) return; s.trans = transSecs(steps[i - 1], s); if (s.id !== "savasana") s.secs += s.trans; });
-    const used = steps.reduce((a, s) => a + s.secs, 0);
-    const minS = { 30: 180, 45: 240, 60: 300 }[opt.minutes] || 240, maxS = { 30: 300, 45: 420, 60: 540 }[opt.minutes] || 420;
+    // closing: after Savasana, roll to the side and come up to sit for a few breaths, hands at the heart
     const sav = steps.find(s => s.id === "savasana");
-    if (sav) sav.secs = Math.round(Math.max(minS, Math.min(maxS, opt.minutes * 60 - used)) / 30) * 30 + (sav.trans || 0);
+    if (sav && steps[steps.length - 1] === sav) {
+      const close = { id: "sukhasana", side: null, section: "Closing", breath: null, challenge: false, peak: false, breaths: 3, secs: Math.round(3 * C), closing: true,
+        tip: { en: "Hands to the heart. Namaste.", de: "Hände vor dem Herzen. Namaste." } };
+      close.trans = opt.gentle ? 15 : 10; close.secs += close.trans; // time to roll over and come up
+      steps.push(close);
+    }
+    const used = steps.reduce((a, s) => a + s.secs, 0);
+    // Savasana: 3 minutes in 30-minute classes and the Grundton, 4 in 45, 5 in 60
+    const SAV = { 30: 180, 45: 240, 60: 300 }[opt.minutes] || 180;
+    if (sav) sav.secs = SAV + (sav.trans || 0);
     // hints
     steps.forEach((s, i) => {
       const prev = steps[i - 1]; if (!prev) return;
@@ -493,7 +502,8 @@
       else if (deepAt >= 0 && BY[s.id].cat === "forward fold") { issues.push(`${BY[s.id].en} right after a deep backbend, without a neutral pose between`); deepAt = -1; }
       if (me(s.id) === "new" && !s.challenge) issues.push(`${BY[s.id].en} is untested for you`);
     });
-    if (!known.length || known[known.length - 1].id !== "savasana") issues.push("Does not end in Savasana");
+    const lastMain = known.filter(s => !s.closing && s.section !== "Closing");
+    if (!lastMain.length || lastMain[lastMain.length - 1].id !== "savasana") issues.push("Does not end in Savasana");
     return { ok: !issues.length, issues };
   }
   function repair(raw, opt) {
@@ -557,7 +567,7 @@
 
   // Re-fit an edited plan (pose removed or swapped) to its length; keeps order, sides and the peak.
   function retime(steps, opt) {
-    const raw = steps.filter(s => s.id !== "savasana").map(s => ({ id: s.id, side: s.side, section: s.section, peak: s.peak, challenge: s.challenge,
+    const raw = steps.filter(s => s.id !== "savasana" && !s.closing).map(s => ({ id: s.id, side: s.side, section: s.section, peak: s.peak, challenge: s.challenge,
       breath: s.breath, hold: s.breath ? null : s.baseBreaths || s.breaths || null })).concat([{ id: "savasana", hold: 0, section: "Savasana" }]);
     const fixed = repair(raw, opt);
     let best = null;
@@ -593,11 +603,11 @@
     opt.me = {};
     const plan = finalize(raw, opt, 1);
     // exact holds, the same on both sides (finalize adds a little random variation for the composed classes)
-    if (plan.steps.length === raw.length) plan.steps.forEach((s, i) => { if (!s.breath && raw[i].hold) { s.breaths = raw[i].hold; s.secs = Math.round(raw[i].hold * opt.cycle) + (s.trans || 0); } if (raw[i].tip) s.tip = raw[i].tip; });
+    if (plan.steps.length >= raw.length) plan.steps.forEach((s, i) => { if (!raw[i]) return; if (!s.breath && raw[i].hold) { s.breaths = raw[i].hold; s.secs = Math.round(raw[i].hold * opt.cycle) + (s.trans || 0); } if (raw[i].tip) s.tip = raw[i].tip; });
     plan.totalSecs = plan.steps.reduce((a, s) => a + s.secs, 0);
     const sav = plan.steps.find(s => s.id === "savasana");
     const before = plan.totalSecs - sav.secs;
-    sav.secs = Math.max(150, Math.min(180, Math.round((opt.minutes * 60 - before) / 30) * 30)) + (sav.trans || 0);
+    sav.secs = 180 + (sav.trans || 0); // three minutes
     plan.totalSecs = before + sav.secs;
     return Object.assign(plan, { offers: [], meta: { peak: null, source: "fundamental", modules: [] }, checks: validate(plan.steps, opt),
       why: "Arrive sitting, then every part of the body once: the spine in all six directions, hips, hamstrings, shoulders, arms, core and balance; a twist lying down, then rest." });

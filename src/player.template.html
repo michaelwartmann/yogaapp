@@ -118,7 +118,13 @@ body.is-live { overflow: hidden; }
 .stage { position: relative; min-width: 0; min-height: 0; height: 100%; display: grid; place-items: center; }
 .stage .ring { position: absolute; height: 82%; max-width: 92%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, var(--ring) 58%, transparent 71%); box-shadow: 0 0 0 1px var(--ring-edge); transform: scale(.86); will-change: transform; top: 50%; left: 50%; translate: -50% -52%; }
 .stage svg { position: relative; height: 100%; max-height: 100%; width: auto; max-width: 100%; aspect-ratio: 260 / 230; display: block; }
-.side-badge { position: absolute; top: 0; left: 0; border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: 0.78rem; color: var(--muted); background: var(--bg); }
+/* tap the figure to pause and to go on */
+.stage { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pausemark { position: absolute; inset: 0; display: none; place-items: center; pointer-events: none; }
+.pausemark span { display: grid; place-items: center; gap: 6px; background: color-mix(in srgb, var(--bg) 78%, transparent); border-radius: 22px; padding: 16px 22px; color: var(--ink); font-weight: 700; text-align: center; }
+.pausemark b { font-size: 2.6rem; line-height: 1; color: var(--accent); }
+#live.paused .pausemark { display: grid; }
+.side-badge { z-index: 2;  position: absolute; top: 0; left: 0; border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: 0.78rem; color: var(--muted); background: var(--bg); }
 .panel { display: flex; flex-direction: column; justify-content: center; gap: clamp(4px, 1.8dvh, 14px); min-width: 0; min-height: 0; max-height: 100%; overflow: hidden; }
 .sa { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.25rem, min(4.2vw, 8dvh), 2.8rem); line-height: 1.08; overflow-wrap: anywhere; }
 .en { font-weight: 600; font-size: clamp(0.95rem, min(2.2vw, 4.4dvh), 1.25rem); margin-top: 2px; }
@@ -151,6 +157,19 @@ body.is-live { overflow: hidden; }
 .learn { display: flex; flex-direction: column; gap: clamp(4px, 1.2dvh, 10px); min-height: 0; flex: 1 1 auto; overflow: auto; }
 #live.learning .panel { justify-content: flex-start; align-self: stretch; }
 #live.learning #pauseBtn { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent); }
+.learnhead { display: flex; gap: 10px; align-items: center; }
+.learnhead svg { width: clamp(64px, 18dvh, 110px); height: auto; aspect-ratio: 260 / 230; flex: none; }
+.learnhead .t { display: flex; flex-direction: column; min-width: 0; }
+.learnimg { width: 100%; max-height: 34dvh; object-fit: contain; border-radius: 14px; }
+/* a reference picture takes the figure's place while the explanation is open */
+.stageimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none; border-radius: 16px; }
+#live.hasimg .stageimg { display: block; }
+#live.hasimg .stage svg, #live.hasimg .stage .ring { visibility: hidden; }
+.next, #lNames { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.next .t .label::after { content: " · ?"; color: var(--accent); }
+.chip { position: relative; }
+.chip .qmark { position: absolute; top: 4px; right: 6px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; font-size: .72rem; font-weight: 800; display: grid; place-items: center; }
+.shhow { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
 .learn ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 3px; font-size: clamp(0.88rem, min(2vw, 3.9dvh), 1rem); }
 .learn .feel { margin: 0; font-size: 0.9rem; }
 .learn .feel b, .learn .care b { font-weight: 700; }
@@ -390,6 +409,7 @@ body.is-live .langbar { display: none; }
     <label class="row muted" for="fsStart" id="fsStartWrap" style="font-size:.9rem"><input type="checkbox" id="fsStart" checked> Full screen</label>
     <label class="row muted" for="learnStart" id="learnWrap" style="font-size:.9rem" hidden><input type="checkbox" id="learnStart"> Step by step</label>
     <label class="row muted" for="gentleStart" style="font-size:.9rem"><input type="checkbox" id="gentleStart"> Slow transitions</label>
+    <label class="row muted" for="explainStart" style="font-size:.9rem"><input type="checkbox" id="explainStart"> Explain tricky poses</label>
     <button class="btn" id="shuffleBtn" type="button">Shuffle</button>
     <button class="btn quiet" id="backBtn" type="button">Settings</button>
   </div>
@@ -408,14 +428,18 @@ body.is-live .langbar { display: none; }
       <div class="ring" id="ring"></div>
       <svg id="lFig" viewBox="0 0 260 230" role="img" aria-label="Current pose"></svg>
       <span class="side-badge" id="lSide" hidden></span>
+      <img class="stageimg" id="stageImg" alt="">
+      <div class="pausemark" aria-hidden="true"><span><b>▶</b><small id="pauseHint">Tap to go on</small></span></div>
     </div>
     <div class="panel">
-      <div aria-live="polite">
+      <div aria-live="polite" id="lNames" title="">
         <div class="sa" id="lSa"></div>
         <div class="en" id="lEn"></div>
         <div class="de" id="lDe"></div>
       </div>
       <div class="learn" id="learn" hidden>
+        <div class="learnhead" id="learnHead" hidden><svg id="learnFig" viewBox="0 0 260 230" aria-hidden="true"></svg><div class="t"><span class="label" id="learnLabel"></span><b id="learnName"></b></div></div>
+        <img class="learnimg" id="learnImg" alt="" hidden>
         <ol id="learnHow"></ol>
         <p class="feel" id="learnFeel"></p>
         <p class="care" id="learnCare"></p>
@@ -495,6 +519,7 @@ body.is-live .langbar { display: none; }
 <script>/*COMPOSER*/</script>
 <script>/*PROFILE*/</script>
 <script>/*I18N*/</script>
+<script>/*POSEIMG*/</script>
 <script>
 (() => {
   const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES, I = window.YogaI18n;
@@ -833,6 +858,7 @@ body.is-live .langbar { display: none; }
   $("gtWelcome").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = []; $("learnStart").checked = false; buildFundamental(); });
   $("gtLearn").addEventListener("click", () => { challenges = {}; GT_SKIP = []; GT_CARE = []; $("learnStart").checked = true; buildFundamental(); });
   $("learnStart").addEventListener("change", () => renderPreview());
+  $("explainStart").addEventListener("change", () => { S.explain = $("explainStart").checked ? "on" : "off"; saveS(); });
   $("gentleStart").addEventListener("change", () => {
     S.trans = $("gentleStart").checked ? "slow" : "normal"; saveS(); paintSeg();
     if (source === "fundamental") buildFundamental();
@@ -899,7 +925,7 @@ Answer with JSON only, no prose, in exactly this shape:
 
   function chip(st) {
     const p = BY[st.id];
-    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small>${st.tip ? `<small>${DE() ? st.tip.de : st.tip.en}</small>` : ""}</button>`;
+    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small>${st.tip ? `<small>${DE() ? st.tip.de : st.tip.en}</small>` : ""}${I.TRICKY.has(st.id) ? `<span class="qmark" aria-hidden="true">?</span>` : ""}</button>`;
   }
   function groupFlow(list) {
     const out = [];
@@ -935,7 +961,7 @@ Answer with JSON only, no prose, in exactly this shape:
   }
   function renderPreview() {
     const gt = source === "fundamental";
-    $("shuffleBtn").hidden = gt; $("learnWrap").hidden = !gt; $("gentleStart").checked = S.trans === "slow";
+    $("shuffleBtn").hidden = gt; $("learnWrap").hidden = !gt; $("gentleStart").checked = S.trans === "slow"; $("explainStart").checked = S.explain !== "off";
     if (gt) {
       $("sumTitle").textContent = tr("Fundamental", "Grundton") + ` · ${Math.round(plan.totalSecs / 60)} min`;
       $("sumWhy").textContent = tr(plan.why, "Im Sitzen ankommen, dann jeder Teil des Körpers einmal: die Wirbelsäule in alle sechs Richtungen, Hüften, Beinrückseite, Schultern, Arme, Rumpf und Gleichgewicht; eine Drehung im Liegen, dann Ruhe.");
@@ -979,7 +1005,9 @@ Answer with JSON only, no prose, in exactly this shape:
     $("shFig").innerHTML = fig(p.p); $("shName").textContent = pn(p); $("shSub").textContent = `${p.sa} · ${pn2(p)}`;
     $("shSwap").hidden = !alt || source === "fundamental"; $("shSwap").textContent = alt ? tr(`Swap for ${alt.en}`, `Tauschen gegen ${alt.de}`) : "";
     $("shOut").hidden = keep; $("shNever").hidden = keep || !ST;
-    $("shMsg").textContent = keep ? tr(`${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".`, `${p.de} hält die Stunde zusammen und bleibt deshalb. Wenn etwas wehtut, wähle es unter „Heute schonen“.`) : "";
+    const Lh = I.LEARN[id] ? (I.LEARN[id][LANG] || I.LEARN[id].en) : null;
+    $("shMsg").innerHTML = (Lh ? `<ol class="shhow">${Lh.how.map(x => `<li>${x}</li>`).join("")}</ol><span style="display:block;margin-top:6px"><b>${tr("Feel", "Spüren")}:</b> ${Lh.feel}<br><b>${tr("Easier", "Leichter")}:</b> ${Lh.care}</span>` + (POSE_IMG[id] ? `<img class="learnimg" src="${POSE_IMG[id]}" alt="" style="margin-top:8px">` : "") : `<span>${cueOf(p)}</span>`)
+      + (keep ? `<span style="display:block;margin-top:6px">${tr(`${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".`, `${p.de} hält die Stunde zusammen und bleibt deshalb. Wenn etwas wehtut, wähle es unter „Heute schonen“.`)}</span>` : "");
     $("sheet").hidden = false; $("shCancel").focus();
   }
   function closeSheet() { $("sheet").hidden = true; sheetId = null; }
@@ -1067,11 +1095,47 @@ Answer with JSON only, no prose, in exactly this shape:
     else { $("nFig").innerHTML = ""; $("nName").textContent = tr("End of practice", "Ende der Praxis"); $("nHow").textContent = ""; }
     animateTo(p.p, st.side === "left");
     paint();
-    if (LEARNING) maybeLearn(st); else if (waiting) learnGo();
+    if (waiting) learnGo(true);
+    if (LEARNING) maybeLearn(st); else maybeHeadsUp(st);
   }
   // step by step: stop before every new pose (and before the second side) until the person taps Ready
   let LEARNING = false, LEARNED = new Set(), waiting = false;
+  // an explanation of one pose in the panel; the timer waits until Ready / a tap on the figure
+  let EXPLAIN = "current";
+  const POSE_IMG = window.YogaPoseImages || {};
+  function fillHow(id, side) {
+    const L = I.LEARN[id], p = BY[id];
+    const t = L ? (L[LANG] || L.en) : null;
+    const step = plan.steps.find(s => s.id === id && (!side || s.side === side)) || {};
+    const how = t ? t.how : [howTxt(step) || "", cueOf(p)].filter(Boolean);
+    $("learnHow").innerHTML = how.map(x => `<li>${x}</li>`).join("");
+    $("learnFeel").innerHTML = t && t.feel ? `<b>${tr("Feel", "Spüren")}:</b> ${t.feel}` : "";
+    $("learnCare").innerHTML = t && t.care ? `<b>${tr("Easier", "Leichter")}:</b> ${t.care}` : (p.prop ? `<b>${tr("Helps", "Hilft")}:</b> ${propTxt(p.prop)}` : "");
+    const img = POSE_IMG[id]; $("learnImg").hidden = true; $("live").classList.toggle("hasimg", !!img); if (img) { $("stageImg").src = img; $("stageImg").alt = pn(p); }
+  }
+  function openExplain(mode) {
+    EXPLAIN = mode;
+    waiting = true; $("learn").hidden = false; $("live").classList.add("learning"); $("live").classList.remove("quiet"); clearTimeout(quietTimer);
+    $("pauseBtn").textContent = mode === "next" ? tr("Resume", "Weiter") : tr("Ready", "Bereit"); try { $("learn").scrollTop = 0; } catch (e) {}
+  }
+  function explainNow(st, mode) { // mode: current | next | ask (asked for the pose on screen)
+    const p = BY[st.id];
+    $("learnHead").hidden = mode !== "next";
+    if (mode === "next") { $("learnFig").innerHTML = fig(p.p, st.side === "left"); $("learnLabel").textContent = tr("Next", "Als Nächstes"); $("learnName").textContent = pn(p) + (st.side ? " · " + sideTxt(st.side) : ""); }
+    fillHow(st.id, st.side);
+    openExplain(mode);
+  }
+  // tricky poses: the first times they come up, the app stops before them and explains
+  let SEEN = {}, EXPLAINED = new Set();
+  function countSeen() { SEEN = {}; store.get("matcat-log", []).forEach(r => (r.poses || []).forEach(id => { SEEN[id] = (SEEN[id] || 0) + 1; })); }
+  function maybeHeadsUp(st) {
+    if (S.explain === "off" || !I.TRICKY.has(st.id) || st.breath || EXPLAINED.has(st.id) || (SEEN[st.id] || 0) >= 3) return false;
+    EXPLAINED.add(st.id); explainNow(st, "current"); return true;
+  }
+  $("nFig").parentElement.addEventListener("click", () => { if (!running) return; const nx = plan.steps[idx + 1]; if (nx) explainNow(nx, "next"); });
+  $("lNames").addEventListener("click", () => { if (!running || waiting) return; explainNow(plan.steps[idx], "ask"); });
   function maybeLearn(st) {
+    $("learnHead").hidden = true; $("learnImg").hidden = true; $("live").classList.remove("hasimg"); EXPLAIN = "current";
     const L = I.LEARN[st.id], key = st.id + (st.side ? ":" + st.side : "");
     const seen = LEARNED.has(st.id), sideSeen = LEARNED.has(key);
     if (!L || (seen && (!st.side || sideSeen))) { if (waiting) learnGo(); return; }
@@ -1089,10 +1153,12 @@ Answer with JSON only, no prose, in exactly this shape:
     waiting = true; $("learn").hidden = false; $("live").classList.add("learning"); $("live").classList.remove("quiet"); clearTimeout(quietTimer);
     $("pauseBtn").textContent = tr("Ready", "Bereit"); try { $("learn").scrollTop = 0; } catch (e) {}
   }
-  function learnGo() {
-    waiting = false; $("learn").hidden = true; $("live").classList.remove("learning");
-    const st = plan.steps[idx]; if (st && st.trans && left > st.secs - st.trans) left = st.secs - st.trans; // they are already in the pose
-    phaseT = st && st.trans ? st.trans : 0; setPaused(paused); wake(); if (st) paint();
+  function learnGo(silent) {
+    waiting = false; $("learn").hidden = true; $("live").classList.remove("learning", "hasimg");
+    if (silent) return;
+    const st = plan.steps[idx]; if (EXPLAIN === "current" && st && st.trans && left > st.secs - st.trans) left = st.secs - st.trans; // they are already in the pose
+    if (EXPLAIN === "current") phaseT = st && st.trans ? st.trans : 0;
+    setPaused(paused); wake(); if (st) paint();
   }
   // breath level 0..1: flow steps rise on the inhale and fall on the exhale; holds follow the breath cycle
   function breathLevel(st) {
@@ -1124,6 +1190,7 @@ Answer with JSON only, no prose, in exactly this shape:
   // which breath line to show now
   function guideFor(st) {
     const B = I.BREATH, L = k => B[k][LANG] || B[k].en;
+    if (st.closing && !inTrans(st)) return L("closing");
     if (inTrans(st)) return L("trans");
     const holdS = st.secs - (st.trans || 0), el = Math.max(0, st.secs - left - (st.trans || 0));
     if (st.id === "savasana") { const lines = L("savasana"), span = Math.min(holdS * 0.6, 150); return el < span ? lines[Math.min(lines.length - 1, Math.floor(el / span * lines.length))] : ""; }
@@ -1164,7 +1231,9 @@ Answer with JSON only, no prose, in exactly this shape:
     if (!paused && !waiting) { left -= dt; phaseT += dt; if (left <= 0) enter(idx + 1); else paint(); }
     if (running) requestAnimationFrame(loop);
   }
-  function setPaused(p) { paused = p; $("pauseBtn").textContent = p ? tr("Resume", "Weiter") : tr("Pause", "Pause"); }
+  $("lFig").parentElement.addEventListener("click", () => { if (!running) return; if (waiting) { learnGo(); return; } setPaused(!paused); wake(); });
+  $("learn").addEventListener("click", () => { if (running && waiting) learnGo(); });
+  function setPaused(p) { $("live").classList.toggle("paused", !!p && running); paused = p; $("pauseBtn").textContent = p ? tr("Resume", "Weiter") : tr("Pause", "Pause"); }
 
   // controls fade after a few quiet seconds; the first tap only brings them back
   function wake() { $("live").classList.remove("quiet"); clearTimeout(quietTimer); quietTimer = setTimeout(() => { if (running && !paused && !waiting) $("live").classList.add("quiet"); }, 4000); }
@@ -1178,7 +1247,7 @@ Answer with JSON only, no prose, in exactly this shape:
     Sound.resume();
     if ($("fsStart").checked) enterFS();
     total = plan.totalSecs; running = true; shown = null; startedAt = Date.now();
-    LEARNING = source === "fundamental" && $("learnStart").checked; LEARNED = new Set(); waiting = false; $("live").classList.remove("learning"); $("learn").hidden = true;
+    LEARNING = source === "fundamental" && $("learnStart").checked; LEARNED = new Set(); EXPLAINED = new Set(); countSeen(); waiting = false; $("live").classList.remove("learning", "hasimg"); $("learn").hidden = true;
     setPaused(false); show("live"); requestLock(); Sound.startDrone(); wake();
     enter(0); last = performance.now(); requestAnimationFrame(loop);
   });
@@ -1197,7 +1266,7 @@ Answer with JSON only, no prose, in exactly this shape:
   function finish(complete) {
     if (!running) return;
     running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
-    waiting = false; $("learn").hidden = true; $("live").classList.remove("learning");
+    waiting = false; $("learn").hidden = true; $("live").classList.remove("learning", "hasimg");
     if (complete) { Sound.bowl(174.6, 1, 9); setTimeout(() => Sound.bowl(174.6, .8, 9), 3500); setTimeout(() => Sound.bowl(174.6, .6, 10), 7000); }
     exitFS();
     const secs = Math.round((Date.now() - startedAt) / 1000);
@@ -1399,7 +1468,7 @@ Answer with JSON only, no prose, in exactly this shape:
     "Save and see my animal": "Speichern und mein Tier sehen", "Back to start": "Zurück zum Start", "Next time you are": "Nächstes Mal bist du",
     "Done": "Fertig", "All levels": "Alle Stufen", "Basic": "Einfach", "Intermediate": "Mittel", "Advanced": "Fortgeschritten",
     "All": "Alle", "In my practices": "In meinen Stunden", "Left out": "Ausgelassen",
-    "Short on time?": "Wenig Zeit?", "Discover poses": "Haltungen entdecken", "♡ Discover poses": "♡ Haltungen entdecken", "Not for me": "Nicht für mich",
+    "Short on time?": "Wenig Zeit?", "Explain tricky poses": "Knifflige Haltungen erklären", "Tap to go on": "Tippen zum Weitermachen", "Discover poses": "Haltungen entdecken", "♡ Discover poses": "♡ Haltungen entdecken", "Not for me": "Nicht für mich",
     "Later": "Später", "I like it": "Mag ich", "Undo": "Rückgängig", "♡ Liked": "♡ Lieblinge", "Transitions": "Übergänge", "Slow": "Langsam", "Slow transitions": "Langsame Übergänge",
     "Slow: time to get into every pose before the breaths are counted.": "Langsam: Zeit, in jede Haltung zu kommen, bevor die Atemzüge gezählt werden.", "Ready": "Bereit", "Step by step": "Schritt für Schritt", "First time: step by step": "Zum ersten Mal: Schritt für Schritt", "Start": "Starten", "Save": "Speichern",
     "Every part of the body once. The same practice for everyone, no animal needed.": "Jeder Teil des Körpers einmal. Für alle gleich, ohne Tier.", "Fundamental · 10 min": "Grundton · 10 min",
