@@ -68,3 +68,7 @@ On your own web address the screen-on lock and full screen work best (HTTPS, top
 ```
 python3 build.py
 ```
+
+## License
+
+MIT, see [LICENSE](LICENSE). © 2026 Michael Wartmann.
