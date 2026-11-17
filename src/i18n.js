@@ -613,6 +613,11 @@
   function hint(template, side, lang) {
     side = side === "left" ? "left" : "right";
     const other = side === "right" ? "left" : "right";
+    const Z = root.YogaI18nZh;
+    if (lang === "zh" && Z && Z.HINTS[template]) {
+      const w = x => (x === "right" ? "右" : "左");
+      return Z.HINTS[template].replace(/\{side\}/g, w(side)).replace(/\{other\}/g, w(other));
+    }
     if (lang === "de" && HINTS_DE[template]) {
       return HINTS_DE[template]
         .replace(/\{S:([A-Za-zäöü]+)\}/g, (m, w) => (side === "right" ? w : flip(w)))
@@ -622,6 +627,11 @@
     return out[0].toUpperCase() + out.slice(1);
   }
   function section(name, lang, peakDe) {
+    const Z = root.YogaI18nZh;
+    if (lang === "zh" && Z) {
+      if (/^Peak · /.test(name)) return Z.PEAK + " · " + (peakDe || name.slice(7));
+      return Z.SECTIONS[name] || name;
+    }
     if (lang !== "de") return name;
     if (/^Peak · /.test(name)) return "Höhepunkt · " + (peakDe || name.slice(7));
     return SECTIONS_DE[name] || name;

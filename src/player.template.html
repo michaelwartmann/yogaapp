@@ -43,6 +43,7 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 18px 28px;
 }
+:root:lang(zh-Hans) { --font-body: "Nunito", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", system-ui, sans-serif; --font-display: "Quicksand", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", system-ui, sans-serif; }
 h1, h2, h3 { font-family: var(--font-display); font-weight: 500; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
 p { margin: 0; }
 button, input, textarea { font: inherit; color: inherit; }
@@ -289,7 +290,7 @@ body.is-live .langbar { display: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stage .ring { transform: scale(.93) !important; } }
 </style>
 
-<div class="langbar"><div class="seg" id="langSeg" role="group" aria-label="Language · Sprache"><button type="button" data-v="en" lang="en">EN</button><button type="button" data-v="de" lang="de">DE</button></div></div>
+<div class="langbar"><div class="seg" id="langSeg" role="group" aria-label="Language · Sprache · 语言"><button type="button" data-v="en" lang="en">EN</button><button type="button" data-v="de" lang="de">DE</button><button type="button" data-v="zh" lang="zh-Hans">中文</button></div></div>
 
 <section class="screen" id="welcome">
   <div class="hero">
@@ -519,11 +520,26 @@ body.is-live .langbar { display: none; }
 <script>/*COMPOSER*/</script>
 <script>/*PROFILE*/</script>
 <script>/*I18N*/</script>
+<script>/*I18NZH*/</script>
 <script>/*POSEIMG*/</script>
 <script>
 (() => {
   const E = window.PoseEngine, G = window.YogaComposer, P = window.YogaProfile, POSES = window.YogaPoses.POSES, I = window.YogaI18n;
   const BY = Object.fromEntries(POSES.map(p => [p.id, p]));
+  // Simplified Chinese: hang the zh texts onto the shared data, next to en and de
+  (function addZh(Z) {
+    if (!Z) return;
+    POSES.forEach(p => { p.zh = Z.NAMES[p.id] || p.en; });
+    P.ANIMALS.forEach(a => { a.zh = Z.ANIMALS[a.id] || a.en; });
+    P.AGES.forEach((a, i) => { a.zh = Z.AGES[i]; }); P.TEMPOS.forEach((t, i) => { t.zh = Z.TEMPOS[i]; });
+    P.NATURES.forEach(n => { const z = Z.NATURES[n.id]; if (z) [n.zh, n.shortZh, n.textZh] = z; });
+    P.THEMES.forEach(t => { const z = Z.THEMES[t.id]; if (z) [t.zh, t.textZh] = z; });
+    P.LEVELS.forEach(L => { const z = Z.LEVELS[L.n]; if (z) [L.zh, L.textZh] = z; });
+    P.CARE.forEach(c => { c.zh = Z.CARE[c.id] || c.en; });
+    Object.entries(Z.LEARN).forEach(([id, t]) => { const L = I.LEARN[id]; if (!L) return; L.zh = { how: t.how, feel: t.feel, care: t.care }; if (L.title && t.title) L.title.zh = t.title; });
+    I.BASICS.zh = Z.BASICS;
+    Object.entries(Z.BREATH).forEach(([k, v]) => { if (I.BREATH[k]) I.BREATH[k].zh = v; });
+  })(window.YogaI18nZh);
   const $ = id => document.getElementById(id);
   // the guide: your own animal does the practice; the cat leads the Grundton and everything before you have an animal
   let GUIDE = "cat";
@@ -532,29 +548,33 @@ body.is-live .langbar { display: none; }
   const mmss = s => { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   // ---------- language ----------
   let LANG = "en";
-  const DE = () => LANG === "de";
-  const tr = (en, de) => DE() ? de : en;
-  const pn = p => DE() ? p.de : p.en;            // pose name in the chosen language
-  const pn2 = p => DE() ? p.en : p.de;           // the other one, shown smaller
-  const an = a => DE() ? a.de : a.en;            // animal name
-  const ntName = n => DE() ? n.de : n.en, ntShort = n => DE() ? n.shortDe : n.short, ntText = n => DE() ? n.textDe : n.text;
-  const thName = t => DE() ? t.de : t.en, thText = t => DE() ? t.textDe : t.text;
-  const lvName = L => DE() ? L.de : L.name, careName = c => DE() ? c.de : c.en;
-  const blockName = (id, fallback) => (DE() && I.BLOCKS_DE[id]) || fallback;
+  const DE = () => LANG === "de", ZH_ = () => LANG === "zh";
+  const ZH = window.YogaI18nZh || { T: {}, UI: {}, ATTR: {} };
+  const L3 = (en, de, zh) => LANG === "de" ? de : LANG === "zh" ? (zh != null ? zh : en) : en;
+  // tr(en, de[, zh]): Chinese comes from the third argument or, for plain strings, from ZH.T keyed by the English text
+  const tr = (en, de, zh) => L3(en, de, zh != null ? zh : ZH.T[en]);
+  const pn = p => L3(p.en, p.de, p.zh);          // pose name in the chosen language
+  const pn2 = p => DE() || ZH_() ? p.en : p.de;  // the other one, shown smaller
+  const an = a => L3(a.en, a.de, a.zh);          // animal name
+  const ntName = n => L3(n.en, n.de, n.zh), ntShort = n => L3(n.short, n.shortDe, n.shortZh), ntText = n => L3(n.text, n.textDe, n.textZh);
+  const thName = t => L3(t.en, t.de, t.zh), thText = t => L3(t.text, t.textDe, t.textZh);
+  const lvName = L => L3(L.name, L.de, L.zh), careName = c => L3(c.en, c.de, c.zh);
+  const blockName = (id, fallback) => (DE() && I.BLOCKS_DE[id]) || (ZH_() && ZH.BLOCKS && ZH.BLOCKS[id]) || fallback;
   const sideTxt = s => s === "right" ? tr("Right", "Rechts") : s === "left" ? tr("Left", "Links") : "";
   const LEVEL_EN = { 1: "Basic", 2: "Intermediate", 3: "Advanced" }, LEVEL_DE = { 1: "Einfach", 2: "Mittel", 3: "Fortgeschritten" };
-  const LEVEL = new Proxy({}, { get: (o, k) => (DE() ? LEVEL_DE : LEVEL_EN)[k] });
+  const LEVEL = new Proxy({}, { get: (o, k) => (DE() ? LEVEL_DE : ZH_() ? ZH.LEVEL : LEVEL_EN)[k] });
   const breathWord = b => b === "in" ? tr("inhale", "einatmen") : tr("exhale", "ausatmen");
-  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs - (st.trans || 0) >= 90 ? mmss(st.secs - (st.trans || 0)) + " min" : (st.breaths === 1 ? tr("1 breath", "1 Atemzug") : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`));
-  const cueOf = p => (DE() && I.CUES_DE[p.id]) || p.cue || "";
-  const propTxt = t => (DE() && I.PROPS_DE[t]) || t;
+  const holdTxt = st => st.breath ? breathWord(st.breath) : st.secs - (st.trans || 0) >= 90 ? mmss(st.secs - (st.trans || 0)) + tr(" min", " min") : (st.breaths === 1 ? tr("1 breath", "1 Atemzug") : tr(`${st.breaths} breaths`, `${st.breaths} Atemzüge`, `${st.breaths} 次呼吸`));
+  const cueOf = p => (DE() && I.CUES_DE[p.id]) || (ZH_() && ZH.CUES[p.id]) || p.cue || "";
+  const propTxt = t => (DE() && I.PROPS_DE[t]) || (ZH_() && ZH.PROPS[t]) || t;
+  const tipTxt = t => L3(t.en, t.de, t.zh || ZH.TIPS[t.en]);
   const howTxt = st => st.howT ? I.hint(st.howT, st.howSide, LANG) : st.how;
-  const secName = name => I.section(name, LANG, plan && plan.meta ? I.BLOCKS_DE[plan.meta.peak] : null);
+  const secName = name => I.section(name, LANG, plan && plan.meta ? (ZH_() ? ZH.BLOCKS : I.BLOCKS_DE)[plan.meta.peak] : null);
   const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 
   // ---------- settings (this device) ----------
   let S = Object.assign({ minutes: 30, theme: "chef", sound: "bowls", volume: 60, trans: "normal" }, store.get("matcat-settings", {}));
-  if (S.lang !== "en" && S.lang !== "de") { let nl = ""; try { nl = (navigator.languages && navigator.languages[0]) || navigator.language || ""; } catch (e) {} S.lang = /^de\b/i.test(nl) ? "de" : "en"; }
+  if (!["en", "de", "zh"].includes(S.lang)) { let nl = ""; try { nl = (navigator.languages && navigator.languages[0]) || navigator.language || ""; } catch (e) {} S.lang = /^de\b/i.test(nl) ? "de" : /^zh\b/i.test(nl) ? "zh" : "en"; }
   LANG = S.lang;
   if (S.sound === "drone") S.sound = "bowls";
   const saveS = () => store.set("matcat-settings", S);
@@ -581,9 +601,20 @@ body.is-live .langbar { display: none; }
   // ---------- profile: animal, level (age), tempo; remembered on this device ----------
   let ST = store.get("matcat-profile", null); // { animal, level, tempo, streak, care: [], skip: [] }
   const saveST = () => store.set("matcat-profile", ST);
-  const phrase = (st, lang) => P.code(st, lang || LANG);
+  // Chinese code word: tempo + 的 + age + animal, e.g. 安静的年轻苍鹭
+  function zhCode(st) { const a = P.ANIMAL[st.animal]; return a ? `${P.TEMPOS[st.tempo - 1].zh}的${P.AGES[st.level - 1].zh}${a.zh}` : ""; }
+  const phrase = (st, lang) => (lang || LANG) === "zh" ? zhCode(st) : P.code(st, lang || LANG);
+  // Chinese typed into the code field: swap known words for English ones, longest first, so P.parse can read it
+  const ZH_WORDS = () => [...P.ANIMALS.map(a => [a.zh, a.en]), ...P.AGES.map(a => [a.zh, a.en]), ...P.AGES.slice(0, 1).flatMap(a => [["幼", a.en], ["小", a.en], ["婴儿", a.en]]), ...P.TEMPOS.map(t => [t.zh, t.en])].sort((x, y) => y[0].length - x[0].length);
+  function zhToEn(text) { let t = String(text || ""); if (!/[\u4e00-\u9fff]/.test(t)) return t; ZH_WORDS().forEach(([zh, en]) => { t = t.split(zh).join(` ${en} `); }); return t.replace(/的/g, " "); }
+  const parseCode = text => P.parse(zhToEn(text));
+  function suggestCode(text, last) {
+    if (!/[\u4e00-\u9fff]/.test(text)) return P.suggestAnimals(last);
+    const rest = zhToEn(text).replace(/[a-z\s]+/gi, " ").trim().split(/\s+/).pop() || "";
+    return rest ? P.ANIMALS.filter(a => a.zh.startsWith(rest) || a.zh.includes(rest[0])).slice(0, 8) : [];
+  }
   const cap = t => t ? t[0].toUpperCase() + t.slice(1) : t;
-  function paintPhrase(big, small, st) { $(big).textContent = cap(phrase(st, LANG)); $(small).textContent = phrase(st, DE() ? "en" : "de"); }
+  function paintPhrase(big, small, st) { $(big).textContent = cap(phrase(st, LANG)); $(small).textContent = phrase(st, DE() || ZH_() ? "en" : "de"); }
 
   // ---------- welcome ----------
   let entry = { animal: null, level: null, tempo: null };
@@ -597,8 +628,12 @@ body.is-live .langbar { display: none; }
   $("wNotMe").addEventListener("click", () => showWelcome(false));
   $("newBtn").addEventListener("click", () => { pickAnimal = entry.animal; startAssess("full"); });
   const natureOfAnimal = id => P.NATURE[(P.ANIMAL[id] || {}).nature];
-  function natureLine(st) { const n = natureOfAnimal(st.animal); return n ? `${an(P.ANIMAL[st.animal])}: ${ntShort(n)}. ${ntText(n).split(". ").slice(1).join(". ")}` : ""; }
-  const both = x => DE() ? `${x.de} · ${x.en}` : `${x.en} · ${x.de}`;
+  function natureLine(st) {
+    const n = natureOfAnimal(st.animal); if (!n) return "";
+    if (ZH_()) return `${an(P.ANIMAL[st.animal])}：${ntShort(n)}。${ntText(n).split(/(?<=。)/).slice(1).join("")}`;
+    return `${an(P.ANIMAL[st.animal])}: ${ntShort(n)}. ${ntText(n).split(". ").slice(1).join(". ")}`;
+  }
+  const both = x => DE() ? `${x.de} · ${x.en}` : ZH_() ? `${x.zh} · ${x.en}` : `${x.en} · ${x.de}`;
   function paintEntry() {
     const a = entry.animal && P.ANIMAL[entry.animal];
     const tag = (ok, txt) => `<span class="${ok ? "ok" : ""}">${ok ? "✓ " : ""}${txt}</span>`;
@@ -608,7 +643,7 @@ body.is-live .langbar { display: none; }
     const missing = a && (!entry.level || !entry.tempo);
     $("codeAsk").hidden = !missing;
     if (missing) {
-      $("codeAskTxt").textContent = tr(`Hello, ${a.en}! Which one were you? Tap it if you recognise it.`, `Hallo, ${a.de}! Welches warst du? Tippe es an, wenn du es wiedererkennst.`);
+      $("codeAskTxt").textContent = tr(`Hello, ${a.en}! Which one were you? Tap it if you recognise it.`, `Hallo, ${a.de}! Welches warst du? Tippe es an, wenn du es wiedererkennst.`, `你好，${a.zh}！你之前是哪一只？认出来就点一下。`);
       $("askAge").hidden = !!entry.level; $("askTempo").hidden = !!entry.tempo;
       const dunno = `<button type="button" data-v="?">${tr("I don't remember", "Weiß ich nicht mehr")}</button>`;
       $("askAge").innerHTML = P.AGES.map(x => `<button type="button" data-v="${x.n}">${both(x)}</button>`).join("") + dunno;
@@ -617,26 +652,28 @@ body.is-live .langbar { display: none; }
     $("codeGo").disabled = !(a && entry.level && entry.tempo);
   }
   $("codeIn").addEventListener("input", () => {
-    const r = P.parse($("codeIn").value);
+    const r = parseCode($("codeIn").value);
     entry = { animal: r.animal, level: r.level, tempo: r.tempo };
     const old = !r.animal && r.unknown.some(t => P.OLD_ANIMALS.includes(t));
     $("oldNote").hidden = !old;
     const last = $("codeIn").value.split(/\s+/).pop();
-    const sug = r.animal ? [] : P.suggestAnimals(last);
+    const sug = r.animal ? [] : suggestCode($("codeIn").value, last);
     $("codeSugg").hidden = !sug.length;
     $("codeSugg").innerHTML = sug.map(a => `<button type="button" data-id="${a.id}">${both(a)}</button>`).join("");
     paintEntry();
   });
   $("codeSugg").addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
-    const words = $("codeIn").value.split(/\s+/); words[words.length - 1] = DE() ? P.ANIMAL[b.dataset.id].de : P.ANIMAL[b.dataset.id].en.toLowerCase();
+    const words = $("codeIn").value.split(/\s+/), A = P.ANIMAL[b.dataset.id], lastW = words[words.length - 1];
+    if (/[\u4e00-\u9fff]/.test($("codeIn").value)) { let w = lastW; for (let k = Math.min(w.length, A.zh.length); k > 0; k--) if (A.zh.startsWith(w.slice(-k))) { w = w.slice(0, -k); break; } words[words.length - 1] = w + A.zh; }
+    else words[words.length - 1] = DE() ? A.de : A.en.toLowerCase();
     $("codeIn").value = words.join(" ") + " "; $("codeSugg").hidden = true; $("codeIn").dispatchEvent(new Event("input")); $("codeIn").focus();
   });
   $("codeIn").addEventListener("keydown", e => { if (e.key === "Enter" && !$("codeGo").disabled) $("codeGo").click(); });
   $("askAge").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess("full"); return; } entry.level = Number(b.dataset.v); paintEntry(); });
   $("askTempo").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; if (b.dataset.v === "?") { pickAnimal = entry.animal; startAssess("full"); return; } entry.tempo = Number(b.dataset.v); paintEntry(); });
   $("oldGo").addEventListener("click", () => {
-    const r = P.parse($("codeIn").value);
+    const r = parseCode($("codeIn").value);
     if (r.level && r.tempo) KEEP_LT = { level: r.level, tempo: r.tempo };
     if (KEEP_LT) startAssess("nature"); else startAssess("full");
   });
@@ -648,14 +685,14 @@ body.is-live .langbar { display: none; }
 
   // ---------- nature and animal ----------
   let pickAnimal = null, NAT_ORDER = P.NATURES.map(n => n.id), PENDING = null, KEEP_LT = null, ASSESS_MODE = "full";
-  const animalBtns = n => n.animals.map(([id, en, de]) => `<button type="button" data-id="${id}" aria-pressed="${pickAnimal === id}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY["sukhasana"].p, false, id)}</svg><b>${DE() ? de : en}</b><small>${DE() ? en : de}</small></button>`).join("");
+  const animalBtns = n => n.animals.map(([id, en, de]) => `<button type="button" data-id="${id}" aria-pressed="${pickAnimal === id}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY["sukhasana"].p, false, id)}</svg><b>${L3(en, de, P.ANIMAL[id].zh)}</b><small>${DE() || ZH_() ? en : de}</small></button>`).join("");
   function renderPick() {
     const n = P.NATURE[NAT_ORDER[0]];
     $("pickLabel").textContent = tr("Your nature", "Deine Natur");
     $("natTitle").textContent = both(n);
     $("natText").textContent = ntText(n);
     $("animalGrid").innerHTML = animalBtns(n);
-    $("natList").innerHTML = NAT_ORDER.slice(1).map(id => { const m = P.NATURE[id]; return `<div style="display:flex;flex-direction:column;gap:6px"><b>${ntName(m)} · <span class="muted">${DE() ? m.en : m.de}</span></b><span class="muted" style="font-size:.88rem">${ntText(m)}</span><div class="animals">${animalBtns(m)}</div></div>`; }).join("");
+    $("natList").innerHTML = NAT_ORDER.slice(1).map(id => { const m = P.NATURE[id]; return `<div style="display:flex;flex-direction:column;gap:6px"><b>${ntName(m)} · <span class="muted">${DE() || ZH_() ? m.en : m.de}</span></b><span class="muted" style="font-size:.88rem">${ntText(m)}</span><div class="animals">${animalBtns(m)}</div></div>`; }).join("");
     $("pickGo").disabled = !pickAnimal;
   }
   $("pick").addEventListener("click", e => { const b = e.target.closest(".animals button[data-id]"); if (!b) return; pickAnimal = b.dataset.id; $("pick").querySelectorAll(".animals button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.id === pickAnimal))); $("pickGo").disabled = false; });
@@ -672,9 +709,10 @@ body.is-live .langbar { display: none; }
     const n = natureOfAnimal(ST.animal), A = P.ANIMAL[ST.animal], L = P.LEVELS[ST.level - 1];
     paintPhrase("rPhrase", "rPhraseDe", ST);
     $("rFig").innerHTML = fig(BY["sukhasana"].p, false, ST.animal);
-    $("rStory").textContent = REVEAL_CHANGED ? tr(`New animal: your nature is now ${n.short}.`, `Neues Tier: deine Natur ist jetzt ${n.shortDe}.`) : "";
+    $("rStory").textContent = REVEAL_CHANGED ? tr(`New animal: your nature is now ${n.short}.`, `Neues Tier: deine Natur ist jetzt ${n.shortDe}.`, `新动物：你现在的天性是${n.shortZh}。`) : "";
     $("rExplain").textContent = tr(`${A.en}: ${n.short}. "${P.AGES[ST.level - 1].en}" is your level (${ST.level} of 5: ${L.name.toLowerCase()}), "${P.TEMPOS[ST.tempo - 1].en}" is your pace. Your ${A.en.toLowerCase()} grows up as you practise.`,
-      `${A.de}: ${n.shortDe}. „${P.AGES[ST.level - 1].de}“ ist deine Stufe (${ST.level} von 5: ${L.de}), „${P.TEMPOS[ST.tempo - 1].de}“ ist dein Tempo. ${A.g === "f" ? "Deine" : "Dein"} ${A.de} wird älter, während du übst.`);
+      `${A.de}: ${n.shortDe}. „${P.AGES[ST.level - 1].de}“ ist deine Stufe (${ST.level} von 5: ${L.de}), „${P.TEMPOS[ST.tempo - 1].de}“ ist dein Tempo. ${A.g === "f" ? "Deine" : "Dein"} ${A.de} wird älter, während du übst.`,
+      `${A.zh}：${n.shortZh}。“${P.AGES[ST.level - 1].zh}”是你的级别（第 ${ST.level} 级，共 5 级：${L.zh}），“${P.TEMPOS[ST.tempo - 1].zh}”是你的节奏。随着练习，你的${A.zh}会长大。`);
   }
   $("pickBack").addEventListener("click", () => show("assess"));
 
@@ -700,15 +738,16 @@ body.is-live .langbar { display: none; }
     { k: "care", multi: true, ask: "Anything to take care of? (You can change this every day.)", askDe: "Gibt es etwas zu schonen? (Das kannst du jeden Tag ändern.)",
       opts: P.CARE.map(c => [c.id, c.en]), optsDe: P.CARE.map(c => [c.id, c.de]) },
   ];
+  QS.forEach(q => { const z = ZH.QS && ZH.QS[q.k]; if (!z) return; q.askZh = z[0]; q.optsZh = z[1] || P.CARE.map(c => [c.id, c.zh]); });
   let ANS = {};
   const NATURE_QS = ["moves", "fold", "plank", "balance"];
   function startAssess(mode) { ASSESS_MODE = mode || "full"; ANS = { moves: [], care: [] }; renderQs(); show("assess"); }
   function renderQs() {
     $("qList").innerHTML = QS.filter(q => ASSESS_MODE === "full" || NATURE_QS.includes(q.k)).map(q => {
-      const opts = (DE() ? q.optsDe : q.opts).map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
+      const opts = L3(q.opts, q.optsDe, q.optsZh).map((o, i) => { const v = Array.isArray(o) ? o[0] : String(i), t = Array.isArray(o) ? o[1] : o;
         const on = q.multi ? (ANS[q.k] || []).includes(v) : String(ANS[q.k]) === v;
         return `<button type="button" data-v="${v}" aria-pressed="${on}">${t}</button>`; }).join("");
-      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p, false, "cat")}</svg><span class="ask">${tr(q.ask, q.askDe)}</span></div>` : `<span class="ask">${tr(q.ask, q.askDe)}</span>`;
+      const head = q.pose ? `<div class="tryit"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[q.pose].p, false, "cat")}</svg><span class="ask">${tr(q.ask, q.askDe, q.askZh)}</span></div>` : `<span class="ask">${tr(q.ask, q.askDe, q.askZh)}</span>`;
       return `<div class="q">${head}<div class="seg" data-q="${q.k}" data-multi="${q.multi ? 1 : ""}">${opts}</div></div>`;
     }).join("");
   }
@@ -752,7 +791,8 @@ body.is-live .langbar { display: none; }
     $("themeSeg").innerHTML = `<button type="button" data-v="chef" aria-pressed="${S.theme === "chef"}">${tr("Chef's choice", "Empfehlung des Hauses")}</button>` + P.THEMES.map(t => `<button type="button" data-v="${t.id}" aria-pressed="${S.theme === t.id}">${thName(t)}</button>`).join("");
     const n = natureOfAnimal(ST.animal);
     $("themeText").textContent = S.theme === "chef" ? tr(`Mostly ${n.work.slice(0, 3).map(t => P.THEME[t].en.toLowerCase()).join(", ")} for a ${P.ANIMAL[ST.animal].en.toLowerCase()}, and one you haven't had for a while.`,
-      `Meist ${n.work.slice(0, 3).map(t => P.THEME[t].de).join(", ")}, passend zu deinem Tier, und ab und zu etwas, das du länger nicht hattest.`) : thText(P.THEME[S.theme]);
+      `Meist ${n.work.slice(0, 3).map(t => P.THEME[t].de).join(", ")}, passend zu deinem Tier, und ab und zu etwas, das du länger nicht hattest.`,
+      `主要是${n.work.slice(0, 3).map(t => P.THEME[t].zh).join("、")}，适合你的${P.ANIMAL[ST.animal].zh}，偶尔加一个你很久没练的。`) : thText(P.THEME[S.theme]);
   }
   $("themeSeg").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; S.theme = b.dataset.v; saveS(); renderThemes(); });
   function renderCare() { $("careSeg").innerHTML = P.CARE.map(c => `<button type="button" data-v="${c.id}" aria-pressed="${CARE_TODAY.includes(c.id)}">${careName(c)}</button>`).join(""); }
@@ -886,7 +926,8 @@ body.is-live .langbar { display: none; }
 The practitioner: level ${ST.level} of 5 (${L.name}: ${L.text}) Pace ${ST.tempo} of 3 (${T.text}) Breath length ${o.cycle} s. Nature: ${natureOfAnimal(ST.animal).en}: ${natureOfAnimal(ST.animal).text}
 Today's theme: ${th.en} (${th.text}). Length: ${S.minutes} minutes.${care ? " Take care of: " + care + "." : ""}
 Recent peaks (pick something different): ${hist || "none yet"}.${DE() ? `
-Language: the practitioner reads German. Write "title", "why" and every section "name" in German (e.g. "Ankommen", "Aufwärmen", "Sonnengrüße", "Im Stehen", "Höhepunkt", "Ausklang", "Savasana"). Pose ids stay as given.` : ""}
+Language: the practitioner reads German. Write "title", "why" and every section "name" in German (e.g. "Ankommen", "Aufwärmen", "Sonnengrüße", "Im Stehen", "Höhepunkt", "Ausklang", "Savasana"). Pose ids stay as given.` : ZH_() ? `
+Language: the practitioner reads Simplified Chinese. Write "title", "why" and every section "name" in Simplified Chinese (e.g. "安住", "热身", "拜日式", "站立", "高峰", "放松", "摊尸式"). Pose ids stay as given.` : ""}
 
 Write a creative, well-sequenced class: arrival, warm-up, a salutation variation, standing work, balance, a peak pose that fits the theme with real preparation, backbends or core as fits, cool-down, Savasana. Every pose marked "both sides" is done right then left with the same holds. Put a neutral pose (Child's Pose, Knees to Chest or a twist) between a deep backbend and any forward fold. Flowing movements use "breath": "in" or "out" (one movement per half breath); holds use "breaths": 1–12. Aim for about ${Math.round(S.minutes * 60 / o.cycle * 0.8)} breaths in total before Savasana; the app fine-tunes the timing.
 
@@ -912,7 +953,9 @@ Answer with JSON only, no prose, in exactly this shape:
       source = "claude"; challenges = {};
       renderPreview();
     } catch (e) {
-      const msg = DE()
+      const msg = ZH_()
+        ? ({ not_granted: "Claude 没有获准回答，所以这里是应用自己编排的一堂课。", rate_limited: "Claude 现在很忙，所以这里是应用自己编排的一堂课。", cancelled: "已停止。这里是应用自己编排的一堂课。" }[e && e.code] || "Claude 的回答无法使用，所以这里是应用自己编排的一堂课。")
+        : DE()
         ? ({ not_granted: "Claude durfte nicht antworten, darum hier eine Stunde aus der App.", rate_limited: "Claude ist gerade beschäftigt, darum hier eine Stunde aus der App.", cancelled: "Gestoppt. Hier ist eine Stunde aus der App." }[e && e.code] || "Claudes Antwort ließ sich nicht verwenden, darum hier eine Stunde aus der App.")
         : ({ not_granted: "Claude wasn't allowed to answer, so here is a class from the app instead.", rate_limited: "Claude is busy right now, so here is a class from the app instead.", cancelled: "Stopped. Here is a class from the app instead." }[e && e.code] || "Claude's answer couldn't be used, so here is a class from the app instead.");
       buildPlan(); $("sumWhy").textContent = msg + " " + $("sumWhy").textContent;
@@ -925,14 +968,14 @@ Answer with JSON only, no prose, in exactly this shape:
 
   function chip(st) {
     const p = BY[st.id];
-    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small>${st.tip ? `<small>${DE() ? st.tip.de : st.tip.en}</small>` : ""}${I.TRICKY.has(st.id) ? `<span class="qmark" aria-hidden="true">?</span>` : ""}</button>`;
+    return `<button type="button" class="chip${st.challenge ? " challenge" : ""}${st.peak ? " peak" : ""}" data-id="${st.id}" aria-label="${pn(p)}: ${tr("change or leave out", "ändern oder weglassen")}"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p, st.side === "left")}</svg><b>${pn(p)}${st.side ? " · " + sideTxt(st.side)[0] : ""}</b><small>${holdTxt(st)}</small>${st.tip ? `<small>${tipTxt(st.tip)}</small>` : ""}${I.TRICKY.has(st.id) ? `<span class="qmark" aria-hidden="true">?</span>` : ""}</button>`;
   }
   function groupFlow(list) {
     const out = [];
     for (let i = 0; i < list.length; i++) {
       const s = list[i], n1 = list[i + 1], n2 = list[i + 2];
       if (s.id === "phalakasana" && n1 && n1.id === "chaturanga" && n2 && n2.id === "urdhva-mukha-svanasana") {
-        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>${["phalakasana", "chaturanga", "urdhva-mukha-svanasana"].map(id => DE() ? BY[id].de : ({ "urdhva-mukha-svanasana": "Up Dog" })[id] || BY[id].en).join(" · ")}</small></div>`); i += 2; continue;
+        out.push(`<div class="chip flowy"><b>Vinyasa</b><small>${["phalakasana", "chaturanga", "urdhva-mukha-svanasana"].map(id => DE() ? BY[id].de : ZH_() ? BY[id].zh : ({ "urdhva-mukha-svanasana": "Up Dog" })[id] || BY[id].en).join(" · ")}</small></div>`); i += 2; continue;
       }
       if (n1 && list[i + 2] && list[i + 2].id === s.id && list[i + 3] && list[i + 3].id === n1.id && s.breath && n1.breath) {
         let c = 0; while (list[i + 2 * c] && list[i + 2 * c].id === s.id && list[i + 2 * c + 1] && list[i + 2 * c + 1].id === n1.id) c++;
@@ -953,6 +996,10 @@ Answer with JSON only, no prose, in exactly this shape:
   // the idea of the class, phrased in the chosen language from the composer's plain data
   function whyTxt() {
     const w = plan.whyData;
+    if (w && ZH_()) {
+      const tags = w.needs.map(t => ZH.TAGS[t] || t).join("、"), prep = w.prep.map(id => ZH.BLOCKS[id] || id), B = id => ZH.BLOCKS[id] || id;
+      return `围绕${B(w.peak)}展开。` + (prep.length ? `${prep.join("、")}为${tags}做准备。` : `为${tags}做准备。`) + `热身：${B(w.warm)}，然后${B(w.sun)}。`;
+    }
     if (!w || !DE()) return plan.why || "";
     const tags = w.needs.map(t => I.TAGS_DE[t] || t).join(", ");
     const prep = w.prep.map(id => I.BLOCKS_DE[id] || id);
@@ -963,19 +1010,19 @@ Answer with JSON only, no prose, in exactly this shape:
     const gt = source === "fundamental";
     $("shuffleBtn").hidden = gt; $("learnWrap").hidden = !gt; $("gentleStart").checked = S.trans === "slow"; $("explainStart").checked = S.explain !== "off";
     if (gt) {
-      $("sumTitle").textContent = tr("Fundamental", "Grundton") + ` · ${Math.round(plan.totalSecs / 60)} min`;
-      $("sumWhy").textContent = tr(plan.why, "Im Sitzen ankommen, dann jeder Teil des Körpers einmal: die Wirbelsäule in alle sechs Richtungen, Hüften, Beinrückseite, Schultern, Arme, Rumpf und Gleichgewicht; eine Drehung im Liegen, dann Ruhe.");
+      $("sumTitle").textContent = tr("Fundamental", "Grundton") + ` · ${Math.round(plan.totalSecs / 60)}` + tr(" min", " min");
+      $("sumWhy").textContent = tr(plan.why, "Im Sitzen ankommen, dann jeder Teil des Körpers einmal: die Wirbelsäule in alle sechs Richtungen, Hüften, Beinrückseite, Schultern, Arme, Rumpf und Gleichgewicht; eine Drehung im Liegen, dann Ruhe.", ZH.WHY_GT);
     } else
-    $("sumTitle").textContent = (source === "claude" ? tr("By Claude · ", "Von Claude · ") : "") + `${thName(P.THEME[THEME_NOW])} · ${S.minutes} min` + (plan.meta && plan.meta.peakName ? ` · ${blockName(plan.meta.peak, plan.meta.peakName)}` : "");
-    if (!gt) $("sumWhy").textContent = whyTxt() + (plan.dropped && plan.dropped.length ? tr(` Skipped unknown poses: ${plan.dropped.join(", ")}.`, ` Unbekannte Haltungen übersprungen: ${plan.dropped.join(", ")}.`) : "");
+    $("sumTitle").textContent = (source === "claude" ? tr("By Claude · ", "Von Claude · ") : "") + `${thName(P.THEME[THEME_NOW])} · ${S.minutes}` + tr(" min", " min") + (plan.meta && plan.meta.peakName ? ` · ${blockName(plan.meta.peak, plan.meta.peakName)}` : "");
+    if (!gt) $("sumWhy").textContent = whyTxt() + (plan.dropped && plan.dropped.length ? tr(` Skipped unknown poses: ${plan.dropped.join(", ")}.`, ` Unbekannte Haltungen übersprungen: ${plan.dropped.join(", ")}.`, ` 已跳过未知体式：${plan.dropped.join("、")}。`) : "");
     $("shuffleBtn").textContent = source === "claude" ? tr("Ask Claude again", "Claude noch mal fragen") : tr("Shuffle", "Neu mischen");
-    if (gt) $("sumMeta").textContent = tr("The same for everyone · 6 s breath", "Für alle gleich · 6 s Atem") + (GT_CARE.length ? tr(` · taking care of ${GT_CARE.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${GT_CARE.map(id => P.CARE_BY[id].de).join(", ")}`) : "");
-    else $("sumMeta").textContent = tr(`For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath`, `Für: ${phrase(ST, "de")} · ${P.LEVELS[ST.level - 1].de} · ${CYCLE} s Atem`)
-      + (CARE_TODAY.length ? tr(` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${CARE_TODAY.map(id => P.CARE_BY[id].de).join(", ")}`) : "");
+    if (gt) $("sumMeta").textContent = tr("The same for everyone · 6 s breath", "Für alle gleich · 6 s Atem") + (GT_CARE.length ? tr(` · taking care of ${GT_CARE.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${GT_CARE.map(id => P.CARE_BY[id].de).join(", ")}`, ` · 照顾：${GT_CARE.map(id => P.CARE_BY[id].zh).join("、")}`) : "");
+    else $("sumMeta").textContent = tr(`For the ${phrase(ST, "en")} · ${P.LEVELS[ST.level - 1].name} · ${CYCLE} s breath`, `Für: ${phrase(ST, "de")} · ${P.LEVELS[ST.level - 1].de} · ${CYCLE} s Atem`, `给${phrase(ST, "zh")} · ${P.LEVELS[ST.level - 1].zh} · ${CYCLE} 秒呼吸`)
+      + (CARE_TODAY.length ? tr(` · taking care of ${CARE_TODAY.map(id => P.CARE_BY[id].en.toLowerCase()).join(", ")}`, ` · mit Rücksicht auf: ${CARE_TODAY.map(id => P.CARE_BY[id].de).join(", ")}`, ` · 照顾：${CARE_TODAY.map(id => P.CARE_BY[id].zh).join("、")}`) : "");
     let top = "";
     plan.offers.forEach(o => {
       const on = challenges[o.id] === true;
-      top += `<div class="card"><span class="label">${tr("Challenge offer", "Herausforderung")}</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${pn(BY[o.id])} · <i>${BY[o.id].sa}</i></b><span class="muted">${(DE() && I.OFFERS_DE[o.id]) || o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">${tr("Add it", "Dazunehmen")}</button><button type="button" data-v="no" aria-pressed="${!on}">${tr("Not today", "Heute nicht")}</button></div></div></div></div>`;
+      top += `<div class="card"><span class="label">${tr("Challenge offer", "Herausforderung")}</span><div class="offer"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY[o.id].p)}</svg><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>${pn(BY[o.id])} · <i>${BY[o.id].sa}</i></b><span class="muted">${(DE() && I.OFFERS_DE[o.id]) || (ZH_() && ZH.OFFERS[o.id]) || o.text}</span><div class="seg" data-offer="${o.id}"><button type="button" data-v="yes" aria-pressed="${on}">${tr("Add it", "Dazunehmen")}</button><button type="button" data-v="no" aria-pressed="${!on}">${tr("Not today", "Heute nicht")}</button></div></div></div></div>`;
     });
     if (gt && $("learnStart").checked) top += `<div class="card"><span class="label">${tr("Before you start", "Bevor du anfängst")}</span><ul class="basics">${I.BASICS[LANG].map(t => `<li>${t}</li>`).join("")}</ul></div>`;
     if (plan.props.length) top += `<div class="card"><span class="label">${tr("Have ready", "Bereitlegen")}</span><ul class="props">${plan.props.map(p => `<li>${propTxt(p)}</li>`).join("")}</ul></div>`;
@@ -1003,11 +1050,11 @@ Answer with JSON only, no prose, in exactly this shape:
   function openSheet(id) {
     sheetId = id; const p = BY[id], alt = swapFor(id), keep = P.KEEP.has(id);
     $("shFig").innerHTML = fig(p.p); $("shName").textContent = pn(p); $("shSub").textContent = `${p.sa} · ${pn2(p)}`;
-    $("shSwap").hidden = !alt || source === "fundamental"; $("shSwap").textContent = alt ? tr(`Swap for ${alt.en}`, `Tauschen gegen ${alt.de}`) : "";
+    $("shSwap").hidden = !alt || source === "fundamental"; $("shSwap").textContent = alt ? tr(`Swap for ${alt.en}`, `Tauschen gegen ${alt.de}`, `换成${alt.zh}`) : "";
     $("shOut").hidden = keep; $("shNever").hidden = keep || !ST;
     const Lh = I.LEARN[id] ? (I.LEARN[id][LANG] || I.LEARN[id].en) : null;
     $("shMsg").innerHTML = (Lh ? `<ol class="shhow">${Lh.how.map(x => `<li>${x}</li>`).join("")}</ol><span style="display:block;margin-top:6px"><b>${tr("Feel", "Spüren")}:</b> ${Lh.feel}<br><b>${tr("Easier", "Leichter")}:</b> ${Lh.care}</span>` + (POSE_IMG[id] ? `<img class="learnimg" src="${POSE_IMG[id]}" alt="" style="margin-top:8px">` : "") : `<span>${cueOf(p)}</span>`)
-      + (keep ? `<span style="display:block;margin-top:6px">${tr(`${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".`, `${p.de} hält die Stunde zusammen und bleibt deshalb. Wenn etwas wehtut, wähle es unter „Heute schonen“.`)}</span>` : "");
+      + (keep ? `<span style="display:block;margin-top:6px">${tr(`${p.en} holds the class together, so it stays. If something hurts, tick it under "Take care today".`, `${p.de} hält die Stunde zusammen und bleibt deshalb. Wenn etwas wehtut, wähle es unter „Heute schonen“.`, `${p.zh}是整堂课的支柱，所以保留。如果哪里疼，请在“今天要照顾”里勾选。`)}</span>` : "");
     $("sheet").hidden = false; $("shCancel").focus();
   }
   function closeSheet() { $("sheet").hidden = true; sheetId = null; }
@@ -1085,8 +1132,8 @@ Answer with JSON only, no prose, in exactly this shape:
     else if (!st.breath && st.id === prev.id) Sound.bowl(523.3, .2, 2.5);
     $("lSect").textContent = source === "claude" ? st.section : secName(st.section);
     $("lSa").textContent = p.sa; $("lEn").textContent = pn(p); $("lDe").textContent = pn2(p);
-    $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p) + (st.tip ? " · " + (DE() ? st.tip.de : st.tip.en) : "");
-    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? tr(sideTxt(st.side) + " side", st.side === "right" ? "Rechte Seite" : "Linke Seite") : "";
+    $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p) + (st.tip ? " · " + tipTxt(st.tip) : "");
+    $("lSide").hidden = !st.side; $("lSide").textContent = st.side ? tr(sideTxt(st.side) + " side", st.side === "right" ? "Rechte Seite" : "Linke Seite", st.side === "right" ? "右侧" : "左侧") : "";
     const bw = $("lBreath");
     if (st.breath) { bw.dataset.b = st.breath; bw.textContent = breathWord(st.breath); } else { bw.dataset.b = ""; bw.textContent = ""; }
     $("lDots").innerHTML = st.breath || st.breaths > 12 || !st.breaths ? "" : Array.from({ length: st.breaths }, () => "<i></i>").join("");
@@ -1183,7 +1230,7 @@ Answer with JSON only, no prose, in exactly this shape:
     const p = BY[st.id], bw = $("lBreath");
     if (on) { bw.dataset.b = ""; bw.textContent = tr("Come into the pose", "In die Haltung kommen"); $("lCue").textContent = howTxt(st) || cueOf(p); }
     else {
-      $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p) + (st.tip ? " · " + (DE() ? st.tip.de : st.tip.en) : "");
+      $("lCue").textContent = (st.challenge ? tr("Challenge · ", "Herausforderung · ") : "") + cueOf(p) + (st.tip ? " · " + tipTxt(st.tip) : "");
       if (st.breath) { bw.dataset.b = st.breath; bw.textContent = breathWord(st.breath); } else { bw.dataset.b = ""; bw.textContent = ""; }
     }
   }
@@ -1215,7 +1262,7 @@ Answer with JSON only, no prose, in exactly this shape:
     const st = plan.steps[idx];
     const done = elapsedBefore(idx) + (st.secs - left);
     $("lBar").style.width = (100 * done / total).toFixed(2) + "%";
-    $("lTime").textContent = tr(`${mmss(total - done)} left`, `noch ${mmss(total - done)}`);
+    $("lTime").textContent = tr(`${mmss(total - done)} left`, `noch ${mmss(total - done)}`, `还剩 ${mmss(total - done)}`);
     paintTrans(st); paintGuide(st);
     const holdS = st.secs - (st.trans || 0), holdLeft = Math.min(left, holdS);
     $("lCount").textContent = inTrans(st) ? mmss(st.trans - (st.secs - left)) : !st.breath && (st.breaths > 12 || !st.breaths || holdS >= 60) ? mmss(holdLeft) : "";
@@ -1262,7 +1309,7 @@ Answer with JSON only, no prose, in exactly this shape:
   let session = null, fb = { poses: null, pace: null, marks: {} }, DONE_SECS = 0, DONE_COMPLETE = true, NEXT_STORY = null;
   let DAYLINE = 0;
   function paintDoneMeta() { const d = I.BREATH.everyday[LANG] || I.BREATH.everyday.en; $("doneDay").textContent = d[DAYLINE % d.length]; paintDoneMeta2(); }
-  function paintDoneMeta2() { $("doneMeta").textContent = tr(`${mmss(DONE_SECS)} on the mat${DONE_COMPLETE ? "" : " · ended early"}`, `${mmss(DONE_SECS)} auf der Matte${DONE_COMPLETE ? "" : " · früher beendet"}`); }
+  function paintDoneMeta2() { $("doneMeta").textContent = tr(`${mmss(DONE_SECS)} on the mat${DONE_COMPLETE ? "" : " · ended early"}`, `${mmss(DONE_SECS)} auf der Matte${DONE_COMPLETE ? "" : " · früher beendet"}`, `在垫子上 ${mmss(DONE_SECS)}${DONE_COMPLETE ? "" : " · 提前结束"}`); }
   function finish(complete) {
     if (!running) return;
     running = false; releaseLock(); cancelAnimationFrame(anim); Sound.stopDrone();
@@ -1287,6 +1334,7 @@ Answer with JSON only, no prose, in exactly this shape:
     if (!NEXT_STORY) return;
     const A = P.ANIMAL[ST.animal], a = A.en.toLowerCase(), story = NEXT_STORY.story, k = 3 - ST.streak, grow = NEXT_STORY.right && ST.level < 5;
     paintPhrase("nPhrase", "nPhraseDe", ST);
+    if (ZH_()) { $("nStory").textContent = story.length ? `你的${A.zh}${story.map(x => ZH.STORY[x] || x).join("，还")}。` : (grow ? `还是那只${A.zh}。再有 ${k} 次好的练习，它就会长大。` : `还是那只${A.zh}。`); return; }
     if (!DE()) { $("nStory").textContent = story.length ? `Your ${a} ${story.join(" and ")}.` : (grow ? `Same ${a} again. After ${k} more good ${k === 1 ? "practice" : "practices"} it grows up.` : `Same ${a} again.`); return; }
     const g = A.g, dein = g === "f" ? "Deine" : "Dein", same = { m: "derselbe", f: "dieselbe", n: "dasselbe" }[g], pron = { m: "er", f: "sie", n: "es" }[g];
     $("nStory").textContent = story.length ? `${dein} ${A.de} ${story.map(x => STORY_DE[x] || x).join(" und ")}.`
@@ -1338,7 +1386,8 @@ Answer with JSON only, no prose, in exactly this shape:
     const L = ST ? P.LEVELS[ST.level - 1] : P.LEVELS[2], skip = new Set((ST && ST.skip) || []);
     const inMine = p => p.lvl <= L.maxLvl && !skip.has(p.id);
     $("libIntro").textContent = ST ? tr(`${POSES.length} poses. At your level (${L.name.toLowerCase()}) practices use poses up to "${LEVEL[L.maxLvl].toLowerCase()}". Tap "Leave out" for anything you never want in a class.`,
-      `${POSES.length} Haltungen. Auf deiner Stufe (${L.de}) nutzen die Stunden Haltungen bis „${LEVEL[L.maxLvl]}“. Tippe auf „Weglassen“ bei allem, was nie in einer Stunde vorkommen soll.`) : tr(`${POSES.length} poses.`, `${POSES.length} Haltungen.`);
+      `${POSES.length} Haltungen. Auf deiner Stufe (${L.de}) nutzen die Stunden Haltungen bis „${LEVEL[L.maxLvl]}“. Tippe auf „Weglassen“ bei allem, was nie in einer Stunde vorkommen soll.`,
+      `共 ${POSES.length} 个体式。在你的级别（${L.zh}），练习会用到“${LEVEL[L.maxLvl]}”及以下的体式。永远不想在课里出现的体式，点“排除”。`) : tr(`${POSES.length} poses.`, `${POSES.length} Haltungen.`, `共 ${POSES.length} 个体式。`);
     const likes = new Set((ST && ST.likes) || []);
     const list = POSES.filter(p => (fLevel === "all" || String(p.lvl) === fLevel) && (fMe === "all" || (fMe === "mine" ? inMine(p) : fMe === "fav" ? likes.has(p.id) : skip.has(p.id))));
     $("libGrid").innerHTML = list.map(p => `<div class="pcard"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
@@ -1368,13 +1417,14 @@ Answer with JSON only, no prose, in exactly this shape:
   function paintDiscover() {
     const c = dCounts(), left = DQ.length;
     $("dsIntro").textContent = tr(`Swipe right if you like a pose: it comes up more often. Left: never in a class. Up or ↻: decide later. ${left} to go · ${c.likes} ♡ · ${c.no} ✕`,
-      `Nach rechts wischen, wenn dir eine Haltung gefällt: Sie kommt öfter vor. Nach links: nie in einer Stunde. Nach oben oder ↻: später entscheiden. Noch ${left} · ${c.likes} ♡ · ${c.no} ✕`);
+      `Nach rechts wischen, wenn dir eine Haltung gefällt: Sie kommt öfter vor. Nach links: nie in einer Stunde. Nach oben oder ↻: später entscheiden. Noch ${left} · ${c.likes} ♡ · ${c.no} ✕`,
+      `喜欢一个体式就向右滑：它会更常出现。向左：永远不在课里出现。向上或 ↻：以后再决定。还剩 ${left} 个 · ${c.likes} ♡ · ${c.no} ✕`);
     $("dUndo").hidden = !DHIST.length;
     dCur = DQ[0] || null;
     if (!dCur) {
       $("dControls").hidden = true;
       $("dStack").innerHTML = `<div class="dcard" style="cursor:default;text-align:center;gap:10px"><svg viewBox="0 0 260 230" aria-hidden="true">${fig(BY["savasana"].p)}</svg>
-        <b style="font-size:1.2rem">${tr("All poses seen.", "Alle Haltungen gesehen.")}</b><span class="muted">${tr(`${c.likes} you like, ${c.no} not for you. Your likes now show up in your classes; change anything in the pose library.`, `${c.likes} magst du, ${c.no} sind nichts für dich. Deine Lieblinge kommen jetzt in deinen Stunden vor; ändern kannst du alles in der Haltungen-Übersicht.`)}</span>
+        <b style="font-size:1.2rem">${tr("All poses seen.", "Alle Haltungen gesehen.")}</b><span class="muted">${tr(`${c.likes} you like, ${c.no} not for you. Your likes now show up in your classes; change anything in the pose library.`, `${c.likes} magst du, ${c.no} sind nichts für dich. Deine Lieblinge kommen jetzt in deinen Stunden vor; ändern kannst du alles in der Haltungen-Übersicht.`, `喜欢 ${c.likes} 个，不适合 ${c.no} 个。你喜欢的体式现在会出现在你的课里；在体式库里可以随时修改。`)}</span>
         <div class="row" style="justify-content:center"><button class="btn" id="dToLib" type="button">${tr("Pose library", "Haltungen")}</button><button class="btn quiet" id="dAgain" type="button">${tr("Go through the undecided again", "Die unentschiedenen noch mal")}</button></div></div>`;
       $("dToLib").onclick = () => { fMe = "fav"; document.querySelectorAll("#fMe button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === "fav"))); renderLibrary(); show("library"); };
       $("dAgain").onclick = () => { ST.passed = []; saveST(); DQ = dQueue(); paintDiscover(); };
@@ -1382,8 +1432,8 @@ Answer with JSON only, no prose, in exactly this shape:
     }
     $("dControls").hidden = false;
     const p = BY[dCur], L = P.LEVELS[ST.level - 1];
-    const lvlNote = p.lvl > L.maxLvl ? tr(`Not at your level yet: comes with "${LEVEL[p.lvl].toLowerCase()}".`, `Noch nicht auf deiner Stufe: kommt mit „${LEVEL[p.lvl]}“.`) : "";
-    const v = p.var && BY[p.var] ? tr(`Can take the place of ${BY[p.var].en} in a flow.`, `Kann im Flow für ${BY[p.var].de} einspringen.`) : "";
+    const lvlNote = p.lvl > L.maxLvl ? tr(`Not at your level yet: comes with "${LEVEL[p.lvl].toLowerCase()}".`, `Noch nicht auf deiner Stufe: kommt mit „${LEVEL[p.lvl]}“.`, `还不在你的级别：到“${LEVEL[p.lvl]}”才会出现。`) : "";
+    const v = p.var && BY[p.var] ? tr(`Can take the place of ${BY[p.var].en} in a flow.`, `Kann im Flow für ${BY[p.var].de} einspringen.`, `在流动序列里可以代替${BY[p.var].zh}。`) : "";
     $("dStack").innerHTML = `<div class="dcard" id="dCard" role="group" aria-label="${pn(p)}">
       <span class="stamp yes">♡</span><span class="stamp no">✕</span>
       <svg viewBox="0 0 260 230" aria-hidden="true">${fig(p.p)}</svg>
@@ -1397,7 +1447,7 @@ Answer with JSON only, no prose, in exactly this shape:
   function decide(kind) {
     if (!dCur) return;
     const id = dCur;
-    if (kind === "no" && P.KEEP.has(id)) { $("dsIntro").textContent = tr(`${pn(BY[id])} holds every class together, so it stays.`, `${pn(BY[id])} hält jede Stunde zusammen und bleibt deshalb.`); kind = "later"; }
+    if (kind === "no" && P.KEEP.has(id)) { $("dsIntro").textContent = tr(`${pn(BY[id])} holds every class together, so it stays.`, `${pn(BY[id])} hält jede Stunde zusammen und bleibt deshalb.`, `${pn(BY[id])}是每堂课的支柱，所以保留。`); kind = "later"; }
     DHIST.push({ id, kind });
     DQ.shift();
     if (kind === "yes") ST.likes = [...new Set((ST.likes || []).concat(id))];
@@ -1473,6 +1523,7 @@ Answer with JSON only, no prose, in exactly this shape:
     "Slow: time to get into every pose before the breaths are counted.": "Langsam: Zeit, in jede Haltung zu kommen, bevor die Atemzüge gezählt werden.", "Ready": "Bereit", "Step by step": "Schritt für Schritt", "First time: step by step": "Zum ersten Mal: Schritt für Schritt", "Start": "Starten", "Save": "Speichern",
     "Every part of the body once. The same practice for everyone, no animal needed.": "Jeder Teil des Körpers einmal. Für alle gleich, ohne Tier.", "Fundamental · 10 min": "Grundton · 10 min",
     "Every part of the body once: the shortest complete practice.": "Jeder Teil des Körpers einmal: die kürzeste vollständige Praxis.",
+    "Normal": "Normal", "30 min": "30 min", "45 min": "45 min", "60 min": "60 min",
   };
   const ATTR_DE = {
     "e.g. calm young heron · ruhiger junger Reiher": "z. B. ruhiger junger Reiher · calm young heron",
@@ -1482,13 +1533,13 @@ Answer with JSON only, no prose, in exactly this shape:
   const TEXTS = [], ATTRS = [];
   (function collect() {
     const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    let n; while ((n = walk.nextNode())) { const t = n.nodeValue.trim(); if (t && UI_DE[t] && !n.parentElement.closest("script,style")) TEXTS.push([n, n.nodeValue, n.nodeValue.replace(t, UI_DE[t])]); }
-    document.querySelectorAll("[placeholder],[aria-label]").forEach(el => ["placeholder", "aria-label"].forEach(a => { const v = el.getAttribute(a); if (v && ATTR_DE[v]) ATTRS.push([el, a, v, ATTR_DE[v]]); }));
+    let n; while ((n = walk.nextNode())) { const t = n.nodeValue.trim(); if (t && UI_DE[t] && !n.parentElement.closest("script,style")) TEXTS.push([n, n.nodeValue, n.nodeValue.replace(t, UI_DE[t]), n.nodeValue.replace(t, ZH.UI[t] || t)]); }
+    document.querySelectorAll("[placeholder],[aria-label]").forEach(el => ["placeholder", "aria-label"].forEach(a => { const v = el.getAttribute(a); if (v && ATTR_DE[v]) ATTRS.push([el, a, v, ATTR_DE[v], ZH.ATTR[v] || v]); }));
   })();
   function applyStatic() {
-    TEXTS.forEach(([n, en, de]) => { n.nodeValue = DE() ? de : en; });
-    ATTRS.forEach(([el, a, en, de]) => el.setAttribute(a, DE() ? de : en));
-    document.documentElement.lang = LANG;
+    TEXTS.forEach(([n, en, de, zh]) => { n.nodeValue = L3(en, de, zh); });
+    ATTRS.forEach(([el, a, en, de, zh]) => el.setAttribute(a, L3(en, de, zh)));
+    document.documentElement.lang = ZH_() ? "zh-Hans" : LANG;
     $("langSeg").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === LANG)));
   }
   function redraw() {
