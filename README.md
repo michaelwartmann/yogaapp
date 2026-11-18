@@ -17,13 +17,13 @@ The app speaks English, German and Simplified Chinese (EN/DE/中文 switch at th
 ## Run it
 
 Open `index.html` in a browser. Everything (drawings, poses, composer, player) is inside that one file;
-only the fonts come from Google Fonts.
+fonts included (Quicksand and Nunito, SIL OFL, in `media/fonts/`). No outside requests.
 
 ## Use it offline on a phone
 
 Hosted on GitHub Pages (or any HTTPS address), the app installs like an app and then opens without internet:
 
-1. Open the Pages address once while online and wait a few seconds (the service worker saves the app and fonts).
+1. Open the Pages address once while online and wait a few seconds (the service worker saves the app).
 2. **Android / Chrome:** menu ⋮ → **Add to Home screen** (or **Install app**). **iPhone / Safari:** Share → **Add to Home Screen**.
 3. Open it from the home screen icon. It runs full screen and works in flight mode.
 
