@@ -10,8 +10,14 @@ SRC = ROOT / "src"
 def b64(name):
     return base64.b64encode((ROOT / "media" / name).read_bytes()).decode()
 
+# Fonts live in the repo (no Google Fonts: blocked in China, and it leaks visits). SIL OFL, see media/fonts/.
+FONTS = "".join(
+    f'@font-face{{font-family:"{fam}";font-style:normal;font-weight:{w};font-display:swap;'
+    f'src:url(data:font/woff2;base64,{b64("fonts/" + file)}) format("woff2")}}'
+    for fam, file, w in [("Quicksand", "quicksand.woff2", "300 700"), ("Nunito", "nunito.woff2", "200 1000")])
+
 def build_fragment():
-    page = (SRC / "player.template.html").read_text(encoding="utf-8")
+    page = (SRC / "player.template.html").read_text(encoding="utf-8").replace("/*FONTS*/", FONTS)
     for marker, file in [("ENGINE", "pose-engine.js"), ("POSES", "poses.js"), ("GENERATOR", "generator.js"),
                          ("BLOCKS", "blocks.js"), ("COMPOSER", "composer.js"), ("PROFILE", "profile.js"),
                          ("I18N", "i18n.js"), ("I18NZH", "i18n-zh.js"), ("POSEIMG", "pose-images.js")]:
@@ -39,7 +45,7 @@ HEAD = """<!doctype html>
 """
 
 def build_tree():
-    page = (SRC / "tree.template.html").read_text(encoding="utf-8")
+    page = (SRC / "tree.template.html").read_text(encoding="utf-8").replace("/*FONTS*/", FONTS)
     for marker, file in [("ENGINE", "pose-engine.js"), ("POSES", "poses.js"), ("GENERATOR", "generator.js"),
                          ("BLOCKS", "blocks.js"), ("COMPOSER", "composer.js"), ("PROFILE", "profile.js")]:
         page = page.replace(f"/*{marker}*/", (SRC / file).read_text(encoding="utf-8"))
